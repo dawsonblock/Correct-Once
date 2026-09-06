@@ -227,11 +227,13 @@ async def test_distinct_mutations_of_same_capability_succeed_live(tmp_path: Path
     first = await adapter.invoke_capability(
         subject="tenant-a",
         capability_id=WRITE_CAPABILITY_ID,
+        idempotency_key="distinct-strict",
         arguments={"repo": "acme/example", "mode": "strict"},
     )
     second = await adapter.invoke_capability(
         subject="tenant-a",
         capability_id=WRITE_CAPABILITY_ID,
+        idempotency_key="distinct-relaxed",
         arguments={"repo": "acme/example", "mode": "relaxed"},
     )
 

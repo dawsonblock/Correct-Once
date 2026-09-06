@@ -11,6 +11,7 @@ import { RuntimeExecutionPolicyError } from "./errors.js";
 import type {
   AdmitRuntimeCapabilityOptions,
   ExecutionClass,
+  RuntimeMcpReadDescriptorPin,
   RuntimeAdmittedCapability,
   RuntimeExecutionPolicy,
 } from "./types.js";
@@ -37,31 +38,21 @@ function normalizedHttpMethod(implementation: Extract<CapabilityImplementation, 
   return (implementation.method ?? "GET").trim().toUpperCase();
 }
 
-function hasAuthenticatedReadOnlyDescriptor(
-  implementation: CapabilityImplementation,
-): boolean {
-  if (implementation.kind !== "mcp") return false;
-  const descriptor = (implementation as CapabilityImplementation & {
-    readonly descriptor?: unknown;
-  }).descriptor;
-  if (!descriptor || typeof descriptor !== "object" || Array.isArray(descriptor)) return false;
-  const readOnlyDescriptor = descriptor as {
-    readonly authenticated?: unknown;
-    readonly readOnly?: unknown;
-  };
-  return readOnlyDescriptor.authenticated === true && readOnlyDescriptor.readOnly === true;
+function hasAuthenticatedReadOnlyDescriptor(capability: AdmittedCapability): boolean {
+  return mcpReadDescriptorPin(capability) !== undefined;
 }
 
 function isReadCompatibleImplementation(
-  implementation: CapabilityImplementation,
+  capability: AdmittedCapability,
 ): boolean {
+  const implementation = capability.implementation;
   switch (implementation.kind) {
     case "filesystem.read":
       return true;
     case "http":
       return READ_ONLY_HTTP_METHODS.has(normalizedHttpMethod(implementation));
     case "mcp":
-      return hasAuthenticatedReadOnlyDescriptor(implementation);
+      return hasAuthenticatedReadOnlyDescriptor(capability);
     default:
       return false;
   }
@@ -104,10 +95,10 @@ function assertImplementationCompatibility(
 ): void {
   const implementation = capability.implementation;
   if (executionClass === "pure" || executionClass === "read") {
-    if (isReadCompatibleImplementation(implementation)) return;
+    if (isReadCompatibleImplementation(capability)) return;
     if (implementation.kind === "mcp") {
       throw new RuntimeExecutionPolicyError(
-        `Capability ${capability.id} mcp reads require implementation.descriptor.authenticated=true and implementation.descriptor.readOnly=true.`,
+        `Capability ${capability.id} mcp reads require pinned descriptor evidence for server/tool/inputSchema/readOnly/authenticated/epoch.`,
       );
     }
     throw new RuntimeExecutionPolicyError(
@@ -134,6 +125,7 @@ function schemaClassDigest(
     readonly executor: ReturnType<typeof executorForClass>;
     readonly policyHookId?: string;
     readonly pureHandlerId?: string;
+    readonly readDescriptorDigest?: string;
     readonly requiresLightweightAuth: boolean;
     readonly trustedRead: boolean;
   },
@@ -144,8 +136,118 @@ function schemaClassDigest(
     executor: input.executor,
     ...(input.policyHookId === undefined ? {} : { policyHookId: input.policyHookId }),
     ...(input.pureHandlerId === undefined ? {} : { pureHandlerId: input.pureHandlerId }),
+    ...(input.readDescriptorDigest === undefined
+      ? {}
+      : { readDescriptorDigest: input.readDescriptorDigest }),
     requiresLightweightAuth: input.requiresLightweightAuth,
     trustedRead: input.trustedRead,
+  });
+}
+
+function normalizedReadDescriptorEpoch(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    const normalized = value.trim();
+    return normalized.length === 0 ? undefined : normalized;
+  }
+  if (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    Number.isInteger(value) &&
+    value >= 0
+  ) {
+    return String(value);
+  }
+  return undefined;
+}
+
+export function normalizeMcpReadDescriptorEvidence(input: {
+  readonly server: string;
+  readonly tool: string;
+  readonly inputSchema: unknown;
+  readonly authenticated: boolean;
+  readonly readOnly: boolean;
+  readonly epoch: string | number;
+}): RuntimeMcpReadDescriptorPin {
+  const epoch = normalizedReadDescriptorEpoch(input.epoch);
+  if (epoch === undefined) {
+    throw new RuntimeExecutionPolicyError(
+      `Pinned MCP read descriptor for ${input.server}/${input.tool} requires a non-empty epoch.`,
+    );
+  }
+  if (input.authenticated !== true || input.readOnly !== true) {
+    throw new RuntimeExecutionPolicyError(
+      `Pinned MCP read descriptor for ${input.server}/${input.tool} must remain authenticated=true and readOnly=true.`,
+    );
+  }
+  return capabilitySnapshot({
+    server: input.server,
+    tool: input.tool,
+    inputSchema: input.inputSchema,
+    authenticated: true as const,
+    readOnly: true as const,
+    epoch,
+    descriptorDigest: capabilitySha256({
+      server: input.server,
+      tool: input.tool,
+      inputSchema: input.inputSchema,
+      authenticated: true,
+      readOnly: true,
+      epoch,
+    }),
+  });
+}
+
+export function mcpReadDescriptorPin(
+  capability: AdmittedCapability,
+): RuntimeMcpReadDescriptorPin | undefined {
+  const implementation = capability.implementation;
+  if (implementation.kind !== "mcp") return undefined;
+  const descriptor = (implementation as CapabilityImplementation & {
+    readonly descriptor?: unknown;
+  }).descriptor;
+  if (!descriptor || typeof descriptor !== "object" || Array.isArray(descriptor)) {
+    return undefined;
+  }
+  const readOnlyDescriptor = descriptor as {
+    readonly authenticated?: unknown;
+    readonly readOnly?: unknown;
+    readonly inputSchema?: unknown;
+    readonly schema?: unknown;
+    readonly epoch?: unknown;
+    readonly server?: unknown;
+    readonly tool?: unknown;
+  };
+  const descriptorServer =
+    typeof readOnlyDescriptor.server === "string" && readOnlyDescriptor.server.length > 0
+      ? readOnlyDescriptor.server
+      : implementation.server;
+  const descriptorTool =
+    typeof readOnlyDescriptor.tool === "string" && readOnlyDescriptor.tool.length > 0
+      ? readOnlyDescriptor.tool
+      : implementation.tool;
+  if (descriptorServer !== implementation.server || descriptorTool !== implementation.tool) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${capability.id} mcp descriptor server/tool drifted from implementation pin.`,
+    );
+  }
+  const descriptorSchema = readOnlyDescriptor.inputSchema ?? readOnlyDescriptor.schema;
+  if (descriptorSchema === undefined) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${capability.id} mcp read descriptor must pin inputSchema.`,
+    );
+  }
+  if (capabilitySha256(descriptorSchema) !== capabilitySha256(capability.inputSchema)) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${capability.id} mcp read descriptor inputSchema drifted from admitted capability inputSchema.`,
+    );
+  }
+  return normalizeMcpReadDescriptorEvidence({
+    server: implementation.server,
+    tool: implementation.tool,
+    inputSchema: descriptorSchema,
+    authenticated: readOnlyDescriptor.authenticated === true,
+    readOnly: readOnlyDescriptor.readOnly === true,
+    epoch: readOnlyDescriptor.epoch as string | number,
   });
 }
 
@@ -167,6 +269,8 @@ function normalizePolicy(
     (executionClass === "read" || AUTH_REQUIRED_SENSITIVITIES.has(capability.sensitivity));
   const trustedRead =
     options.trustedRead ?? (executionClass === "read" && requiresLightweightAuth === false);
+  const readDescriptorDigest =
+    executionClass === "read" ? mcpReadDescriptorPin(capability)?.descriptorDigest : undefined;
   const executor = executorForClass(executionClass);
 
   if (policyHookId === "") {
@@ -224,11 +328,13 @@ function normalizePolicy(
       executor,
       ...(policyHookId ? { policyHookId } : {}),
       ...(pureHandlerId ? { pureHandlerId } : {}),
+      ...(readDescriptorDigest === undefined ? {} : { readDescriptorDigest }),
       requiresLightweightAuth,
       trustedRead,
     }),
     ...(policyHookId ? { policyHookId } : {}),
     ...(pureHandlerId ? { pureHandlerId } : {}),
+    ...(readDescriptorDigest === undefined ? {} : { readDescriptorDigest }),
     requiresLightweightAuth,
     trustedRead,
   });
@@ -274,6 +380,11 @@ export function assertRuntimeAdmittedCapability(value: unknown): asserts value i
   if (candidate.execution.schemaClassDigest !== normalized.schemaClassDigest) {
     throw new RuntimeExecutionPolicyError(
       `Capability ${candidate.capability.id} execution digest drifted from its schema/class pin.`,
+    );
+  }
+  if (candidate.execution.readDescriptorDigest !== normalized.readDescriptorDigest) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${candidate.capability.id} execution read descriptor drifted from its descriptor pin.`,
     );
   }
 }

@@ -14,6 +14,7 @@ import {
   callLockedEffectGateway,
   createEffectGatewayClient,
   createFunctionHooksRuntime,
+  deriveTrustedWriteIdentity,
 } from "../src/index.ts";
 
 const READ_CAPABILITY_ID = "github.repo.read-live";
@@ -32,6 +33,34 @@ type GatewayResult = {
   readonly reconciliation_status?: string | null;
   readonly action_digest?: string;
 };
+
+type WriteIdentityVector = {
+  readonly name: string;
+  readonly subject: string;
+  readonly capabilityId: string;
+  readonly input: Record<string, unknown>;
+  readonly idempotencyKey: string;
+  readonly callerCorrelationId: string;
+  readonly metadata: Record<string, string>;
+  readonly semanticMetadata: Record<string, string>;
+  readonly expectedActionDigest: string;
+  readonly expectedTrustedIdempotencyKey: string;
+  readonly expectedTrustedActionId: string;
+  readonly expectedTraceId: string;
+};
+
+type ToolControlPatch = Partial<{
+  readonly schema: unknown;
+  readonly readOnly: boolean;
+  readonly authenticated: boolean;
+  readonly epoch: string | number;
+  readonly mode: string;
+  readonly result: unknown;
+  readonly externalId: string;
+  readonly statusCode: number;
+  readonly approvalSecret: string;
+  readonly reconcileStatus: string;
+}>;
 
 function readSchema() {
   return {
@@ -63,7 +92,14 @@ function mcpImplementation(
     server: "github",
     tool,
     ...(options.attestedReadOnly
-      ? { descriptor: { authenticated: true, readOnly: true } }
+      ? {
+          descriptor: {
+            authenticated: true,
+            readOnly: true,
+            inputSchema: readSchema(),
+            epoch: "read-descriptor-v1",
+          },
+        }
       : {}),
   } as unknown as Parameters<typeof createCapabilityCandidate>[0]["implementation"];
 }
@@ -120,9 +156,11 @@ function expectedUnifiedActionId(input: {
   readonly capabilityId: string;
   readonly idempotencyKey: string;
   readonly requestInput?: unknown;
+  readonly semanticMetadata?: Readonly<Record<string, string>>;
 }): string {
   const actionDigest = capabilitySha256({
     ...(input.requestInput === undefined ? {} : { input: input.requestInput }),
+    ...(input.semanticMetadata === undefined ? {} : { metadata: input.semanticMetadata }),
   });
   return capabilitySha256({
     subject: input.subject,
@@ -159,6 +197,16 @@ async function writeJsonAtomic(path: string, value: unknown): Promise<void> {
 
 async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(path, "utf8")) as T;
+}
+
+async function loadWriteIdentityVectors(): Promise<readonly WriteIdentityVector[]> {
+  const path = fileURLToPath(
+    new URL("../../qualification/write-identity-vectors.json", import.meta.url),
+  );
+  const document = JSON.parse(await readFile(path, "utf8")) as {
+    readonly cases: readonly WriteIdentityVector[];
+  };
+  return document.cases;
 }
 
 async function waitForHealth(baseUrl: string, child: ChildProcessWithoutNullStreams): Promise<void> {
@@ -206,9 +254,14 @@ type HarnessContext = {
   readonly controlPath: string;
   makeRuntime(options?: RuntimeFactoryOptions): ReturnType<typeof createFunctionHooksRuntime>;
   callCount(): Promise<number>;
+  effectFabricEnvironment(): Promise<{
+    readonly effect_fabric_version: string;
+    readonly effect_fabric_module: string;
+  }>;
   getTransaction(transactionId: string): Promise<any>;
   writeSnapshotState(capabilityId: string, state: SnapshotState): Promise<void>;
   writeToolSchema(toolKey: string, schema: unknown): Promise<void>;
+  patchToolControl(toolKey: string, patch: ToolControlPatch): Promise<void>;
   restoreDefaultControl(): Promise<void>;
   close(): Promise<void>;
 };
@@ -218,7 +271,9 @@ function defaultControl() {
     tools: {
       "github/repo.read": {
         schema: readSchema(),
+        authenticated: true,
         readOnly: true,
+        epoch: "read-descriptor-v1",
         mode: "success",
         result: { repo: "acme/example" },
       },
@@ -262,13 +317,6 @@ function defaultReceipts() {
 
 async function createHarness(): Promise<HarnessContext> {
   const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
-  const effectFabricSrc = join(
-    repoRoot,
-    "effect-fabric-v0.2.11",
-    "source",
-    "effect-fabric-0.2.11",
-    "src",
-  );
   const harnessPath = fileURLToPath(new URL("./live_effect_gateway_harness.py", import.meta.url));
   const tempRoot = await mkdtemp(join(tmpdir(), "correct-once-xlang-"));
   const snapshotPath = join(tempRoot, "runtime-snapshot.json");
@@ -276,6 +324,7 @@ async function createHarness(): Promise<HarnessContext> {
   const token = `cross-language-${Math.random().toString(16).slice(2)}`;
   const port = await availablePort();
   const baseUrl = `http://127.0.0.1:${port}`;
+  const pythonBinary = process.env.EFFECT_FABRIC_TEST_PYTHON ?? "python3";
 
   const registry = new InMemoryRuntimeCapabilityRegistry();
   await registry.register(
@@ -382,15 +431,13 @@ async function createHarness(): Promise<HarnessContext> {
 
   let stderr = "";
   const child = spawn(
-    "python3",
+    pythonBinary,
     [harnessPath, "--snapshot", snapshotPath, "--control", controlPath, "--token", token, "--port", String(port)],
     {
       cwd: repoRoot,
       env: {
         ...process.env,
-        PYTHONPATH: [repoRoot, effectFabricSrc, process.env.PYTHONPATH]
-          .filter((value): value is string => Boolean(value))
-          .join(":"),
+        PYTHONPATH: repoRoot,
       },
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -434,12 +481,37 @@ async function createHarness(): Promise<HarnessContext> {
     baseUrl,
     bearerToken: token,
   });
+  const readDescriptorAuthority = {
+    describeTool: async (server: string, tool: string) => {
+      const control = await readJson<{
+        readonly tools?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+      }>(controlPath);
+      const config = control.tools?.[`${server}/${tool}`];
+      assert.ok(config, `Missing control descriptor for ${server}/${tool}`);
+      const epoch = config.epoch;
+      assert.ok(
+        typeof epoch === "string" || typeof epoch === "number",
+        `Missing descriptor epoch for ${server}/${tool}`,
+      );
+      return {
+        server,
+        tool,
+        inputSchema: config.schema ?? {},
+        authenticated: config.authenticated === true,
+        readOnly: config.readOnly === true,
+        epoch,
+      };
+    },
+  } satisfies NonNullable<
+    Parameters<typeof createFunctionHooksRuntime>[0]["mcpReadDescriptorAuthority"]
+  >;
   const runtimes: ReturnType<typeof createFunctionHooksRuntime>[] = [];
   const makeRuntime = (options: RuntimeFactoryOptions = {}) => {
     const runtime = createFunctionHooksRuntime({
       registry,
       fastGateway,
       effectGateway: client,
+      mcpReadDescriptorAuthority: readDescriptorAuthority,
       policyHooks:
         options.policyHooks ?? {
           "read-auth": () => {},
@@ -457,6 +529,18 @@ async function createHarness(): Promise<HarnessContext> {
     assert.equal(res.status, 200, body);
     return JSON.parse(body) as { count: number; calls: unknown[] };
   };
+  const effectFabricEnvironment = async (): Promise<{
+    readonly effect_fabric_version: string;
+    readonly effect_fabric_module: string;
+  }> => {
+    const res = await fetch(`${baseUrl}/debug/environment`);
+    const body = await res.text();
+    assert.equal(res.status, 200, body);
+    return JSON.parse(body) as {
+      readonly effect_fabric_version: string;
+      readonly effect_fabric_module: string;
+    };
+  };
 
   return {
     runtime,
@@ -465,6 +549,7 @@ async function createHarness(): Promise<HarnessContext> {
     controlPath,
     makeRuntime,
     callCount: async () => (await readCalls()).count,
+    effectFabricEnvironment,
     getTransaction: async (transactionId: string) => {
       const res = await fetch(`${baseUrl}/debug/transactions/${transactionId}`);
       const body = await res.text();
@@ -485,6 +570,15 @@ async function createHarness(): Promise<HarnessContext> {
       const control = await readJson<any>(controlPath);
       assert.ok(control.tools?.[toolKey], `Missing control tool ${toolKey}`);
       control.tools[toolKey].schema = schema;
+      await writeJsonAtomic(controlPath, control);
+    },
+    patchToolControl: async (toolKey: string, patch: ToolControlPatch) => {
+      const control = await readJson<any>(controlPath);
+      assert.ok(control.tools?.[toolKey], `Missing control tool ${toolKey}`);
+      control.tools[toolKey] = {
+        ...control.tools[toolKey],
+        ...patch,
+      };
       await writeJsonAtomic(controlPath, control);
     },
     restoreDefaultControl: async () => {
@@ -530,6 +624,22 @@ test("live cross-language read stays a passthrough read", async () => {
   });
 });
 
+test("live harness proves the installed effect-fabric environment", async () => {
+  await withHarness(async ({ effectFabricEnvironment }) => {
+    const environment = await effectFabricEnvironment();
+    assert.equal(environment.effect_fabric_version, "0.2.12");
+    if (process.env.EFFECT_FABRIC_EXPECT_WHEEL === "1") {
+      assert.match(environment.effect_fabric_module, /site-packages/);
+      assert.equal(
+        environment.effect_fabric_module.includes(
+          "/effect-fabric-v0.2.12/source/effect-fabric-0.2.12/src/",
+        ),
+        false,
+      );
+    }
+  });
+});
+
 test("live guarded write uses the cross-language MCP path", async () => {
   await withHarness(async ({ runtime, callCount }) => {
     const before = await callCount();
@@ -551,7 +661,7 @@ test("live critical write stores trusted identity in Effect Fabric and replays i
   await withHarness(async ({ runtime, callCount, getTransaction }) => {
     const request = {
       id: WRITE_CAPABILITY_ID,
-      actionId: "caller-visible-action",
+      callerCorrelationId: "caller-visible-action",
       idempotencyKey: "write-live-1",
       input: { repo: "acme/example", mode: "strict" },
     };
@@ -576,16 +686,62 @@ test("live critical write stores trusted identity in Effect Fabric and replays i
       idempotencyKey: "write-live-1",
     });
     assert.equal(tx.intent.intent_id, expectedActionId);
-    assert.equal(tx.intent.trace_id, expectedActionId);
+    assert.equal(tx.intent.trace_id, "caller-visible-action");
     assert.equal(tx.idempotency.key, expectedIdempotency);
 
     const replay = (await runtime.invokeCapability(
-      { ...request, actionId: "caller-visible-replay" },
+      { ...request, callerCorrelationId: "caller-visible-replay" },
       { subject: "tenant-a" },
     )) as GatewayResult;
     assert.equal(replay.transaction_id, first.transaction_id);
     assert.equal((await callCount()) - before, 1);
   });
+});
+
+test("live shared write identity vectors survive the runtime-to-wheel gateway path", async () => {
+  const vectors = await loadWriteIdentityVectors();
+  for (const vector of vectors) {
+    await withHarness(async ({ runtime, getTransaction }) => {
+      const derived = deriveTrustedWriteIdentity({
+        subject: vector.subject,
+        capabilityId: vector.capabilityId,
+        request: {
+          id: vector.capabilityId,
+          callerCorrelationId: vector.callerCorrelationId,
+          idempotencyKey: vector.idempotencyKey,
+          input: { ...vector.input },
+          metadata: vector.metadata,
+          semanticMetadata: vector.semanticMetadata,
+        },
+      });
+      assert.equal(derived.actionDigest, vector.expectedActionDigest);
+      assert.equal(derived.trustedIdempotencyKey, vector.expectedTrustedIdempotencyKey);
+      assert.equal(derived.trustedActionId, vector.expectedTrustedActionId);
+      assert.equal(derived.traceId, vector.expectedTraceId);
+
+      const result = (await runtime.invokeCapability(
+        {
+          id: vector.capabilityId,
+          callerCorrelationId: vector.callerCorrelationId,
+          idempotencyKey: vector.idempotencyKey,
+          input: { ...vector.input },
+          metadata: vector.metadata,
+          semanticMetadata: vector.semanticMetadata,
+        },
+        { subject: vector.subject },
+      )) as GatewayResult;
+      assert.equal(result.mode, "governed_effect");
+      assert.ok(result.transaction_id);
+
+      const tx = await getTransaction(result.transaction_id);
+      assert.equal(tx.idempotency.key, vector.expectedTrustedIdempotencyKey);
+      assert.equal(tx.intent.intent_id, vector.expectedTrustedActionId);
+      assert.equal(tx.intent.trace_id, vector.expectedTraceId);
+      assert.deepEqual(tx.intent.semantic_metadata ?? null, {
+        ...vector.semanticMetadata,
+      });
+    });
+  }
 });
 
 test("live approval-gated critical write requires a valid approval token", async () => {
@@ -817,6 +973,39 @@ test("live schema drift and authoritative suspension or revocation are denied", 
       assert.equal((await callCount()) - before, 0);
     },
   );
+});
+
+test("live read descriptor drift is denied before external read I/O", async () => {
+  await withHarness(async ({ runtime, callCount, patchToolControl, restoreDefaultControl }) => {
+    const before = await callCount();
+    const first = (await runtime.invokeCapability(
+      {
+        id: READ_CAPABILITY_ID,
+        callerCorrelationId: "read-descriptor-first",
+        input: { repo: "acme/example" },
+      },
+      { subject: "reader-1" },
+    )) as { readonly repo: string };
+    assert.deepEqual(first, { repo: "acme/example" });
+    assert.equal((await callCount()) - before, 1);
+
+    await patchToolControl("github/repo.read", {
+      epoch: "read-descriptor-v2",
+    });
+    await assert.rejects(async () => {
+      await runtime.invokeCapability(
+        {
+          id: READ_CAPABILITY_ID,
+          callerCorrelationId: "read-descriptor-second",
+          input: { repo: "acme/example" },
+        },
+        { subject: "reader-1" },
+      );
+    }, /descriptor drifted|re-admit/i);
+    assert.equal((await callCount()) - before, 1);
+
+    await restoreDefaultControl();
+  });
 });
 
 test("live ambiguous provider outcomes reconcile without a second external call", async () => {

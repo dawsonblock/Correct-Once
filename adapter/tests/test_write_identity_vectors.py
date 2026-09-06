@@ -7,7 +7,12 @@ from typing import Any
 import pytest
 
 from adapter.python.call_time_policy import SubjectAllowlist
-from adapter.python.curated_mcp_adapter import AdapterError, CuratedMcpAdapter
+from adapter.python.curated_mcp_adapter import (
+    AdapterError,
+    CuratedMcpAdapter,
+    derive_trusted_write_identity,
+)
+from effect_fabric.errors import DuplicateIdempotencyConflict
 from effect_fabric.gateway import EffectGateway
 from effect_fabric.integrations.mcp_gateway import McpToolDescriptor, McpToolResult
 
@@ -165,16 +170,34 @@ async def test_shared_write_identity_vectors_are_applied_to_effect_gateway(
     snapshot = tmp_path / "adapter-snapshot.json"
     write_adapter_snapshot(snapshot)
 
-    transport = FakeMcpTransport()
-    transport.add("github", "repo.settings", capability_schema())
-    gateway = EffectGateway(transport=transport)
-    adapter = CuratedMcpAdapter(
-        gateway,
-        subjects={"tenant-a": subject_allowlist("write")},
-    )
-    adapter.register_from_snapshot(snapshot)
-
     for vector in load_vectors():
+        transport = FakeMcpTransport()
+        transport.add("github", "repo.settings", capability_schema())
+        gateway = EffectGateway(transport=transport)
+        adapter = CuratedMcpAdapter(
+            gateway,
+            subjects={"tenant-a": subject_allowlist("write")},
+        )
+        adapter.register_from_snapshot(snapshot)
+
+        identity = derive_trusted_write_identity(
+            subject=vector["subject"],
+            capability_id=vector["capabilityId"],
+            arguments=vector["input"],
+            caller_correlation_id=vector["callerCorrelationId"],
+            metadata=vector["metadata"],
+            semantic_metadata=vector["semanticMetadata"],
+            idempotency_key=vector["idempotencyKey"],
+            action_id=None,
+        )
+        assert identity.action_digest == vector["expectedActionDigest"]
+        assert (
+            identity.trusted_idempotency_key
+            == vector["expectedTrustedIdempotencyKey"]
+        )
+        assert identity.trusted_action_id == vector["expectedTrustedActionId"]
+        assert identity.trace_id == vector["expectedTraceId"]
+
         result = await adapter.invoke_capability(
             subject=vector["subject"],
             capability_id=vector["capabilityId"],
@@ -185,7 +208,6 @@ async def test_shared_write_identity_vectors_are_applied_to_effect_gateway(
             semantic_metadata=vector["semanticMetadata"],
         )
         tx = await gateway.engine.store.get_transaction(result.transaction_id)
-        assert tx.action_digest == vector["expectedActionDigest"]
         assert tx.idempotency.key == vector["expectedTrustedIdempotencyKey"]
         assert tx.intent.intent_id == vector["expectedTrustedActionId"]
         assert tx.intent.trace_id == vector["expectedTraceId"]
@@ -213,3 +235,43 @@ async def test_mutating_calls_require_nonempty_caller_idempotency_key(
             capability_id=WRITE_CAPABILITY_ID,
             arguments={"repo": "acme/example", "mode": "strict"},
         )
+
+
+@pytest.mark.asyncio
+async def test_semantic_metadata_changes_conflict_under_shared_idempotency_key(
+    tmp_path: Path,
+) -> None:
+    snapshot = tmp_path / "adapter-snapshot.json"
+    write_adapter_snapshot(snapshot)
+
+    transport = FakeMcpTransport()
+    transport.add("github", "repo.settings", capability_schema())
+    gateway = EffectGateway(transport=transport)
+    adapter = CuratedMcpAdapter(
+        gateway,
+        subjects={"tenant-a": subject_allowlist("write")},
+    )
+    adapter.register_from_snapshot(snapshot)
+
+    await adapter.invoke_capability(
+        subject="tenant-a",
+        capability_id=WRITE_CAPABILITY_ID,
+        arguments={"repo": "acme/example", "mode": "strict"},
+        caller_correlation_id="corr-strong",
+        idempotency_key="semantic-shared-key",
+        semantic_metadata={"consistency": "strong"},
+    )
+
+    with pytest.raises(DuplicateIdempotencyConflict, match="semantic action digest"):
+        await adapter.invoke_capability(
+            subject="tenant-a",
+            capability_id=WRITE_CAPABILITY_ID,
+            arguments={"repo": "acme/example", "mode": "strict"},
+            caller_correlation_id="corr-eventual",
+            idempotency_key="semantic-shared-key",
+            semantic_metadata={"consistency": "eventual"},
+        )
+
+    assert transport.calls == [
+        ("github", "repo.settings", {"repo": "acme/example", "mode": "strict"})
+    ]

@@ -1,4 +1,4 @@
-import { capabilitySha256 } from "@function-hooks/capabilities";
+import { randomUUID } from "node:crypto";
 import { callLockedEffectGateway } from "./effect-gateway-bridge.js";
 import {
   RuntimeEffectExecutionDeniedError,
@@ -16,6 +16,11 @@ import type {
   RuntimePolicyHook,
   RuntimeReceiptHooks,
 } from "./types.js";
+import {
+  deriveTrustedWriteIdentity,
+  mergedRequestMetadata,
+  normalizedCallerCorrelationId,
+} from "./write-identity.js";
 
 function asError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
@@ -42,15 +47,15 @@ function requireSubject(
   return subject;
 }
 
-const REQUEST_ACTION_ID_METADATA = "function-hooks.runtime.request-action-id";
-
 interface MutationIdentity {
   readonly subject: string;
   readonly idempotencyKey: string;
+  readonly semanticMetadata?: Readonly<Record<string, string>>;
   readonly actionDigest: string;
   readonly namespaceKey: string;
   readonly trustedIdempotencyKey: string;
-  readonly unifiedActionId: string;
+  readonly trustedActionId: string;
+  readonly traceId: string;
 }
 
 async function runPolicyHook(
@@ -99,29 +104,15 @@ function directRequest(
     readonly actionId?: string;
   } = {},
 ) {
-  const actionId = options.actionId ?? request.actionId;
-  const metadata: Record<string, string> = {
-    ...(request.metadata ?? {}),
-  };
-  if (actionId !== request.actionId) {
-    metadata[REQUEST_ACTION_ID_METADATA] = request.actionId;
-  }
+  const actionId = options.actionId ?? normalizedCallerCorrelationId(request) ?? randomUUID();
+  const metadata = mergedRequestMetadata(request);
   return {
     actionId,
     app: handle.app,
     capability: handle.capability,
     ...(request.input === undefined ? {} : { input: request.input }),
-    ...(Object.keys(metadata).length === 0
-      ? {}
-      : { metadata: Object.freeze({ ...metadata }) }),
+    ...(metadata === undefined ? {} : { metadata }),
   };
-}
-
-function actionDigest(request: InvokeCapabilityRequest): string {
-  return capabilitySha256({
-    ...(request.input === undefined ? {} : { input: request.input }),
-    ...(request.metadata === undefined ? {} : { metadata: request.metadata }),
-  });
 }
 
 function mutationIdentity(
@@ -129,31 +120,23 @@ function mutationIdentity(
   request: InvokeCapabilityRequest,
   context: InvokeCapabilityContext,
 ): MutationIdentity {
-  if (!request.idempotencyKey?.trim()) {
-    throw new RuntimeExecutionPolicyError(
-      `Capability ${handle.id} is ${handle.executionClass} and requires a non-empty idempotencyKey.`,
-    );
-  }
   const subject = requireSubject(handle, context, `${handle.executionClass} execution`);
-  const idempotencyKey = request.idempotencyKey.trim();
-  const digest = actionDigest(request);
-  const trustedIdempotencyKey = capabilitySha256({
+  const trusted = deriveTrustedWriteIdentity({
     subject,
     capabilityId: handle.id,
-    idempotencyKey,
+    request,
   });
   return Object.freeze({
-    subject,
-    idempotencyKey,
-    actionDigest: digest,
-    namespaceKey: `${subject}\u0000${handle.id}\u0000${idempotencyKey}`,
-    trustedIdempotencyKey,
-    unifiedActionId: capabilitySha256({
-      subject,
-      capabilityId: handle.id,
-      idempotencyKey,
-      actionDigest: digest,
-    }),
+    subject: trusted.subject,
+    idempotencyKey: trusted.callerIdempotencyKey,
+    ...(trusted.semanticMetadata === undefined
+      ? {}
+      : { semanticMetadata: trusted.semanticMetadata }),
+    actionDigest: trusted.actionDigest,
+    namespaceKey: trusted.namespaceKey,
+    trustedIdempotencyKey: trusted.trustedIdempotencyKey,
+    trustedActionId: trusted.trustedActionId,
+    traceId: trusted.traceId,
   });
 }
 
@@ -190,13 +173,16 @@ function needsReconciliation(
 export class FastExecutor {
   readonly #policyHooks: ReadonlyMap<string, RuntimePolicyHook>;
   readonly #pureHandlers: ReadonlyMap<string, PureCapabilityHandler>;
+  readonly #assertReadAuthority: (handle: CompiledCapabilityHandle) => Promise<void>;
 
   constructor(options: {
     readonly policyHooks?: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook>;
     readonly pureHandlers?: Readonly<Record<string, PureCapabilityHandler>> | ReadonlyMap<string, PureCapabilityHandler>;
+    readonly assertReadAuthority: (handle: CompiledCapabilityHandle) => Promise<void>;
   }) {
     this.#policyHooks = valueMap(options.policyHooks);
     this.#pureHandlers = valueMap(options.pureHandlers);
+    this.#assertReadAuthority = options.assertReadAuthority;
   }
 
   async execute(
@@ -231,6 +217,7 @@ export class FastExecutor {
         `Capability ${handle.id} is missing a read-path router handle.`,
       );
     }
+    await this.#assertReadAuthority(handle);
     return handle.directRouter.execute(directRequest(handle, request), context);
   }
 }
@@ -286,8 +273,11 @@ export class EffectExecutor {
       tool: implementation.tool,
       args: effectArgs(request.input, handle.id),
       idempotencyKey: identity.trustedIdempotencyKey,
-      actionId: identity.unifiedActionId,
-      traceId: identity.unifiedActionId,
+      actionId: identity.trustedActionId,
+      traceId: identity.traceId,
+      ...(identity.semanticMetadata === undefined
+        ? {}
+        : { semanticMetadata: identity.semanticMetadata }),
       ...(context.approvalToken === undefined
         ? {}
         : { approvalToken: context.approvalToken }),
@@ -358,7 +348,7 @@ export class GuardedExecutor {
         executionStarted = true;
         result = await directRouter.execute(
           directRequest(handle, request, {
-            actionId: identity.unifiedActionId,
+            actionId: identity.trustedActionId,
           }),
           context,
         );

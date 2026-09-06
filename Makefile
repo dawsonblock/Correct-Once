@@ -1,12 +1,13 @@
 PYTHON ?= python3
 NPM ?= npm
 
-EFFECT_FABRIC_DIR := effect-fabric-v0.2.11/source/effect-fabric-0.2.11
+EFFECT_FABRIC_DIR := effect-fabric-v0.2.12/source/effect-fabric-0.2.12
 FUNCTION_HOOKS_DIR := function-hooks-core-reference-v0.11.0
 FUNCTION_HOOKS_RUNTIME_DIR := function-hooks-runtime-v0.12
 QUALIFY_PYTHONPATH := $(CURDIR):$(CURDIR)/$(EFFECT_FABRIC_DIR)/src
+QUALIFY_WHEEL_VENV := $(CURDIR)/.tmp/effect-fabric-wheel-qualify
 
-.PHONY: install install-a install-b install-runtime build-b typecheck typecheck-runtime test test-runtime test-adapter-live test-cross-language verify-b-manifest qualify smoke smoke-runtime smoke-adapter smoke-a-import smoke-b-import
+.PHONY: install install-a install-b install-runtime build-a-release build-b typecheck typecheck-runtime verify-a-integrity test test-runtime test-adapter-live test-cross-language verify-b-manifest qualify smoke smoke-runtime smoke-adapter smoke-a-import smoke-b-import
 
 install: install-a install-b install-runtime
 
@@ -19,13 +20,19 @@ install-b:
 install-runtime:
 	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) ci
 
+build-a-release:
+	cd $(EFFECT_FABRIC_DIR) && bash scripts/qualify.sh && $(PYTHON) scripts/freeze_release.py && $(PYTHON) scripts/verify_release_integrity.py && $(PYTHON) scripts/build_release.py
+
 build-b:
 	cd $(FUNCTION_HOOKS_DIR) && $(NPM) run build
 
 typecheck: typecheck-runtime
 
 typecheck-runtime:
-	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) run typecheck
+	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) run typecheck && $(NPM) run typecheck:qualification
+
+verify-a-integrity:
+	cd $(EFFECT_FABRIC_DIR) && $(PYTHON) scripts/verify_release_integrity.py
 
 test: test-runtime
 
@@ -35,13 +42,20 @@ test-runtime:
 test-adapter-live:
 	PYTHONPATH="$(QUALIFY_PYTHONPATH)" $(PYTHON) -m pytest -q adapter/tests/test_curated_mcp_adapter_live.py
 
-test-cross-language:
-	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) run test:cross-language
+test-cross-language: build-a-release
+	WHEEL_PATH="$$(python3 - <<'PY'\nfrom pathlib import Path\nwheels = sorted(Path('$(EFFECT_FABRIC_DIR)/release-artifacts/wheel').glob('effect_fabric-0.2.12-*.whl'))\nif len(wheels) != 1:\n    raise SystemExit(f'expected exactly one 0.2.12 wheel, found {len(wheels)}')\nprint(wheels[0].resolve())\nPY\n)" && \
+	rm -rf "$(QUALIFY_WHEEL_VENV)" && \
+	$(PYTHON) -m venv "$(QUALIFY_WHEEL_VENV)" && \
+	"$(QUALIFY_WHEEL_VENV)/bin/python" -m pip install --upgrade pip && \
+	"$(QUALIFY_WHEEL_VENV)/bin/pip" install "effect-fabric[api] @ file://$$WHEEL_PATH" && \
+	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && \
+	EFFECT_FABRIC_TEST_PYTHON="$(QUALIFY_WHEEL_VENV)/bin/python" EFFECT_FABRIC_EXPECT_WHEEL=1 $(NPM) run test:cross-language
 
 verify-b-manifest:
 	cd $(FUNCTION_HOOKS_DIR) && sha256sum --check MANIFEST.sha256
 
 qualify:
+	$(MAKE) build-a-release
 	$(MAKE) build-b
 	$(MAKE) typecheck-runtime
 	$(MAKE) test-runtime

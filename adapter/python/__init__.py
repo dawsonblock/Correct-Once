@@ -1,3 +1,8 @@
-from .curated_mcp_adapter import CuratedMcpAdapter, CATALOG_TOOL_INVOKE, CATALOG_TOOL_SEARCH
+from .curated_mcp_adapter import (
+    CATALOG_TOOL_INVOKE,
+    CATALOG_TOOL_SEARCH,
+    CuratedMcpAdapter,
+    derive_trusted_write_identity,
+)
 from .call_time_policy import CallTimeAllowlistPolicy, SubjectAllowlist
 from .side_effect_map import map_side_effect

@@ -21,7 +21,18 @@ function mcpImplementation(
     server: "github",
     tool,
     ...(options.attestedReadOnly
-      ? { descriptor: { authenticated: true, readOnly: true } }
+      ? {
+          descriptor: {
+            authenticated: true,
+            readOnly: true,
+            inputSchema: {
+              type: "object",
+              properties: { repo: { type: "string" } },
+              required: ["repo"],
+            },
+            epoch: "read-descriptor-v1",
+          },
+        }
       : {}),
   } as unknown as Parameters<typeof createCapabilityCandidate>[0]["implementation"];
 }
@@ -47,11 +58,11 @@ function expectedUnifiedActionId(input: {
   readonly capabilityId: string;
   readonly idempotencyKey: string;
   readonly requestInput?: unknown;
-  readonly requestMetadata?: Readonly<Record<string, string>>;
+  readonly semanticMetadata?: Readonly<Record<string, string>>;
 }): string {
   const actionDigest = capabilitySha256({
     ...(input.requestInput === undefined ? {} : { input: input.requestInput }),
-    ...(input.requestMetadata === undefined ? {} : { metadata: input.requestMetadata }),
+    ...(input.semanticMetadata === undefined ? {} : { metadata: input.semanticMetadata }),
   });
   return capabilitySha256({
     subject: input.subject,
@@ -299,6 +310,81 @@ test("read re-checks subject and allowlist on every call even with a cached hand
   assert.equal(authChecks, 2);
   assert.equal(directCalls, 1);
   assert.equal(effectCalls, 0);
+});
+
+test("read-path MCP descriptor drift is denied before external I/O", async (t) => {
+  let directCalls = 0;
+  let descriptorSchema: Record<string, unknown> = {
+    type: "object",
+    properties: { repo: { type: "string" } },
+    required: ["repo"],
+  };
+  let descriptorEpoch: string | number = "read-descriptor-v1";
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => {
+        directCalls += 1;
+        return { ok: true };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.read-descriptor-freshness",
+        capability: "repo.read",
+      },
+      {
+        executionClass: "read",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => ({ from: "effect" })),
+    mcpReadDescriptorAuthority: {
+      describeTool: async () => ({
+        server: "github",
+        tool: "repo.read",
+        inputSchema: descriptorSchema,
+        authenticated: true,
+        readOnly: true,
+        epoch: descriptorEpoch,
+      }),
+    },
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await runtime.invokeCapability(
+    {
+      id: "github.repo.read-descriptor-freshness",
+      callerCorrelationId: "descriptor-freshness-ok",
+      input: { repo: "acme/example" },
+    },
+    { subject: "reader-1" },
+  );
+  descriptorEpoch = "read-descriptor-v2";
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.read-descriptor-freshness",
+        callerCorrelationId: "descriptor-freshness-drift",
+        input: { repo: "acme/example" },
+      },
+      { subject: "reader-1" },
+    ),
+    /descriptor drifted|re-admit/i,
+  );
+  assert.equal(directCalls, 1);
 });
 
 test("ordinary mutations stay on the guarded direct path while critical stays on Effect Fabric", async (t) => {
@@ -652,7 +738,7 @@ test("destructive effect execution stays off by default", async (t) => {
   assert.equal(effectCalls, 0);
 });
 
-test("critical execution propagates the unified write identity into Effect Gateway contract fields", async (t) => {
+test("critical execution keeps caller correlation distinct from the trusted action id", async (t) => {
   let seenTraceId: string | undefined;
   let seenActionId: string | undefined;
   let seenIdempotencyKey: string | undefined;
@@ -702,7 +788,7 @@ test("critical execution propagates the unified write identity into Effect Gatew
   const result = await runtime.invokeCapability(
     {
       id: "github.repo.identity-trace",
-      actionId: "caller-visible-action",
+      callerCorrelationId: "caller-visible-action",
       idempotencyKey: "critical-identity-1",
       input: { repo: "acme/example" },
     },
@@ -720,11 +806,11 @@ test("critical execution propagates the unified write identity into Effect Gatew
     capabilityId: "github.repo.identity-trace",
     idempotencyKey: "critical-identity-1",
   });
-  assert.equal(seenTraceId, expected);
+  assert.equal(seenTraceId, "caller-visible-action");
   assert.equal(seenActionId, expected);
   assert.equal(seenIdempotencyKey, expectedIdempotency);
   assert.deepEqual(result, {
-    traceId: expected,
+    traceId: "caller-visible-action",
     actionId: expected,
     idempotencyKey: expectedIdempotency,
   });

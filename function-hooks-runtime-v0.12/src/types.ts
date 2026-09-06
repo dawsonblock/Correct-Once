@@ -18,6 +18,7 @@ export interface RuntimeExecutionPolicy {
   readonly schemaClassDigest: string;
   readonly policyHookId?: string;
   readonly pureHandlerId?: string;
+  readonly readDescriptorDigest?: string;
   /**
    * Pure/read do not enter Effect Fabric by default. When lightweight auth is
    * still required, the admission record must carry a policy hook id.
@@ -90,15 +91,41 @@ export interface RuntimeCapabilityCatalogEntry extends AgentCapabilityCatalogEnt
   readonly schemaClassDigest: string;
   readonly policyHookId?: string;
   readonly pureHandlerId?: string;
+  readonly readDescriptorDigest?: string;
   readonly requiresLightweightAuth: boolean;
   readonly trustedRead: boolean;
 }
 
+export interface RuntimeMcpReadDescriptorPin {
+  readonly server: string;
+  readonly tool: string;
+  readonly inputSchema: unknown;
+  readonly authenticated: true;
+  readonly readOnly: true;
+  readonly epoch: string;
+  readonly descriptorDigest: string;
+}
+
+export interface RuntimeMcpReadDescriptorAuthority {
+  describeTool(server: string, tool: string): Promise<{
+    readonly server: string;
+    readonly tool: string;
+    readonly inputSchema: unknown;
+    readonly authenticated: boolean;
+    readonly readOnly: boolean;
+    readonly epoch: string | number;
+  }>;
+}
+
 export interface InvokeCapabilityRequest {
   readonly id: string;
-  readonly actionId: string;
+  /** Non-authoritative caller correlation id for audit and tracing. */
+  readonly callerCorrelationId?: string;
+  /** @deprecated Legacy alias for callerCorrelationId. Never authoritative. */
+  readonly actionId?: string;
   readonly input?: unknown;
   readonly metadata?: Readonly<Record<string, string>>;
+  readonly semanticMetadata?: Readonly<Record<string, string>>;
   readonly idempotencyKey?: string;
 }
 
@@ -119,10 +146,12 @@ export interface CompiledCapabilityHandle {
   readonly schemaClassDigest: string;
   readonly policyHookId?: string;
   readonly pureHandlerId?: string;
+  readonly readDescriptorDigest?: string;
   readonly requiresLightweightAuth: boolean;
   readonly trustedRead: boolean;
   readonly stateVersion: number;
   readonly admitted: RuntimeAdmittedCapability;
+  readonly mcpReadDescriptorPin?: RuntimeMcpReadDescriptorPin;
   readonly route?: AnyCapabilityRoute;
   readonly directRouter?: ExecutionRouter;
 }
@@ -159,6 +188,7 @@ export interface CreateFunctionHooksRuntimeOptions {
   readonly registry: RuntimeCapabilityRegistry;
   readonly fastGateway: AgentGateway;
   readonly effectGateway: EffectGatewayClient;
+  readonly mcpReadDescriptorAuthority?: RuntimeMcpReadDescriptorAuthority;
   readonly policyHooks?: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook>;
   readonly pureHandlers?: Readonly<Record<string, PureCapabilityHandler>> | ReadonlyMap<string, PureCapabilityHandler>;
   readonly receipts?: RuntimeReceiptHooks;

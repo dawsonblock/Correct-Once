@@ -229,7 +229,7 @@ test("shared write identity vectors stay stable across runtime invocations", asy
     const result = (await runtime.invokeCapability(
       {
         id: vector.capabilityId,
-        actionId: vector.callerCorrelationId,
+        callerCorrelationId: vector.callerCorrelationId,
         idempotencyKey: vector.idempotencyKey,
         input: {
           ...vector.input,
