@@ -1,0 +1,23 @@
+{
+  "name": "function-hooks-runtime-v0.12",
+  "private": true,
+  "type": "module",
+  "description": "Parallel scaffold for Function Hooks Runtime 0.12 execution classes, handle caching, and tiered dispatch.",
+  "scripts": {
+    "test": "tsx --test tests/**/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@function-hooks/assurance": "file:../function-hooks-core-reference-v0.11.0/packages/assurance",
+    "@function-hooks/audit": "file:../function-hooks-core-reference-v0.11.0/packages/audit",
+    "@function-hooks/capabilities": "file:../function-hooks-core-reference-v0.11.0/packages/capabilities",
+    "@function-hooks/core": "file:../function-hooks-core-reference-v0.11.0/packages/core",
+    "@function-hooks/gateway": "file:../function-hooks-core-reference-v0.11.0/packages/gateway",
+    "@function-hooks/router": "file:../function-hooks-core-reference-v0.11.0/packages/router"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.3",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
