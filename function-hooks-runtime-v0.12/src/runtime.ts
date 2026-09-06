@@ -47,8 +47,10 @@ function compileHandle(
     record.capability.execution.executionClass === "pure"
       ? undefined
       : compileAdmittedCapabilityRoute(record.capability.capability);
-  const readRouter =
-    record.capability.execution.executionClass === "read" && route
+  const directRouter =
+    (record.capability.execution.executionClass === "read" ||
+      record.capability.execution.executionClass === "mutation") &&
+    route
       ? createExecutionRouter({ gateway: options.fastGateway, routes: [route] })
       : undefined;
 
@@ -72,19 +74,21 @@ function compileHandle(
     stateVersion: record.stateVersion,
     admitted: record.capability,
     ...(route ? { route } : {}),
-    ...(readRouter ? { readRouter } : {}),
+    ...(directRouter ? { directRouter } : {}),
   });
 }
 
 function createExecutors(options: CreateFunctionHooksRuntimeOptions): RuntimeExecutors {
-  const effect = new EffectExecutor({ target: options.effectGateway });
+  const effect = new EffectExecutor({
+    target: options.effectGateway,
+    ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
+  });
   return {
     fast: new FastExecutor({
       ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
       ...(options.pureHandlers === undefined ? {} : { pureHandlers: options.pureHandlers }),
     }),
     guarded: new GuardedExecutor({
-      effect,
       ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
       ...(options.receipts === undefined ? {} : { receipts: options.receipts }),
     }),
@@ -147,6 +151,16 @@ function assertHandlePin(handle: CompiledCapabilityHandle): void {
   if (handle.pureHandlerId !== pinned.pureHandlerId) {
     throw new RuntimeExecutionPolicyError(
       `Capability ${handle.id} handle pure handler drifted from admission pin.`,
+    );
+  }
+  if (handle.requiresLightweightAuth !== pinned.requiresLightweightAuth) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle lightweight auth requirement drifted from admission pin.`,
+    );
+  }
+  if (handle.trustedRead !== pinned.trustedRead) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle trusted-read marker drifted from admission pin.`,
     );
   }
 }

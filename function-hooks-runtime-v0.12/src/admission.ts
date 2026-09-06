@@ -5,6 +5,7 @@ import {
   capabilitySnapshot,
   type AdmittedCapability,
   type CapabilityCandidate,
+  type CapabilityImplementation,
 } from "@function-hooks/capabilities";
 import { RuntimeExecutionPolicyError } from "./errors.js";
 import type {
@@ -17,6 +18,8 @@ import type {
 const READ_ONLY_SIDE_EFFECTS = new Set(["read"]);
 const MUTATING_SIDE_EFFECTS = new Set(["write", "external"]);
 const HIGH_TIER_SIDE_EFFECTS = new Set(["write", "external", "destructive"]);
+const AUTH_REQUIRED_SENSITIVITIES = new Set(["private", "secret", "unknown"]);
+const READ_ONLY_HTTP_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 function executorForClass(executionClass: ExecutionClass) {
   switch (executionClass) {
@@ -27,6 +30,100 @@ function executorForClass(executionClass: ExecutionClass) {
       return "guarded" as const;
     case "critical":
       return "effect" as const;
+  }
+}
+
+function normalizedHttpMethod(implementation: Extract<CapabilityImplementation, { readonly kind: "http" }>): string {
+  return (implementation.method ?? "GET").trim().toUpperCase();
+}
+
+function hasAuthenticatedReadOnlyDescriptor(
+  implementation: CapabilityImplementation,
+): boolean {
+  if (implementation.kind !== "mcp") return false;
+  const descriptor = (implementation as CapabilityImplementation & {
+    readonly descriptor?: unknown;
+  }).descriptor;
+  if (!descriptor || typeof descriptor !== "object" || Array.isArray(descriptor)) return false;
+  const readOnlyDescriptor = descriptor as {
+    readonly authenticated?: unknown;
+    readonly readOnly?: unknown;
+  };
+  return readOnlyDescriptor.authenticated === true && readOnlyDescriptor.readOnly === true;
+}
+
+function isReadCompatibleImplementation(
+  implementation: CapabilityImplementation,
+): boolean {
+  switch (implementation.kind) {
+    case "filesystem.read":
+      return true;
+    case "http":
+      return READ_ONLY_HTTP_METHODS.has(normalizedHttpMethod(implementation));
+    case "mcp":
+      return hasAuthenticatedReadOnlyDescriptor(implementation);
+    default:
+      return false;
+  }
+}
+
+function isMutationCompatibleImplementation(
+  implementation: CapabilityImplementation,
+): boolean {
+  switch (implementation.kind) {
+    case "filesystem.write":
+    case "process":
+    case "browser":
+    case "desktop":
+    case "mcp":
+      return true;
+    case "http":
+      return !READ_ONLY_HTTP_METHODS.has(normalizedHttpMethod(implementation));
+    default:
+      return false;
+  }
+}
+
+function describeImplementation(implementation: CapabilityImplementation): string {
+  switch (implementation.kind) {
+    case "http":
+      return `http.${normalizedHttpMethod(implementation)}`;
+    case "filesystem.read":
+    case "filesystem.write":
+    case "process":
+    case "browser":
+    case "desktop":
+    case "mcp":
+      return implementation.kind;
+  }
+}
+
+function assertImplementationCompatibility(
+  capability: AdmittedCapability,
+  executionClass: ExecutionClass,
+): void {
+  const implementation = capability.implementation;
+  if (executionClass === "pure" || executionClass === "read") {
+    if (isReadCompatibleImplementation(implementation)) return;
+    if (implementation.kind === "mcp") {
+      throw new RuntimeExecutionPolicyError(
+        `Capability ${capability.id} mcp reads require implementation.descriptor.authenticated=true and implementation.descriptor.readOnly=true.`,
+      );
+    }
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${capability.id} implementation=${describeImplementation(implementation)} is incompatible with executionClass=${executionClass}.`,
+    );
+  }
+  if (executionClass === "mutation") {
+    if (isMutationCompatibleImplementation(implementation)) return;
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${capability.id} implementation=${describeImplementation(implementation)} is incompatible with executionClass=mutation.`,
+    );
+  }
+  if (implementation.kind !== "mcp") {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${capability.id} implementation=${describeImplementation(implementation)} is incompatible with executionClass=critical; the governed critical path is MCP-only in v0.13.`,
+    );
   }
 }
 
@@ -65,7 +162,9 @@ function normalizePolicy(
   const executionClass = options.executionClass;
   const policyHookId = options.policyHookId?.trim();
   const pureHandlerId = options.pureHandlerId?.trim();
-  const requiresLightweightAuth = options.requiresLightweightAuth ?? (executionClass === "read");
+  const requiresLightweightAuth =
+    options.requiresLightweightAuth ??
+    (executionClass === "read" || AUTH_REQUIRED_SENSITIVITIES.has(capability.sensitivity));
   const trustedRead =
     options.trustedRead ?? (executionClass === "read" && requiresLightweightAuth === false);
   const executor = executorForClass(executionClass);
@@ -87,11 +186,18 @@ function normalizePolicy(
   if (executionClass !== "pure" && pureHandlerId) {
     throw new RuntimeExecutionPolicyError("pureHandlerId can only be used with executionClass=pure.");
   }
+  if (AUTH_REQUIRED_SENSITIVITIES.has(capability.sensitivity) && requiresLightweightAuth === false) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${capability.id} sensitivity=${capability.sensitivity} cannot disable lightweight auth.`,
+    );
+  }
   if (requiresLightweightAuth && !policyHookId) {
     throw new RuntimeExecutionPolicyError(
       `Capability ${capability.id} requires lightweight auth but no policyHookId was admitted.`,
     );
   }
+
+  assertImplementationCompatibility(capability, executionClass);
 
   const sideEffect = capability.sideEffect;
   if ((executionClass === "pure" || executionClass === "read") && !READ_ONLY_SIDE_EFFECTS.has(sideEffect)) {

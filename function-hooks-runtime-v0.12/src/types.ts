@@ -6,7 +6,7 @@ import type {
 } from "@function-hooks/capabilities";
 import type { AgentGateway } from "@function-hooks/gateway";
 import type { AnyCapabilityRoute, ExecutionRouter, RouterDispatchOptions } from "@function-hooks/router";
-import type { EffectGatewayCallTool, EffectGatewayHttpFacade } from "./effect-gateway-bridge.js";
+import type { EffectGatewayClient } from "./effect-gateway-bridge.js";
 
 export type ExecutionClass = "pure" | "read" | "mutation" | "critical";
 
@@ -124,7 +124,7 @@ export interface CompiledCapabilityHandle {
   readonly stateVersion: number;
   readonly admitted: RuntimeAdmittedCapability;
   readonly route?: AnyCapabilityRoute;
-  readonly readRouter?: ExecutionRouter;
+  readonly directRouter?: ExecutionRouter;
 }
 
 export interface RuntimePolicyContext {
@@ -158,7 +158,7 @@ export interface RuntimeExecutors {
 export interface CreateFunctionHooksRuntimeOptions {
   readonly registry: RuntimeCapabilityRegistry;
   readonly fastGateway: AgentGateway;
-  readonly effectGateway: EffectGatewayCallTool | EffectGatewayHttpFacade;
+  readonly effectGateway: EffectGatewayClient;
   readonly policyHooks?: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook>;
   readonly pureHandlers?: Readonly<Record<string, PureCapabilityHandler>> | ReadonlyMap<string, PureCapabilityHandler>;
   readonly receipts?: RuntimeReceiptHooks;

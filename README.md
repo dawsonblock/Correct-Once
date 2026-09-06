@@ -4,6 +4,12 @@
 v0.1.1**: the adapter source drop, the `effect-fabric` v0.2.11 freeze tree,
 and the `function-hooks-core-reference` v0.11.0 freeze tree.
 
+It also contains the merged `function-hooks-runtime-v0.12/` scaffold. That
+runtime directory is **not** a production claim for 0.12. The current work on
+top of it is a v0.13 correctness track that hardens admit-time class gating,
+subject/auth requirements, idempotency, and effect-client bridging without
+loosening the sealed v0.1.1 freeze trees.
+
 The imported source of truth is the GitHub release asset:
 
 - File:
@@ -15,13 +21,14 @@ The imported source of truth is the GitHub release asset:
 
 That exact checksum is also stored in `mcp-hooks-upgraded-v0.1.1.sha256`.
 
-## Frozen component pins
+## Frozen component pins and active runtime track
 
 | Component | Version | Role |
 | --- | --- | --- |
 | `effect-fabric` | `0.2.11` | A executes admitted effects |
 | `function-hooks-core-reference` | `0.11.0` | B admits and gates capability traffic |
 | `adapter` | `0.1.1` | Locked adapter surface and smoke fixtures |
+| `function-hooks-runtime` | `0.12 scaffold` | v0.13 correctness-only runtime track; not a production 0.12 release |
 
 ## What this repository is
 
@@ -66,6 +73,7 @@ The freeze tree is now vendored directly at repo root:
 ├── RELEASE.md
 ├── adapter/
 ├── effect-fabric-v0.2.11/
+├── function-hooks-runtime-v0.12/
 ├── function-hooks-core-reference-v0.11.0/
 └── mcp-hooks-upgraded-v0.1.1.sha256
 ```
@@ -76,6 +84,9 @@ Notes:
 - `effect-fabric-v0.2.11/` preserves the shipped freeze wrapper; the actual
   Python install root is
   `effect-fabric-v0.2.11/source/effect-fabric-0.2.11/`.
+- `function-hooks-runtime-v0.12/` is the parallel runtime scaffold now being
+  corrected in-place for the v0.13 correctness release. It is first-class for
+  install/typecheck/test/smoke, but it is not blessed as production 0.12.
 - `function-hooks-core-reference-v0.11.0/` contains the Node workspace, shipped
   `dist/`, package sources, and release evidence.
 - `RELEASE.md` is the freeze release note from the verified zip.
@@ -119,10 +130,42 @@ Make target:
 make install-b
 ```
 
+### Install the runtime scaffold (`function-hooks-runtime-v0.12`)
+
+Direct command:
+
+```bash
+cd function-hooks-runtime-v0.12
+npm install
+```
+
+Make target:
+
+```bash
+make install-runtime
+```
+
 If you want to rebuild the shipped workspace artifacts locally:
 
 ```bash
 make build-b
+```
+
+### Typecheck and test the runtime scaffold
+
+Direct commands:
+
+```bash
+cd function-hooks-runtime-v0.12
+npm run typecheck
+npm test
+```
+
+Make targets:
+
+```bash
+make typecheck
+make test
 ```
 
 ## Smoke and import checks
@@ -139,6 +182,11 @@ or:
 make smoke
 ```
 
+`make smoke` is now the official root smoke for the runtime track as well: it
+runs `function-hooks-runtime-v0.12` tests first and only reaches the mirrored
+adapter smoke if the runtime suite passes. A runtime regression therefore fails
+the root smoke command immediately.
+
 Optional install verification commands:
 
 ```bash
@@ -149,7 +197,10 @@ make smoke-b-import
 Important honesty boundary: `adapter/fixtures/run_smoke.py` is a **mirrored
 gate smoke**. It checks the adapter's fail-closed rules and composition-lock
 branding, but it does **not** import a live `effect_fabric` runtime and does
-**not** prove end-to-end A execution.
+**not** prove end-to-end A execution. Likewise, passing the runtime scaffold
+tests and root smoke does **not** upgrade `function-hooks-runtime-v0.12/` into
+a production 0.12 claim; the correctness track is still explicitly bounded to
+v0.13 blocker fixes.
 
 ## Security gates
 
