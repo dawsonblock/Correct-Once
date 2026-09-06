@@ -228,6 +228,31 @@ class EffectGatewayConfig:
     allow_unregistered_reads: bool = False
 
 
+def _normalize_optional_identity(value: str | None, field: str) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{field} must be a non-empty string when provided")
+    return normalized
+
+
+def _bind_trusted_idempotency(
+    bound: BoundEffectDefinition,
+    *,
+    idempotency_key: str | None,
+) -> BoundEffectDefinition:
+    if idempotency_key is None:
+        return bound
+    return bound.model_copy(
+        update={
+            "idempotency": bound.idempotency.model_copy(
+                update={"key": idempotency_key}
+            )
+        }
+    )
+
+
 class EffectGateway:
     def __init__(
         self,
@@ -308,6 +333,8 @@ class EffectGateway:
         tool: str,
         arguments: dict[str, Any],
         trace_id: str | None = None,
+        idempotency_key: str | None = None,
+        action_id: str | None = None,
         approval_token: str | None = None,
     ) -> GatewayCallResult:
         definition = self.registry.get(server, tool)
@@ -342,53 +369,68 @@ class EffectGateway:
                 output=result.content,
             )
 
-        bound = definition.bind(arguments)
-        intent = ActionIntent(
-            subject=subject,
-            operation=bound.operation,
-            resource=bound.resource,
-            arguments=dict(arguments),
-            trace_id=trace_id,
+        trusted_idempotency_key = _normalize_optional_identity(
+            idempotency_key, "idempotency_key"
         )
+        trusted_action_id = _normalize_optional_identity(action_id, "action_id")
+        bound = _bind_trusted_idempotency(
+            definition.bind(arguments),
+            idempotency_key=trusted_idempotency_key,
+        )
+        intent_kwargs: dict[str, Any] = {
+            "subject": subject,
+            "operation": bound.operation,
+            "resource": bound.resource,
+            "arguments": dict(arguments),
+            "trace_id": trace_id if trace_id is not None else trusted_action_id,
+        }
+        if trusted_action_id is not None:
+            intent_kwargs["intent_id"] = trusted_action_id
+        intent = ActionIntent(**intent_kwargs)
         tx = await self.engine.propose(
             intent=intent,
             contract=bound.contract,
             idempotency=bound.idempotency,
             reversibility=bound.reversibility,
         )
-        tx = await self.engine.prepare(tx.transaction_id, bound.executor)
+        if tx.execution_state is ExecutionState.PLANNED:
+            tx = await self.engine.prepare(tx.transaction_id, bound.executor)
 
-        grant = await self.policy.authorize(
-            GatewayPolicyRequest(
-                transaction=tx,
-                server=server,
-                tool=tool,
-                registration_digest=bound.registration_digest,
-                approval_token=approval_token,
+        if tx.execution_state in {
+            ExecutionState.PREPARED,
+            ExecutionState.AUTHORIZED,
+        }:
+            grant = await self.policy.authorize(
+                GatewayPolicyRequest(
+                    transaction=tx,
+                    server=server,
+                    tool=tool,
+                    registration_digest=bound.registration_digest,
+                    approval_token=approval_token,
+                )
             )
-        )
-        if grant.decision is PolicyDecision.REQUIRE_APPROVAL:
-            raise GatewayApprovalRequired(grant.reason or "external approval required")
-        if grant.decision is not PolicyDecision.ALLOW:
-            raise GatewayDenied(grant.reason or "policy denied effect")
+            if grant.decision is PolicyDecision.REQUIRE_APPROVAL:
+                raise GatewayApprovalRequired(grant.reason or "external approval required")
+            if grant.decision is not PolicyDecision.ALLOW:
+                raise GatewayDenied(grant.reason or "policy denied effect")
 
-        try:
-            capability = await self.engine.authorize(
+            try:
+                capability = await self.engine.authorize(
+                    tx.transaction_id,
+                    bound.executor,
+                    ttl_seconds=self.config.capability_ttl_seconds,
+                    policy_version=grant.policy_version,
+                    approval_digest=grant.approval_digest,
+                )
+            except AuthorizationError:
+                raise
+
+            tx = await self.engine.execute(
                 tx.transaction_id,
-                bound.executor,
-                ttl_seconds=self.config.capability_ttl_seconds,
-                policy_version=grant.policy_version,
-                approval_digest=grant.approval_digest,
+                capability,
+                worker_id=self.config.worker_id,
+                lease_seconds=self.config.lease_seconds,
             )
-        except AuthorizationError:
-            raise
-
-        tx = await self.engine.execute(
-            tx.transaction_id,
-            capability,
-            worker_id=self.config.worker_id,
-            lease_seconds=self.config.lease_seconds,
-        )
         reconciliation_status = None
         if tx.execution_state is ExecutionState.UNKNOWN and self.config.auto_reconcile_unknown:
             status = await self.engine.reconcile(tx.transaction_id)

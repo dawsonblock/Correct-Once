@@ -16,6 +16,8 @@ export type EffectGatewayCallTool = (input: {
   tool: string;
   arguments?: Record<string, unknown>;
   trace_id?: string;
+  idempotency_key?: string;
+  action_id?: string;
   approval_token?: string;
 }) => Promise<unknown>;
 
@@ -63,6 +65,8 @@ export async function effectGatewayMcpCall(
     tool: string;
     args?: Record<string, unknown>;
     traceId?: string;
+    idempotencyKey?: string;
+    actionId?: string;
     approvalToken?: string;
   },
 ): Promise<unknown> {
@@ -73,6 +77,8 @@ export async function effectGatewayMcpCall(
       tool: input.tool,
       arguments: input.args ?? {},
       trace_id: input.traceId,
+      idempotency_key: input.idempotencyKey,
+      action_id: input.actionId,
       approval_token: input.approvalToken,
     });
   }
@@ -90,6 +96,8 @@ export async function effectGatewayMcpCall(
       tool: input.tool,
       arguments: input.args ?? {},
       trace_id: input.traceId,
+      idempotency_key: input.idempotencyKey,
+      action_id: input.actionId,
       // approval_token may be sent over the authenticated facade; never embed in schemas/receipts.
       approval_token: input.approvalToken,
     }),
