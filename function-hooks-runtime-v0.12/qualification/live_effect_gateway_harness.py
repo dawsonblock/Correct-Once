@@ -216,6 +216,15 @@ def build_gateway(snapshot_path: Path, control_path: Path) -> tuple[EffectGatewa
     for record in snapshot["records"]:
         if record.get("state") != "active":
             continue
+        execution = record.get("execution")
+        if isinstance(execution, dict):
+            execution_pair = (
+                execution.get("executionClass"),
+                execution.get("executor"),
+            )
+            # The live gateway only registers read passthrough and critical effect pins.
+            if execution_pair not in {("read", "fast"), ("critical", "effect")}:
+                continue
         pin = parse_active_mcp_pin(record)
         factory = build_effect_factory(pin)
         reconcile_probe = None
