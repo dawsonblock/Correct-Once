@@ -1,1 +1,6 @@
-{"execution_state": "receipt_recorded", "identity_bound": true, "ledger_ok": true, "version": "0.2.11"}
+{
+  "execution_state": "receipt_recorded",
+  "identity_bound": true,
+  "ledger_ok": true,
+  "version": "0.2.12"
+}

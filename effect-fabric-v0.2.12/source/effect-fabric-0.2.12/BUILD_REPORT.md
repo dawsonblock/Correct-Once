@@ -1,56 +1,39 @@
 # Effect Fabric v0.2.12 — Build and Qualification Report
 
 **Release:** `0.2.12-trust-boundary-hardening`  
-**Date:** 2026-09-05
+**Date:** 2026-09-06  
+**Posture:** `REFERENCE_QUALIFIED`
 
-## Executive result
+## Why 0.2.12 exists
 
-v0.2.12 extends the v0.2.10 Effect Gateway with locally qualified cryptographic workload identity
-and environment/release-bound external ledger anchors. The build remains intentionally
-`REFERENCE_QUALIFIED`; production workload attestation/KMS custody and real external WORM storage
-are not claimed by local mechanism tests.
+This release moves the Correct-Once gateway and trusted-write-identity changes out of the sealed
+0.2.11 line into a clean 0.2.12 source tree, then rebuilds the qualification inputs, source
+manifest, release manifest, sdist, wheel, and source-to-wheel evidence from that tree.
 
-## Main changes
+## Commands and results
 
-- Ed25519 workload authority, short-lived worker credentials, per-worker signing keys, and assertion verification.
-- Optional fail-closed `require_workload_identity` enforcement before capability consumption.
-- Signed start, attempt-bound, and outcome assertions coupled to evidence.
-- Workload credential ID/digest persisted on execution attempts.
-- PostgreSQL migration `007_workload_identity.sql`.
-- Ledger anchors now bind environment and release identity.
-- Exclusive `DirectoryAnchorStore` and SDK-free `HttpAnchorStore` external-anchor adapter.
-- New source-bound `WORKLOAD_IDENTITY_QUALIFICATION.json` and `EXTERNAL_ANCHOR_QUALIFICATION.json` gates.
+- `bash scripts/qualify.sh` -> **176 tests / 174 passed / 2 skipped / 0 failed**.
+- `python3 scripts/freeze_release.py` -> refreshed `MANIFEST.sha256` and `release-manifest.json`.
+- `python3 scripts/verify_release_integrity.py` -> **PASS**.
+- `python3 scripts/build_release.py` -> rebuilt the source tar and wheel; exact artifact digests are
+  recorded in `release-artifacts/artifact-manifest.json`.
+- `release-artifacts/WHEEL_CONTENTS_CHECK.json` -> **PASS**.
+- `release-artifacts/WHEEL_SOURCE_EQUIVALENCE.json` -> **PASS** with **72 compared files** and
+  **0 failures**.
 
-## Verified local qualification
+## Qualified local gates
 
-- Python tests: **172 passed, 2 skipped**.
-- Skips: live PostgreSQL modules only (`psycopg` / live DSN unavailable).
-- Local static sanity: **PASS**.
-- Canonical transition kernel: **PASS**.
-- Effect Gateway local qualification: **PASS**.
-- Workload identity local qualification: **PASS**.
-- External anchor local qualification: **PASS**.
-- Provider/evidence/transactional-evidence gates: **PASS**.
-- Reducer equivalence and negative controls: **PASS**.
-- Qualification artifact determinism: **PASS**.
-- Overall release posture: **REFERENCE_QUALIFIED**.
+- `core_tests`, `provider_local`, `evidence_local`, `transactional_evidence_local`,
+  `canonical_transition_kernel`, `effect_gateway_local`, `workload_identity_local`,
+  `external_anchor_local`, `reducer_equivalence_local`, `reducer_negative_controls`, and
+  `qualification_reproducibility_local`: **PASS**.
+- `postgres_live` and `postgres_crash_fencing`: **NOT_RUN** because `psycopg` and a live DSN were
+  not present.
+- Upstream DAO donor, live GitHub/provider, external WORM anchoring, production workload identity,
+  and production native-kernel promotion gates: **NOT_RUN**.
 
-## Explicit NOT_RUN production gates
+## Honesty boundary
 
-- live PostgreSQL crash/fencing qualification;
-- external upstream DAO donor qualification;
-- Ruff and mypy (tools unavailable in this environment);
-- live GitHub/provider qualification;
-- external WORM/Object-Lock anchoring;
-- production workload identity / KMS/HSM / attestation;
-- production native-kernel promotion.
-
-## Security interpretation
-
-`workload_identity_local=PASS` proves the code can bind a worker credential to worker, subject,
-environment, release, expiry, and worker public key; require that credential before execution; and
-emit signed execution evidence. It does not prove production key custody or workload attestation.
-
-`external_anchor_local=PASS` proves signed checkpoint chaining, environment/release binding,
-append-only local persistence semantics, and tamper rejection. It does not prove that a remote
-service is administratively independent or WORM.
+Passing these local gates proves the 0.2.12 source tree, manifest, and built artifacts are aligned
+for this reference environment. It does **not** claim production WORM storage, KMS/HSM-backed
+workload identity, live PostgreSQL durability, `RELEASE_QUALIFIED`, or production packaging.

@@ -95,8 +95,9 @@ when that capability record changes.
     `subject + capability id + caller idempotencyKey`
   - Derives one unified write action id from
     `subject + capability id + caller idempotencyKey + canonical action digest`
-    while preserving the caller's original `request.actionId` in metadata for
-    audit correlation
+    while preserving the caller correlation id (or the legacy
+    `request.actionId` alias when it matches) in metadata for audit
+    correlation
   - Same key + different digest is `IDEMPOTENCY_CONFLICT`
   - If receipt persistence fails after an external attempt, the cached entry is
     retained and the call fails `NEEDS_RECONCILIATION` instead of re-executing

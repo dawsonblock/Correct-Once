@@ -8,7 +8,7 @@ version = "0.2.12"
 description = "MCP-native consequential effect runtime for autonomous agents"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "Apache-2.0"
+license = { file = "LICENSE" }
 authors = [{name = "Effect Fabric contributors"}]
 dependencies = [
   "pydantic>=2.7,<3",

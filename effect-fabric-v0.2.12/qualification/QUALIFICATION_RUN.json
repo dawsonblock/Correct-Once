@@ -1,11 +1,11 @@
 {
   "dependency_lock_hash": null,
-  "dependency_spec_hash": "9008db7cd676ea836e9ff8f2d51095efd4214a8dee6354a26f5c2319d87d66cf",
-  "generated_at": "2026-09-05T10:28:13.922665+00:00",
-  "git_commit": null,
-  "platform": "Linux-6.18.35-x86_64-with-glibc2.41",
+  "dependency_spec_hash": "01e830036a3f5daf402dcc6b29631b69541f29253ba0324b86dac307435ac79a",
+  "generated_at": "2026-09-06T20:56:29.479463+00:00",
+  "git_commit": "990e2cf3179d8e305904a1f7c94a179ad86d4ed7",
+  "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
   "postgres_image_digest": null,
-  "python": "3.13.5",
+  "python": "3.12.3",
   "schema": "effect-fabric/qualification-run/v1",
-  "version": "0.2.11"
+  "version": "0.2.12"
 }

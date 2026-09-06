@@ -1,6 +1,6 @@
-# Effect Fabric v0.2.11 — Trust Boundary Hardening
+# Effect Fabric v0.2.12 — Trust Boundary Hardening
 
-Effect Fabric is a transactional safety kernel for consequential autonomous actions. v0.2.11
+Effect Fabric is a transactional safety kernel for consequential autonomous actions. v0.2.12
 preserves the v0.2.10 Effect Gateway and adds two missing trust primitives: **cryptographic workload
 identity** for execution attribution and **environment/release-bound external ledger checkpoints**.
 
@@ -8,7 +8,7 @@ The release still does not claim production workload attestation or external WOR
 locally qualified mechanisms and keeps those production gates explicitly `NOT_RUN` until a real KMS /
 workload-attestation system and independently administered immutable anchor service are exercised.
 
-## What changed in v0.2.11
+## What changed in v0.2.12
 
 - Added `WorkloadAuthority`, `WorkloadSigner`, `WorkloadCredential`, `WorkloadAssertion`, and
   `WorkloadVerifier` using Ed25519 signatures.
@@ -68,7 +68,7 @@ signer = WorkloadSigner.enroll(
     worker_id="worker-7",
     subject="personal-assistant",
     environment_id="home-prod",
-    release_id="0.2.11",
+    release_id="0.2.12",
 )
 verifier = WorkloadVerifier.from_authority(authority)
 ```
@@ -80,7 +80,7 @@ engine = EffectEngine(
     workload_verifier=verifier,
     require_workload_identity=True,
     environment_id="home-prod",
-    release_id="0.2.11",
+    release_id="0.2.12",
 )
 ```
 
@@ -103,7 +103,7 @@ retention policy, administrative separation, and deletion resistance must be qua
 
 ## Existing safety model retained
 
-v0.2.11 retains the canonical transition algebra, exact capabilities, STARTED-before-provider-I/O,
+v0.2.12 retains the canonical transition algebra, exact capabilities, STARTED-before-provider-I/O,
 UNKNOWN/reconciliation semantics, attempt fencing, outbox claim tokens, PostgreSQL constraints,
 source-bound qualification evidence, native DAO compatibility infrastructure, and the v0.2.10 Effect
 Gateway with fail-closed tool/schema routing.

@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { spawn, type ChildProcessByStdio } from "node:child_process";
 import { mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Readable } from "node:stream";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { capabilitySha256, createCapabilityCandidate } from "@function-hooks/capabilities";
@@ -19,7 +20,7 @@ import {
 
 const READ_CAPABILITY_ID = "github.repo.read-live";
 const MUTATION_CAPABILITY_ID = "github.repo.write-live";
-const WRITE_CAPABILITY_ID = "github.repo.settings-live";
+const WRITE_CAPABILITY_ID = "github.repo.settings";
 const APPROVAL_CAPABILITY_ID = "github.repo.approved-settings-live";
 const DESTRUCTIVE_CAPABILITY_ID = "github.repo.purge-live";
 const UNCERTAIN_CAPABILITY_ID = "github.repo.uncertain-live";
@@ -61,6 +62,8 @@ type ToolControlPatch = Partial<{
   readonly approvalSecret: string;
   readonly reconcileStatus: string;
 }>;
+
+type HarnessProcess = ChildProcessByStdio<null, Readable, Readable>;
 
 function readSchema() {
   return {
@@ -209,7 +212,7 @@ async function loadWriteIdentityVectors(): Promise<readonly WriteIdentityVector[
   return document.cases;
 }
 
-async function waitForHealth(baseUrl: string, child: ChildProcessWithoutNullStreams): Promise<void> {
+async function waitForHealth(baseUrl: string, child: HarnessProcess): Promise<void> {
   const started = Date.now();
   let lastError = "";
   while (Date.now() - started < 10_000) {
@@ -228,7 +231,7 @@ async function waitForHealth(baseUrl: string, child: ChildProcessWithoutNullStre
   throw new Error(`Timed out waiting for harness health.\n${lastError}`);
 }
 
-async function terminate(child: ChildProcessWithoutNullStreams): Promise<void> {
+async function terminate(child: HarnessProcess): Promise<void> {
   if (child.exitCode !== null) return;
   child.kill("SIGTERM");
   const exit = new Promise<void>((resolve) => child.once("exit", () => resolve()));
@@ -365,8 +368,8 @@ async function createHarness(): Promise<HarnessContext> {
     runtimeCapability(
       {
         id: WRITE_CAPABILITY_ID,
-        capability: "repo.settings-live",
-        description: "Live critical write qualification capability",
+        capability: "repo.settings",
+        description: "Canonical critical write qualification capability",
         inputSchema: writeSchema(),
         sideEffect: "write",
         implementation: mcpImplementation("repo.settings"),
@@ -737,9 +740,11 @@ test("live shared write identity vectors survive the runtime-to-wheel gateway pa
       assert.equal(tx.idempotency.key, vector.expectedTrustedIdempotencyKey);
       assert.equal(tx.intent.intent_id, vector.expectedTrustedActionId);
       assert.equal(tx.intent.trace_id, vector.expectedTraceId);
-      assert.deepEqual(tx.intent.semantic_metadata ?? null, {
-        ...vector.semanticMetadata,
-      });
+      const expectedSemanticMetadata =
+        Object.keys(vector.semanticMetadata).length === 0
+          ? null
+          : { ...vector.semanticMetadata };
+      assert.deepEqual(tx.intent.semantic_metadata ?? null, expectedSemanticMetadata);
     });
   }
 });

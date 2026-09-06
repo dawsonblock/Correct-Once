@@ -1,28 +1,34 @@
 {
   "artifacts": [
     {
-      "bytes": 206222,
-      "path": "effect-fabric-0.2.11.tar.gz",
-      "sha256": "37729ba15a8af31c0af25ed8020ea6c57f99b5b2828d7865aa8f0ba4b286dcfa"
+      "bytes": 207705,
+      "path": "effect-fabric-0.2.12.tar.gz",
+      "sha256": "fa50c406f77e1d2261bfa892a0de438843c800e249e753ffb9475db9df64fed0"
     },
     {
-      "bytes": 134859,
-      "path": "wheel/effect_fabric-0.2.11-py3-none-any.whl",
-      "sha256": "e0b53d89bb138d6c42c7fa48348f4fc873b77d3315090fab814f29dfa59e7a42"
+      "bytes": 135661,
+      "path": "wheel/effect_fabric-0.2.12-py3-none-any.whl",
+      "sha256": "dfe150347ec379df84ab6bd6bc26dad089dbda3c921f7738f4475de88ec49cd6"
     },
     {
       "bytes": 1707,
       "path": "WHEEL_CONTENTS_CHECK.json",
-      "sha256": "d6324f5852a8fe0ed4c4763fec33032db3c19c04cfa6c5c048d56561d970fc5b"
+      "sha256": "5f08e81b9f6768acf59270ab654bcf0d6ae3b935dc1b1d3057d4a5fe3fc2496c"
     },
     {
-      "bytes": 386,
+      "bytes": 31049,
+      "path": "WHEEL_SOURCE_EQUIVALENCE.json",
+      "sha256": "4a5fc2b8216d4528ded83048a0fc41726755e68c7cf5af25fa2747c7c151b7a6"
+    },
+    {
+      "bytes": 425,
       "path": "QUALIFICATION_RUN.json",
-      "sha256": "90d26d94eec6b641be38448e1d82f68ccdccd996dee1f307e22df2903e8290c3"
+      "sha256": "5ae5c8eea90709a51c54677049fc56758b75c4139ea4d127604f63b581e88bad"
     }
   ],
   "schema": "effect-fabric/artifact-manifest/v3",
   "source_date_epoch": 946684800,
-  "version": "0.2.11",
-  "wheel_contents_verified": true
+  "version": "0.2.12",
+  "wheel_contents_verified": true,
+  "wheel_source_equivalence_verified": true
 }

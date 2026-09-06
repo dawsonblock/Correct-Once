@@ -1,4 +1,4 @@
 {
-  "status": "PASS",
-  "root": "/mnt/data/ef_v0211_sdist_check/effect-fabric-0.2.11"
+  "root": "/workspace/effect-fabric-v0.2.12/source/effect-fabric-0.2.12",
+  "status": "PASS"
 }

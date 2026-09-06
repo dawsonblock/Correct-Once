@@ -72,6 +72,34 @@ function expectedUnifiedActionId(input: {
   });
 }
 
+function defaultReadDescriptorSchema() {
+  return {
+    type: "object",
+    properties: { repo: { type: "string" } },
+    required: ["repo"],
+  };
+}
+
+function readDescriptorAuthority(options: {
+  readonly server?: string;
+  readonly tool?: string;
+  readonly inputSchema?: Record<string, unknown>;
+  readonly authenticated?: boolean;
+  readonly readOnly?: boolean;
+  readonly epoch?: string | number;
+} = {}) {
+  return {
+    describeTool: async () => ({
+      server: options.server ?? "github",
+      tool: options.tool ?? "repo.read",
+      inputSchema: options.inputSchema ?? defaultReadDescriptorSchema(),
+      authenticated: options.authenticated ?? true,
+      readOnly: options.readOnly ?? true,
+      epoch: options.epoch ?? "read-descriptor-v1",
+    }),
+  };
+}
+
 function candidate(
   overrides: Partial<Parameters<typeof createCapabilityCandidate>[0]> = {},
 ) {
@@ -156,7 +184,7 @@ test("pure stays in-process and read stays direct without calling Effect Fabric"
         capability: "json.normalize",
         description: "Normalize runtime JSON",
         inputSchema: { type: "object" },
-        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
+        implementation: { kind: "filesystem.read", path: "ignored-by-pure-handler.json" },
       },
       {
         executionClass: "pure",
@@ -201,6 +229,7 @@ test("pure stays in-process and read stays direct without calling Effect Fabric"
         readChecks.push(subject);
       },
     },
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
   });
 
   t.after(async () => {
@@ -279,6 +308,7 @@ test("read re-checks subject and allowlist on every call even with a cached hand
         }
       },
     },
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
   });
 
   t.after(async () => {
@@ -306,7 +336,7 @@ test("read re-checks subject and allowlist on every call even with a cached hand
     /not allowlisted/,
   );
 
-  assert.equal(registry.gets, 1);
+  assert.equal(runtime.cacheSize, 1);
   assert.equal(authChecks, 2);
   assert.equal(directCalls, 1);
   assert.equal(effectCalls, 0);
@@ -315,9 +345,7 @@ test("read re-checks subject and allowlist on every call even with a cached hand
 test("read-path MCP descriptor drift is denied before external I/O", async (t) => {
   let directCalls = 0;
   let descriptorSchema: Record<string, unknown> = {
-    type: "object",
-    properties: { repo: { type: "string" } },
-    required: ["repo"],
+    ...defaultReadDescriptorSchema(),
   };
   let descriptorEpoch: string | number = "read-descriptor-v1";
   const gateway = await createAgentGateway({
@@ -579,7 +607,7 @@ test("handle cache avoids a second registry resolve for repeated invokes", async
         capability: "math.increment",
         description: "Increment a counter",
         inputSchema: { type: "object" },
-        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
+        implementation: { kind: "filesystem.read", path: "ignored-by-pure-handler.json" },
       },
       {
         executionClass: "pure",
@@ -899,6 +927,7 @@ test("call-time executionClass choice is denied", async (t) => {
     policyHooks: {
       "read-auth": () => {},
     },
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
   });
 
   t.after(async () => {
@@ -1039,7 +1068,7 @@ test("pure capabilities fail closed instead of reaching MCP or other external pa
         capability: "math.double",
         description: "Double a value",
         inputSchema: { type: "object" },
-        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
+        implementation: { kind: "filesystem.read", path: "ignored-by-pure-handler.json" },
       },
       {
         executionClass: "pure",

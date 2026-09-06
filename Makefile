@@ -43,9 +43,11 @@ test-adapter-live:
 	PYTHONPATH="$(QUALIFY_PYTHONPATH)" $(PYTHON) -m pytest -q adapter/tests/test_curated_mcp_adapter_live.py
 
 test-cross-language: build-a-release
-	WHEEL_PATH="$$(python3 - <<'PY'\nfrom pathlib import Path\nwheels = sorted(Path('$(EFFECT_FABRIC_DIR)/release-artifacts/wheel').glob('effect_fabric-0.2.12-*.whl'))\nif len(wheels) != 1:\n    raise SystemExit(f'expected exactly one 0.2.12 wheel, found {len(wheels)}')\nprint(wheels[0].resolve())\nPY\n)" && \
+	set -- "$(EFFECT_FABRIC_DIR)"/release-artifacts/wheel/effect_fabric-0.2.12-*.whl && \
+	[ "$$#" -eq 1 ] && [ -f "$$1" ] || (echo "expected exactly one 0.2.12 wheel, found $$#" >&2; exit 1) && \
+	WHEEL_PATH="$$(realpath "$$1")" && \
 	rm -rf "$(QUALIFY_WHEEL_VENV)" && \
-	$(PYTHON) -m venv "$(QUALIFY_WHEEL_VENV)" && \
+	($(PYTHON) -m venv "$(QUALIFY_WHEEL_VENV)" >/dev/null 2>&1 || $(PYTHON) -m virtualenv "$(QUALIFY_WHEEL_VENV)") && \
 	"$(QUALIFY_WHEEL_VENV)/bin/python" -m pip install --upgrade pip && \
 	"$(QUALIFY_WHEEL_VENV)/bin/pip" install "effect-fabric[api] @ file://$$WHEEL_PATH" && \
 	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && \

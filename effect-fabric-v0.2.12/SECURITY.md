@@ -1,6 +1,6 @@
 # Security
 
-Effect Fabric v0.2.11 is a correctness/reference build. It is not a production-certified
+Effect Fabric v0.2.12 is a correctness/reference build. It is not a production-certified
 authorization boundary and it does not turn non-transactional external APIs into distributed ACID
 resources.
 
@@ -155,7 +155,7 @@ v0.2.9 preserves legal production execution-state edges a centralized security b
 The Effect Gateway is a privileged mutation boundary. Unknown tools are denied by default even if an MCP server advertises a read-only hint. Registered mutations require a current schema digest, a bound per-call effect definition, and an independent policy grant before Effect Fabric mints an execution capability. The MCP executor rechecks the schema immediately before external I/O. The secure default policy denies all mutations. Production deployments must ensure agents cannot access the underlying mutating transport through a second path that bypasses the gateway.
 
 
-## Workload identity boundary (v0.2.11)
+## Workload identity boundary (v0.2.12)
 
 `EffectEngine` can require an authority-signed workload credential before it consumes an execution
 capability. The credential binds the worker ID, agent subject, environment, release, expiry, and
@@ -172,7 +172,7 @@ label alone. It does **not** prove hardware-backed attestation, process isolatio
 KMS/HSM-backed signing. Those properties remain part of the separate `production_workload_identity`
 gate.
 
-## External anchor boundary (v0.2.11)
+## External anchor boundary (v0.2.12)
 
 Signed ledger checkpoints now bind the ledger root to `environment_id` and `release_id`, in addition
 to sequence, previous anchor hash, timestamp, and signing key. `DirectoryAnchorStore` uses exclusive

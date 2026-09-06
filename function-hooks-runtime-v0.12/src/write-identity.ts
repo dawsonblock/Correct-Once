@@ -133,9 +133,10 @@ export function deriveTrustedWriteIdentity(input: {
   }
   const callerCorrelationId = normalizedCallerCorrelationId(input.request);
   const semanticMetadata = normalizedSemanticMetadata(input.request);
+  const gatewayMetadata = mergedRequestMetadata(input.request);
   const actionDigest = semanticActionDigest({
     requestInput: input.request.input,
-    semanticMetadata,
+    ...(semanticMetadata === undefined ? {} : { semanticMetadata }),
   });
   const trustedIdempotencyKey = capabilitySha256({
     subject: input.subject,
@@ -149,7 +150,7 @@ export function deriveTrustedWriteIdentity(input: {
     actionDigest,
   });
 
-  return Object.freeze({
+  const trusted: TrustedWriteIdentity = {
     subject: input.subject,
     callerIdempotencyKey: idempotencyKey,
     ...(callerCorrelationId === undefined ? {} : { callerCorrelationId }),
@@ -159,8 +160,7 @@ export function deriveTrustedWriteIdentity(input: {
     trustedIdempotencyKey,
     trustedActionId,
     traceId: callerCorrelationId ?? trustedActionId,
-    ...(mergedRequestMetadata(input.request) === undefined
-      ? {}
-      : { gatewayMetadata: mergedRequestMetadata(input.request) }),
-  });
+    ...(gatewayMetadata === undefined ? {} : { gatewayMetadata }),
+  };
+  return Object.freeze(trusted);
 }

@@ -38,15 +38,15 @@
   "legal_edge_count": 11,
   "provenance": {
     "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
-    "native_reducer_sha256": "03148cceee4eb5e6d5a20b6159bd6896ae6029a632af1114a3733fe26cf8ee48",
-    "pyproject_sha256": "9008db7cd676ea836e9ff8f2d51095efd4214a8dee6354a26f5c2319d87d66cf",
-    "qualification_inputs_sha256": "de143f9c625e0b34b30c513be6b5414b3bed566b981a7f80554673852b6b95d7",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "01e830036a3f5daf402dcc6b29631b69541f29253ba0324b86dac307435ac79a",
+    "qualification_inputs_sha256": "73af6bb7a23449697b930689cc1f911b49b7d2ac7717e2d6d9b1350818a3c7b0",
     "schema": "effect-fabric/qualification-provenance/v1",
-    "version": "0.2.11"
+    "version": "0.2.12"
   },
   "schema": "effect-fabric/transition-kernel-qualification/v1",
   "scope": "structural execution-state algebra and runtime write centralization; not live provider/database qualification",
   "status": "PASS",
   "transition_spec_sha256": "06b7d68f0104180e779a09c470d988f7b1f8a5d8ff595251d457f4acd9bb3f86",
-  "version": "0.2.11"
+  "version": "0.2.12"
 }
