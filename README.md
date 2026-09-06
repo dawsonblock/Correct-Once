@@ -100,7 +100,6 @@ The exact checksum line is also stored in
     ├── VERSION
     ├── fixtures/
     ├── python/
-    ├── schemas/
     └── ts/
 ```
 
@@ -109,8 +108,8 @@ The exact checksum line is also stored in
 - `RELEASE-mcp-hooks-v0.1.1.md` captures the release-only notes.
 - `mcp-hooks-upgraded-v0.1.1.sha256` records the bundle checksum exactly.
 - `adapter/` now contains the v0.1.1 source drop (`VERSION`, `README`,
-  `FIXES`, `MAPPING`, `ts/`, `python/`, `fixtures/`, `schemas/`). The large
-  upstream A/B trees are intentionally omitted from git.
+  `FIXES`, `MAPPING`, `ts/`, `python/`, `fixtures/`). The large upstream A/B
+  trees are intentionally omitted from git.
 
 ## Safety notes
 
