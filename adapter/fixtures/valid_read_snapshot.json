@@ -1,0 +1,58 @@
+{
+  "format": "adapter/admitted-registry/v1",
+  "source": {
+    "package": "@function-hooks/capabilities",
+    "version": "0.11.0"
+  },
+  "records": [
+    {
+      "state": "active",
+      "capability": {
+        "id": "demo.repo.read",
+        "app": "demo",
+        "capability": "repo.read",
+        "description": "fixture read",
+        "lifecycle": "admitted",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "x"
+          ]
+        },
+        "outputSchema": {
+          "type": "object"
+        },
+        "sideEffect": "read",
+        "sensitivity": "private",
+        "risk": "low",
+        "schemaHash": "sha256:input-output-fixture-hash-aaaa",
+        "descriptorHash": "sha256:descriptor-bbbb",
+        "candidateHash": "sha256:candidate-cccc",
+        "provenance": {
+          "connectorId": "demo-mcp",
+          "connectorType": "mcp",
+          "version": "1.0.0",
+          "discoveredAt": "2026-09-06T00:00:00.000Z",
+          "schemaDigest": "sha256:input-output-fixture-hash-aaaa"
+        },
+        "implementation": {
+          "kind": "mcp",
+          "server": "demo",
+          "tool": "get_file"
+        },
+        "admission": {
+          "kind": "function-hooks.capability-admission.v1",
+          "admissionId": "adm-1",
+          "policyVersion": "policy-v1",
+          "candidateHash": "sha256:candidate-cccc",
+          "descriptorHash": "sha256:descriptor-bbbb"
+        }
+      }
+    }
+  ]
+}
