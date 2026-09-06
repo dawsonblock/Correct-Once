@@ -42,6 +42,16 @@ function requireSubject(
   return subject;
 }
 
+const REQUEST_ACTION_ID_METADATA = "function-hooks.runtime.request-action-id";
+
+interface MutationIdentity {
+  readonly subject: string;
+  readonly idempotencyKey: string;
+  readonly actionDigest: string;
+  readonly namespaceKey: string;
+  readonly unifiedActionId: string;
+}
+
 async function runPolicyHook(
   hooks: ReadonlyMap<string, RuntimePolicyHook>,
   handle: CompiledCapabilityHandle,
@@ -84,13 +94,25 @@ function effectArgs(input: unknown, capabilityId: string): Record<string, unknow
 function directRequest(
   handle: CompiledCapabilityHandle,
   request: InvokeCapabilityRequest,
+  options: {
+    readonly actionId?: string;
+  } = {},
 ) {
+  const actionId = options.actionId ?? request.actionId;
+  const metadata: Record<string, string> = {
+    ...(request.metadata ?? {}),
+  };
+  if (actionId !== request.actionId) {
+    metadata[REQUEST_ACTION_ID_METADATA] = request.actionId;
+  }
   return {
-    actionId: request.actionId,
+    actionId,
     app: handle.app,
     capability: handle.capability,
     ...(request.input === undefined ? {} : { input: request.input }),
-    ...(request.metadata === undefined ? {} : { metadata: request.metadata }),
+    ...(Object.keys(metadata).length === 0
+      ? {}
+      : { metadata: Object.freeze({ ...metadata }) }),
   };
 }
 
@@ -98,6 +120,33 @@ function actionDigest(request: InvokeCapabilityRequest): string {
   return capabilitySha256({
     ...(request.input === undefined ? {} : { input: request.input }),
     ...(request.metadata === undefined ? {} : { metadata: request.metadata }),
+  });
+}
+
+function mutationIdentity(
+  handle: CompiledCapabilityHandle,
+  request: InvokeCapabilityRequest,
+  context: InvokeCapabilityContext,
+): MutationIdentity {
+  if (!request.idempotencyKey?.trim()) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} is ${handle.executionClass} and requires a non-empty idempotencyKey.`,
+    );
+  }
+  const subject = requireSubject(handle, context, `${handle.executionClass} execution`);
+  const idempotencyKey = request.idempotencyKey.trim();
+  const digest = actionDigest(request);
+  return Object.freeze({
+    subject,
+    idempotencyKey,
+    actionDigest: digest,
+    namespaceKey: `${subject}\u0000${handle.id}\u0000${idempotencyKey}`,
+    unifiedActionId: capabilitySha256({
+      subject,
+      capabilityId: handle.id,
+      idempotencyKey,
+      actionDigest: digest,
+    }),
   });
 }
 
@@ -182,13 +231,16 @@ export class FastExecutor {
 export class EffectExecutor {
   readonly #target;
   readonly #policyHooks: ReadonlyMap<string, RuntimePolicyHook>;
+  readonly #assertEffectEpoch: (handle: CompiledCapabilityHandle) => Promise<void>;
 
   constructor(options: {
     readonly target: Parameters<typeof callLockedEffectGateway>[0];
     readonly policyHooks?: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook>;
+    readonly assertEffectEpoch: (handle: CompiledCapabilityHandle) => Promise<void>;
   }) {
     this.#target = options.target;
     this.#policyHooks = valueMap(options.policyHooks);
+    this.#assertEffectEpoch = options.assertEffectEpoch;
   }
 
   async execute(
@@ -199,6 +251,7 @@ export class EffectExecutor {
     await runPolicyHook(this.#policyHooks, handle, request, context);
     const admitted = handle.admitted.capability;
     const implementation = admitted.implementation;
+    const identity = mutationIdentity(handle, request, context);
     if (handle.executionClass !== "critical") {
       throw new RuntimeEffectExecutionDeniedError(
         `Capability ${handle.id} is ${handle.executionClass}; EffectExecutor is reserved for critical execution.`,
@@ -219,13 +272,13 @@ export class EffectExecutor {
         `Capability ${handle.id} is destructive and requires allowDestructive=true.`,
       );
     }
-    const subject = requireSubject(handle, context, "critical effect execution");
+    await this.#assertEffectEpoch(handle);
     return callLockedEffectGateway(this.#target, {
-      subject,
+      subject: identity.subject,
       server: implementation.server,
       tool: implementation.tool,
       args: effectArgs(request.input, handle.id),
-      traceId: request.actionId,
+      traceId: identity.unifiedActionId,
       ...(context.approvalToken === undefined
         ? {}
         : { approvalToken: context.approvalToken }),
@@ -236,6 +289,7 @@ export class EffectExecutor {
 export class GuardedExecutor {
   readonly #policyHooks: ReadonlyMap<string, RuntimePolicyHook>;
   readonly #receipts: RuntimeReceiptHooks | undefined;
+  readonly #assertEffectEpoch: (handle: CompiledCapabilityHandle) => Promise<void>;
   readonly #idempotency = new Map<
     string,
     {
@@ -247,9 +301,11 @@ export class GuardedExecutor {
   constructor(options: {
     readonly policyHooks?: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook>;
     readonly receipts?: RuntimeReceiptHooks;
+    readonly assertEffectEpoch: (handle: CompiledCapabilityHandle) => Promise<void>;
   }) {
     this.#policyHooks = valueMap(options.policyHooks);
     this.#receipts = options.receipts;
+    this.#assertEffectEpoch = options.assertEffectEpoch;
   }
 
   async execute(
@@ -257,13 +313,8 @@ export class GuardedExecutor {
     request: InvokeCapabilityRequest,
     context: InvokeCapabilityContext,
   ): Promise<unknown> {
-    const subject = requireSubject(handle, context, "guarded execution");
+    const identity = mutationIdentity(handle, request, context);
     const policyContext = await runPolicyHook(this.#policyHooks, handle, request, context);
-    if (!request.idempotencyKey?.trim()) {
-      throw new RuntimeExecutionPolicyError(
-        `Capability ${handle.id} is guarded and requires a non-empty idempotencyKey.`,
-      );
-    }
     const receipts = this.#receipts;
     const onStart = receipts?.onStart;
     const onSuccess = receipts?.onSuccess;
@@ -279,14 +330,11 @@ export class GuardedExecutor {
       );
     }
     const directRouter = handle.directRouter;
-    const key = request.idempotencyKey.trim();
-    const digest = actionDigest(request);
-    const cacheKey = `${subject}\u0000${handle.id}\u0000${key}`;
-    const existing = this.#idempotency.get(cacheKey);
+    const existing = this.#idempotency.get(identity.namespaceKey);
     if (existing) {
-      if (existing.actionDigest !== digest) {
+      if (existing.actionDigest !== identity.actionDigest) {
         throw new RuntimeIdempotencyConflictError(
-          `IDEMPOTENCY_CONFLICT: Capability ${handle.id} subject=${subject} idempotencyKey=${key} was reused with a different action digest.`,
+          `IDEMPOTENCY_CONFLICT: Capability ${handle.id} subject=${identity.subject} idempotencyKey=${identity.idempotencyKey} was reused with a different action digest.`,
         );
       }
       return existing.promise;
@@ -295,10 +343,16 @@ export class GuardedExecutor {
     let executionStarted = false;
     const pending = (async (): Promise<unknown> => {
       await onStart(policyContext);
+      await this.#assertEffectEpoch(handle);
       let result: unknown;
       try {
         executionStarted = true;
-        result = await directRouter.execute(directRequest(handle, request), context);
+        result = await directRouter.execute(
+          directRequest(handle, request, {
+            actionId: identity.unifiedActionId,
+          }),
+          context,
+        );
       } catch (error) {
         const wrapped = asError(error);
         try {
@@ -311,8 +365,8 @@ export class GuardedExecutor {
         } catch (receiptError) {
           throw needsReconciliation(
             handle,
-            subject,
-            key,
+            identity.subject,
+            identity.idempotencyKey,
             "failure receipt persistence after the external attempt",
             wrapped,
             asError(receiptError),
@@ -320,8 +374,8 @@ export class GuardedExecutor {
         }
         throw needsReconciliation(
           handle,
-          subject,
-          key,
+          identity.subject,
+          identity.idempotencyKey,
           "external execution",
           wrapped,
         );
@@ -336,23 +390,23 @@ export class GuardedExecutor {
       } catch (error) {
         throw needsReconciliation(
           handle,
-          subject,
-          key,
+          identity.subject,
+          identity.idempotencyKey,
           "success receipt persistence after the external effect",
           asError(error),
         );
       }
       return result;
     })();
-    this.#idempotency.set(cacheKey, {
-      actionDigest: digest,
+    this.#idempotency.set(identity.namespaceKey, {
+      actionDigest: identity.actionDigest,
       promise: pending,
     });
     try {
       return await pending;
     } catch (error) {
       if (!executionStarted) {
-        this.#idempotency.delete(cacheKey);
+        this.#idempotency.delete(identity.namespaceKey);
       }
       throw error;
     }

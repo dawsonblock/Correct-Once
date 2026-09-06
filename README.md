@@ -183,9 +183,15 @@ make smoke
 ```
 
 `make smoke` is now the official root smoke for the runtime track as well: it
-runs `function-hooks-runtime-v0.12` tests first and only reaches the mirrored
-adapter smoke if the runtime suite passes. A runtime regression therefore fails
-the root smoke command immediately.
+runs `make smoke-runtime` first and only reaches the mirrored adapter smoke if
+the runtime fail-closed fixtures pass. A runtime regression therefore fails the
+root smoke command immediately.
+
+If you want to run only the runtime smoke fixtures:
+
+```bash
+make smoke-runtime
+```
 
 Optional install verification commands:
 

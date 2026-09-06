@@ -78,10 +78,35 @@ function compileHandle(
   });
 }
 
+async function assertCurrentExecutionEpoch(
+  registry: CreateFunctionHooksRuntimeOptions["registry"],
+  handle: CompiledCapabilityHandle,
+): Promise<void> {
+  const current = await registry.get(handle.id);
+  if (!current) {
+    throw new RuntimeCapabilityNotFoundError(
+      `Capability ${handle.id} is no longer registered for external execution.`,
+    );
+  }
+  if (current.state !== "active") {
+    throw new RuntimeCapabilityStateError(
+      `Capability ${handle.id} is ${current.state} and cannot execute externally.`,
+    );
+  }
+  if (current.stateVersion !== handle.stateVersion) {
+    throw new RuntimeCapabilityStateError(
+      `Capability ${handle.id} changed from stateVersion ${handle.stateVersion} to ${current.stateVersion} before external execution.`,
+    );
+  }
+}
+
 function createExecutors(options: CreateFunctionHooksRuntimeOptions): RuntimeExecutors {
+  const assertEffectEpoch = (handle: CompiledCapabilityHandle) =>
+    assertCurrentExecutionEpoch(options.registry, handle);
   const effect = new EffectExecutor({
     target: options.effectGateway,
     ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
+    assertEffectEpoch,
   });
   return {
     fast: new FastExecutor({
@@ -91,6 +116,7 @@ function createExecutors(options: CreateFunctionHooksRuntimeOptions): RuntimeExe
     guarded: new GuardedExecutor({
       ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
       ...(options.receipts === undefined ? {} : { receipts: options.receipts }),
+      assertEffectEpoch,
     }),
     effect,
   };

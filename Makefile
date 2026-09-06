@@ -5,7 +5,7 @@ EFFECT_FABRIC_DIR := effect-fabric-v0.2.11/source/effect-fabric-0.2.11
 FUNCTION_HOOKS_DIR := function-hooks-core-reference-v0.11.0
 FUNCTION_HOOKS_RUNTIME_DIR := function-hooks-runtime-v0.12
 
-.PHONY: install install-a install-b install-runtime build-b typecheck typecheck-runtime test test-runtime smoke smoke-adapter smoke-a-import smoke-b-import
+.PHONY: install install-a install-b install-runtime build-b typecheck typecheck-runtime test test-runtime smoke smoke-runtime smoke-adapter smoke-a-import smoke-b-import
 
 install: install-a install-b install-runtime
 
@@ -32,8 +32,11 @@ test-runtime:
 	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) test
 
 smoke:
-	$(MAKE) test-runtime
+	$(MAKE) smoke-runtime
 	$(MAKE) smoke-adapter
+
+smoke-runtime:
+	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) test
 
 smoke-adapter:
 	$(PYTHON) adapter/fixtures/run_smoke.py
