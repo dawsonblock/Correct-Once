@@ -4,19 +4,20 @@ NPM ?= npm
 EFFECT_FABRIC_DIR := effect-fabric-v0.2.11/source/effect-fabric-0.2.11
 FUNCTION_HOOKS_DIR := function-hooks-core-reference-v0.11.0
 FUNCTION_HOOKS_RUNTIME_DIR := function-hooks-runtime-v0.12
+QUALIFY_PYTHONPATH := $(CURDIR):$(CURDIR)/$(EFFECT_FABRIC_DIR)/src
 
-.PHONY: install install-a install-b install-runtime build-b typecheck typecheck-runtime test test-runtime smoke smoke-runtime smoke-adapter smoke-a-import smoke-b-import
+.PHONY: install install-a install-b install-runtime build-b typecheck typecheck-runtime test test-runtime test-adapter-live test-cross-language verify-b-manifest qualify smoke smoke-runtime smoke-adapter smoke-a-import smoke-b-import
 
 install: install-a install-b install-runtime
 
 install-a:
-	$(PYTHON) -m pip install -e $(EFFECT_FABRIC_DIR)
+	$(PYTHON) -m pip install -e "$(CURDIR)/$(EFFECT_FABRIC_DIR)[api,dev]"
 
 install-b:
-	cd $(FUNCTION_HOOKS_DIR) && $(NPM) install --package-lock=false
+	cd $(FUNCTION_HOOKS_DIR) && $(NPM) ci
 
 install-runtime:
-	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) install
+	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) ci
 
 build-b:
 	cd $(FUNCTION_HOOKS_DIR) && $(NPM) run build
@@ -30,6 +31,23 @@ test: test-runtime
 
 test-runtime:
 	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) test
+
+test-adapter-live:
+	PYTHONPATH="$(QUALIFY_PYTHONPATH)" $(PYTHON) -m pytest -q adapter/tests/test_curated_mcp_adapter_live.py
+
+test-cross-language:
+	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) run test:cross-language
+
+verify-b-manifest:
+	cd $(FUNCTION_HOOKS_DIR) && sha256sum --check MANIFEST.sha256
+
+qualify:
+	$(MAKE) build-b
+	$(MAKE) typecheck-runtime
+	$(MAKE) test-runtime
+	$(MAKE) test-adapter-live
+	$(MAKE) test-cross-language
+	$(MAKE) verify-b-manifest
 
 smoke:
 	$(MAKE) smoke-runtime

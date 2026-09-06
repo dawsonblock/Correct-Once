@@ -9,6 +9,8 @@ export interface EffectGatewayCallTool {
     readonly tool: string;
     readonly arguments?: Record<string, unknown>;
     readonly trace_id?: string;
+    readonly idempotency_key?: string;
+    readonly action_id?: string;
     readonly approval_token?: string;
   }): Promise<unknown>;
 }
@@ -78,6 +80,8 @@ export async function callLockedEffectGateway(
     readonly tool: string;
     readonly args?: Record<string, unknown>;
     readonly traceId?: string;
+    readonly idempotencyKey?: string;
+    readonly actionId?: string;
     readonly approvalToken?: string;
   },
 ): Promise<unknown> {
@@ -89,6 +93,8 @@ export async function callLockedEffectGateway(
       tool: input.tool,
       arguments: input.args ?? {},
       ...(input.traceId === undefined ? {} : { trace_id: input.traceId }),
+      ...(input.idempotencyKey === undefined ? {} : { idempotency_key: input.idempotencyKey }),
+      ...(input.actionId === undefined ? {} : { action_id: input.actionId }),
       ...(input.approvalToken === undefined ? {} : { approval_token: input.approvalToken }),
     });
   }
@@ -106,6 +112,8 @@ export async function callLockedEffectGateway(
       tool: input.tool,
       arguments: input.args ?? {},
       trace_id: input.traceId,
+      idempotency_key: input.idempotencyKey,
+      action_id: input.actionId,
       approval_token: input.approvalToken,
     }),
   });

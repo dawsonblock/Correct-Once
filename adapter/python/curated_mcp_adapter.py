@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from effect_fabric.canonical import digest_document
 from effect_fabric.effect_registry import McpToolIdentity, MutationClass
 from effect_fabric.gateway import EffectDefinitionFactory, EffectGateway
 from effect_fabric.gateway_policy import StaticGatewayPolicy
@@ -26,6 +27,7 @@ from .call_time_policy import CallTimeAllowlistPolicy, SubjectAllowlist
 from .side_effect_map import map_side_effect
 
 ADAPTER_FORMAT = "adapter/admitted-registry/v1"
+RUNTIME_REGISTRY_FORMAT = "function-hooks.runtime-capability-registry.v0.12"
 
 
 class AdapterError(RuntimeError):
@@ -53,6 +55,17 @@ class RegistrationPin:
     policy_version: str
     operation: str
     mutation_class: MutationClass
+    execution_class: str | None = None
+    executor: str | None = None
+    schema_class_digest: str | None = None
+    requires_lightweight_auth: bool | None = None
+    trusted_read: bool | None = None
+
+
+@dataclass(frozen=True)
+class TrustedWriteIdentity:
+    idempotency_key: str
+    action_id: str
 
 
 def _require(obj: dict[str, Any], key: str) -> Any:
@@ -73,17 +86,153 @@ def _unresolved_profile(tool_pattern: str) -> ProviderEffectProfile:
 
 def load_admitted_registry(path: str | Path) -> dict[str, Any]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    if data.get("format") != ADAPTER_FORMAT:
-        raise AdapterError(f"unsupported snapshot format: {data.get('format')!r}")
-    source = data.get("source") or {}
-    if source.get("package") != "@function-hooks/capabilities":
-        raise AdapterError("snapshot source.package must be @function-hooks/capabilities")
-    version = str(source.get("version") or "")
-    if not version.startswith("0.11."):
-        raise AdapterError(f"refuse non-0.11.x capabilities snapshot: {version!r}")
-    if not isinstance(data.get("records"), list):
-        raise AdapterError("snapshot.records must be a list")
-    return data
+    if data.get("format") == ADAPTER_FORMAT:
+        source = data.get("source") or {}
+        if source.get("package") != "@function-hooks/capabilities":
+            raise AdapterError("snapshot source.package must be @function-hooks/capabilities")
+        version = str(source.get("version") or "")
+        if not version.startswith("0.11."):
+            raise AdapterError(f"refuse non-0.11.x capabilities snapshot: {version!r}")
+        if not isinstance(data.get("records"), list):
+            raise AdapterError("snapshot.records must be a list")
+        return data
+
+    if data.get("format") == RUNTIME_REGISTRY_FORMAT:
+        records = data.get("records")
+        if not isinstance(records, list):
+            raise AdapterError("runtime snapshot.records must be a list")
+        return {
+            "format": ADAPTER_FORMAT,
+            "source": {
+                "package": "@function-hooks/capabilities",
+                "version": "0.11.0",
+            },
+            "records": [_normalize_runtime_record(record) for record in records],
+        }
+
+    raise AdapterError(f"unsupported snapshot format: {data.get('format')!r}")
+
+
+def _normalize_runtime_record(record: dict[str, Any]) -> dict[str, Any]:
+    runtime_capability = _require(record, "capability")
+    if not isinstance(runtime_capability, dict):
+        raise AdapterError("runtime record.capability must be an object")
+    admitted = _require(runtime_capability, "capability")
+    if not isinstance(admitted, dict):
+        raise AdapterError("runtime capability.capability must be an object")
+    normalized: dict[str, Any] = {
+        "state": record.get("state"),
+        "capability": admitted,
+    }
+    execution = runtime_capability.get("execution")
+    if execution is not None:
+        if not isinstance(execution, dict):
+            raise AdapterError("runtime capability.execution must be an object")
+        normalized["execution"] = dict(execution)
+    for field in ("stateVersion", "updatedAt", "reason"):
+        if field in record:
+            normalized[field] = record[field]
+    return normalized
+
+
+def _parse_execution_pin(record: dict[str, Any]) -> dict[str, Any]:
+    execution = record.get("execution")
+    if execution is None:
+        return {}
+    if not isinstance(execution, dict):
+        raise AdapterError("record.execution must be an object when present")
+    execution_class = str(_require(execution, "executionClass"))
+    executor = str(_require(execution, "executor"))
+    schema_class_digest = str(_require(execution, "schemaClassDigest"))
+    requires_lightweight_auth = execution.get("requiresLightweightAuth")
+    trusted_read = execution.get("trustedRead")
+    if not execution_class:
+        raise AdapterError("execution.executionClass must be non-empty")
+    if not executor:
+        raise AdapterError("execution.executor must be non-empty")
+    if not schema_class_digest:
+        raise AdapterError("execution.schemaClassDigest must be non-empty")
+    if not isinstance(requires_lightweight_auth, bool):
+        raise AdapterError("execution.requiresLightweightAuth must be a boolean")
+    if not isinstance(trusted_read, bool):
+        raise AdapterError("execution.trustedRead must be a boolean")
+    return {
+        "execution_class": execution_class,
+        "executor": executor,
+        "schema_class_digest": schema_class_digest,
+        "requires_lightweight_auth": requires_lightweight_auth,
+        "trusted_read": trusted_read,
+    }
+
+
+def _validate_execution_pin(pin: RegistrationPin) -> None:
+    if pin.execution_class is None:
+        return
+    if pin.mutation_class is MutationClass.READ_ONLY:
+        if pin.execution_class != "read" or pin.executor != "fast":
+            raise AdapterDenied(
+                "read capability runtime pin drifted: expected executionClass=read executor=fast"
+            )
+        return
+    if pin.execution_class != "critical" or pin.executor != "effect":
+        raise AdapterDenied(
+            "mutating capability runtime pin drifted: expected executionClass=critical executor=effect"
+        )
+
+
+def _fallback_effect_idempotency_key(
+    pin: RegistrationPin, arguments: dict[str, Any]
+) -> str:
+    return digest_document(
+        {
+            "capabilityId": pin.capability_id,
+            "arguments": arguments,
+        }
+    )
+
+
+def _optional_non_empty(value: str | None, field: str) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    if not normalized:
+        raise AdapterError(f"{field} must be a non-empty string when provided")
+    return normalized
+
+
+def _trusted_write_identity(
+    *,
+    subject: str,
+    capability_id: str,
+    arguments: dict[str, Any],
+    idempotency_key: str | None,
+    action_id: str | None,
+) -> TrustedWriteIdentity:
+    request_action_digest = digest_document({"input": arguments})
+    caller_key = _optional_non_empty(idempotency_key, "idempotency_key")
+    if caller_key is None:
+        caller_key = request_action_digest
+    trusted_idempotency_key = digest_document(
+        {
+            "subject": subject,
+            "capabilityId": capability_id,
+            "idempotencyKey": caller_key,
+        }
+    )
+    trusted_action_id = _optional_non_empty(action_id, "action_id")
+    if trusted_action_id is None:
+        trusted_action_id = digest_document(
+            {
+                "subject": subject,
+                "capabilityId": capability_id,
+                "idempotencyKey": caller_key,
+                "actionDigest": request_action_digest,
+            }
+        )
+    return TrustedWriteIdentity(
+        idempotency_key=trusted_idempotency_key,
+        action_id=trusted_action_id,
+    )
 
 
 def parse_active_mcp_pin(record: dict[str, Any]) -> RegistrationPin:
@@ -141,7 +290,7 @@ def parse_active_mcp_pin(record: dict[str, Any]) -> RegistrationPin:
     app = str(_require(cap, "app"))
     capability = str(_require(cap, "capability"))
     cap_id = str(_require(cap, "id"))
-    return RegistrationPin(
+    pin = RegistrationPin(
         capability_id=cap_id,
         app=app,
         capability=capability,
@@ -157,7 +306,10 @@ def parse_active_mcp_pin(record: dict[str, Any]) -> RegistrationPin:
         policy_version=str(_require(admission, "policyVersion")),
         operation=f"{app}.{capability}",
         mutation_class=MutationClass(mapped.mutation_class),
+        **_parse_execution_pin(record),
     )
+    _validate_execution_pin(pin)
+    return pin
 
 
 def build_effect_factory(pin: RegistrationPin) -> EffectDefinitionFactory:
@@ -203,7 +355,7 @@ def build_effect_factory(pin: RegistrationPin) -> EffectDefinitionFactory:
     def idempotency_factory(a: dict[str, Any]) -> IdempotencyContract:
         return IdempotencyContract(
             mechanism="natural_resource",
-            key=f"{pin.capability_id}",
+            key=_fallback_effect_idempotency_key(pin, a),
             retry_after_not_happened=False,
             retry_after_unknown=False,
         )
@@ -242,9 +394,11 @@ class CuratedMcpAdapter:
         self._catalog: dict[str, dict[str, Any]] = {}
         self._subjects = subjects or {}
         self._pending_allowed_ops = allowed_operations
+        self._snapshot_path: Path | None = None
 
     def register_from_snapshot(self, path: str | Path) -> list[str]:
         data = load_admitted_registry(path)
+        self._snapshot_path = Path(path)
         registered: list[str] = []
         ops: set[str] = set(self._pending_allowed_ops or ())
         for record in data["records"]:
@@ -322,6 +476,26 @@ class CuratedMcpAdapter:
         entry = self._catalog.get(capability_id)
         if entry is None or entry.get("schemaHash") != pin.schema_hash_b:
             raise AdapterDenied("catalog pin drift detected")
+        if self._snapshot_path is not None:
+            try:
+                live_snapshot = load_admitted_registry(self._snapshot_path)
+            except Exception as exc:  # pragma: no cover - fail closed
+                raise AdapterDenied(
+                    f"failed to reload authoritative snapshot: {self._snapshot_path}"
+                ) from exc
+            live_record = None
+            for record in live_snapshot["records"]:
+                cap = record.get("capability")
+                if isinstance(cap, dict) and cap.get("id") == capability_id:
+                    live_record = record
+                    break
+            if live_record is None:
+                raise AdapterDenied(
+                    f"authoritative snapshot no longer contains capability id: {capability_id}"
+                )
+            live_pin = parse_active_mcp_pin(live_record)
+            if live_pin != pin:
+                raise AdapterDenied("authoritative pin drift detected")
         return pin
 
     async def invoke_capability(
@@ -331,6 +505,8 @@ class CuratedMcpAdapter:
         capability_id: str,
         arguments: dict[str, Any] | None = None,
         trace_id: str | None = None,
+        idempotency_key: str | None = None,
+        action_id: str | None = None,
         approval_token: str | None = None,
     ) -> Any:
         pin = self._recheck_pin(capability_id)
@@ -354,12 +530,27 @@ class CuratedMcpAdapter:
 
         # Gate 3: pass clean args only — policy looks up pin by server+tool.
         args = dict(arguments or {})
+        trusted_write = None
+        if pin.mutation_class is not MutationClass.READ_ONLY:
+            trusted_write = _trusted_write_identity(
+                subject=subject,
+                capability_id=capability_id,
+                arguments=args,
+                idempotency_key=idempotency_key,
+                action_id=action_id,
+            )
         return await self.gateway.call_tool(
             subject=subject,
             server=pin.server,
             tool=pin.tool,
             arguments=args,
-            trace_id=trace_id,
+            trace_id=trace_id if trace_id is not None else (
+                trusted_write.action_id if trusted_write is not None else None
+            ),
+            idempotency_key=(
+                trusted_write.idempotency_key if trusted_write is not None else None
+            ),
+            action_id=trusted_write.action_id if trusted_write is not None else None,
             approval_token=approval_token,
         )
 

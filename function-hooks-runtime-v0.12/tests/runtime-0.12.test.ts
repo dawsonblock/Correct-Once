@@ -30,6 +30,18 @@ function effectGatewayClient(target: Parameters<typeof createEffectGatewayClient
   return createEffectGatewayClient(target);
 }
 
+function expectedTrustedIdempotencyKey(input: {
+  readonly subject: string;
+  readonly capabilityId: string;
+  readonly idempotencyKey: string;
+}): string {
+  return capabilitySha256({
+    subject: input.subject,
+    capabilityId: input.capabilityId,
+    idempotencyKey: input.idempotencyKey,
+  });
+}
+
 function expectedUnifiedActionId(input: {
   readonly subject: string;
   readonly capabilityId: string;
@@ -640,8 +652,10 @@ test("destructive effect execution stays off by default", async (t) => {
   assert.equal(effectCalls, 0);
 });
 
-test("critical execution propagates the unified write identity into Effect Gateway trace_id", async (t) => {
+test("critical execution propagates the unified write identity into Effect Gateway contract fields", async (t) => {
   let seenTraceId: string | undefined;
+  let seenActionId: string | undefined;
+  let seenIdempotencyKey: string | undefined;
   const gateway = await createAgentGateway({
     receipts: false,
     authorizer: allowAllGatewayAuthorizer(),
@@ -670,7 +684,13 @@ test("critical execution propagates the unified write identity into Effect Gatew
     fastGateway: gateway,
     effectGateway: effectGatewayClient(async (input) => {
       seenTraceId = input.trace_id;
-      return { traceId: input.trace_id };
+      seenActionId = input.action_id;
+      seenIdempotencyKey = input.idempotency_key;
+      return {
+        traceId: input.trace_id,
+        actionId: input.action_id,
+        idempotencyKey: input.idempotency_key,
+      };
     }),
   });
 
@@ -695,8 +715,19 @@ test("critical execution propagates the unified write identity into Effect Gatew
     idempotencyKey: "critical-identity-1",
     requestInput: { repo: "acme/example" },
   });
+  const expectedIdempotency = expectedTrustedIdempotencyKey({
+    subject: "writer-1",
+    capabilityId: "github.repo.identity-trace",
+    idempotencyKey: "critical-identity-1",
+  });
   assert.equal(seenTraceId, expected);
-  assert.deepEqual(result, { traceId: expected });
+  assert.equal(seenActionId, expected);
+  assert.equal(seenIdempotencyKey, expectedIdempotency);
+  assert.deepEqual(result, {
+    traceId: expected,
+    actionId: expected,
+    idempotencyKey: expectedIdempotency,
+  });
 });
 
 test("critical execution rejects a bare unapproved effect gateway function", async (t) => {

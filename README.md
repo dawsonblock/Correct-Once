@@ -106,7 +106,7 @@ You can use the root `Makefile` helpers or run the commands directly.
 Direct command:
 
 ```bash
-python3 -m pip install -e effect-fabric-v0.2.11/source/effect-fabric-0.2.11
+python3 -m pip install -e "effect-fabric-v0.2.11/source/effect-fabric-0.2.11[api,dev]"
 ```
 
 Make target:
@@ -121,7 +121,7 @@ Direct command:
 
 ```bash
 cd function-hooks-core-reference-v0.11.0
-npm install --package-lock=false
+npm ci
 ```
 
 Make target:
@@ -136,7 +136,7 @@ Direct command:
 
 ```bash
 cd function-hooks-runtime-v0.12
-npm install
+npm ci
 ```
 
 Make target:
@@ -167,6 +167,26 @@ Make targets:
 make typecheck
 make test
 ```
+
+### Live qualification
+
+The root qualification target now drives the release-blocker proofs directly:
+
+```bash
+make qualify
+```
+
+It runs:
+
+- the locked `function-hooks-core-reference-v0.11.0/` rebuild;
+- `function-hooks-runtime-v0.12/` typecheck plus runtime unit tests;
+- the live Python adapter + Effect Fabric tests;
+- the TS -> Effect Fabric -> fake-MCP cross-language suite; and
+- `sha256sum --check function-hooks-core-reference-v0.11.0/MANIFEST.sha256`.
+
+It does **not** claim the PostgreSQL-only Effect Fabric gates passed locally. Those
+still require `EFFECT_FABRIC_TEST_POSTGRES_DSN` and remain outside this archive-only
+qualification path.
 
 ## Smoke and import checks
 
@@ -203,10 +223,10 @@ make smoke-b-import
 Important honesty boundary: `adapter/fixtures/run_smoke.py` is a **mirrored
 gate smoke**. It checks the adapter's fail-closed rules and composition-lock
 branding, but it does **not** import a live `effect_fabric` runtime and does
-**not** prove end-to-end A execution. Likewise, passing the runtime scaffold
-tests and root smoke does **not** upgrade `function-hooks-runtime-v0.12/` into
-a production 0.12 claim; the correctness track is still explicitly bounded to
-v0.13 blocker fixes.
+**not** prove end-to-end A execution. Likewise, even a passing `make qualify`
+does **not** upgrade `function-hooks-runtime-v0.12/` into a production 0.12
+claim or a packaging-ready release; the correctness track is still explicitly
+bounded to v0.13 blocker fixes.
 
 ## Security gates
 

@@ -11,6 +11,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .errors import DuplicateIdempotencyConflict
 from .gateway import EffectGateway, GatewayApprovalRequired, GatewayDenied
 
 
@@ -22,6 +23,8 @@ class GatewayToolCall(BaseModel):
     tool: str
     arguments: dict[str, Any] = Field(default_factory=dict)
     trace_id: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=1)
+    action_id: str | None = Field(default=None, min_length=1)
     approval_token: str | None = None
 
 
@@ -57,9 +60,13 @@ def create_gateway_app(gateway: EffectGateway, *, api_token: str | None = None):
                 tool=request.tool,
                 arguments=request.arguments,
                 trace_id=request.trace_id,
+                idempotency_key=request.idempotency_key,
+                action_id=request.action_id,
                 approval_token=request.approval_token,
             )
         except GatewayApprovalRequired as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except DuplicateIdempotencyConflict as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         except GatewayDenied as exc:
             raise HTTPException(status_code=403, detail=str(exc)) from exc

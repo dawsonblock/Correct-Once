@@ -9,10 +9,11 @@ admitted capabilities onto **effect-fabric v0.2.11** (archive A) Effect Gateway.
 - **B** is the curated catalog / admission source of truth.
 - **A** is the runtime bridge: discovery → auth; schema-digest deny on drift.
 - Emit MCP tools **only** as `search_capabilities` + `invoke_capability(id, args) `.
-- Tag each capability `read | write | destructive` (derived from B ssideEffect`).
+- Tag each capability `read | write | destructive` (derived from B `sideEffect`).
 - Security gates at **CALL TIME**: re-check identity + allowlist class + scope;
-  fail closed on unknown ops; never mint from floating `latest`; no tokens in
-  schemas/receipts; destructive requires explicit allow flag default **OFF**.
+  reload the authoritative registry snapshot on every invoke; fail closed on
+  unknown ops; never mint from floating `latest`; no tokens in schemas/receipts;
+  destructive requires explicit allow flag default **OFF**.
 
 ## Freeze versions
 
@@ -24,21 +25,27 @@ admitted capabilities onto **effect-fabric v0.2.11** (archive A) Effect Gateway.
 
 ## Flow
 
-``tpext
-B createCapabilityCandidate → admitCapability → mnMemoryCapabilityRegistry.register
+```text
+B createCapabilityCandidate → admitCapability → InMemoryCapabilityRegistry.register
         |
         v (export active admitted records only)
 adapter/admitted-registry/v1 JSON  (no tokens, no floating latest)
         |
         v
-a EffectDefinitionFactory + EffectGateway.register_tool  (schema pin = B inputSchema)
+A EffectDefinitionFactory + EffectGateway.register_tool  (schema pin = B inputSchema)
         |
         v
 curated MCP surface: search_capabilities / invoke_capability
         |
         v
 A GatewayPolicy.authorize + adapter call-time re-check → EffectGateway.call_tool
-``
+```
+
+For mutating calls, `invoke_capability(...)` derives a trusted idempotency
+namespace from `subject + capability id + caller idempotency key`, derives a
+stable action id from that tuple plus the canonical input digest, and passes
+both into Effect Gateway / Effect Fabric. Same-key different-payload reuse now
+conflicts, while different subjects stay isolated.
 
 ## What this scaffold is / is not
 
@@ -48,8 +55,7 @@ A GatewayPolicy.authorize + adapter call-time re-check → EffectGateway.call_to
 ## Run posture
 
 Prefer reading sources under the extracted trees. Do not `npm install` / `pip install`
-both archives unless type-checking requires it. Point `PYTHONPATH` at A'
-s
+both archives unless type-checking requires it. Point `PYTHONPATH` at A's
 `source/effect-fabric-0.2.11/src` when importing `effect_fabric.*`.
 
 ## Key symbols (verified)

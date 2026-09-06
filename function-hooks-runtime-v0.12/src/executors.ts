@@ -49,6 +49,7 @@ interface MutationIdentity {
   readonly idempotencyKey: string;
   readonly actionDigest: string;
   readonly namespaceKey: string;
+  readonly trustedIdempotencyKey: string;
   readonly unifiedActionId: string;
 }
 
@@ -136,11 +137,17 @@ function mutationIdentity(
   const subject = requireSubject(handle, context, `${handle.executionClass} execution`);
   const idempotencyKey = request.idempotencyKey.trim();
   const digest = actionDigest(request);
+  const trustedIdempotencyKey = capabilitySha256({
+    subject,
+    capabilityId: handle.id,
+    idempotencyKey,
+  });
   return Object.freeze({
     subject,
     idempotencyKey,
     actionDigest: digest,
     namespaceKey: `${subject}\u0000${handle.id}\u0000${idempotencyKey}`,
+    trustedIdempotencyKey,
     unifiedActionId: capabilitySha256({
       subject,
       capabilityId: handle.id,
@@ -278,6 +285,8 @@ export class EffectExecutor {
       server: implementation.server,
       tool: implementation.tool,
       args: effectArgs(request.input, handle.id),
+      idempotencyKey: identity.trustedIdempotencyKey,
+      actionId: identity.unifiedActionId,
       traceId: identity.unifiedActionId,
       ...(context.approvalToken === undefined
         ? {}
