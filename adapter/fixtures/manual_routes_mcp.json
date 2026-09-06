@@ -1,0 +1,8 @@
+[
+  {
+    "app": "demo",
+    "capability": "bypass",
+    "backend": "mcp",
+    "event": "mcp.call"
+  }
+]

@@ -1,0 +1,7 @@
+adapter/0.1.1
+pins:
+  effect-fabric: 0.2.11
+  function-hooks-core-reference: 0.11.0
+  curated-tools: search_capabilities, invoke_capability
+  openapi: none
+critical-path: createEffectLockedAgentGateway (assertMcpCallIsEffectLocked mandatory)
