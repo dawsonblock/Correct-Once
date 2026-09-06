@@ -9,3 +9,7 @@ export class RuntimeCapabilityStateError extends RuntimeCapabilityError {}
 export class RuntimePolicyHookError extends RuntimeCapabilityError {}
 
 export class RuntimeEffectExecutionDeniedError extends RuntimeCapabilityError {}
+
+export class RuntimeIdempotencyConflictError extends RuntimeCapabilityError {}
+
+export class RuntimeNeedsReconciliationError extends RuntimeCapabilityError {}

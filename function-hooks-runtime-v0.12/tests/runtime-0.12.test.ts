@@ -1,15 +1,53 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createCapabilityCandidate } from "@function-hooks/capabilities";
+import { capabilitySha256, createCapabilityCandidate } from "@function-hooks/capabilities";
 import { allowAllGatewayAuthorizer, createAgentGateway } from "@function-hooks/gateway";
 import {
   InMemoryRuntimeCapabilityRegistry,
   RuntimeEffectExecutionDeniedError,
   RuntimeExecutionPolicyError,
   admitRuntimeCapability,
+  createEffectGatewayClient,
   createFunctionHooksRuntime,
   type RuntimeAdmittedCapability,
 } from "../src/index.ts";
+
+function mcpImplementation(
+  tool: string,
+  options: { readonly attestedReadOnly?: boolean } = {},
+): Parameters<typeof createCapabilityCandidate>[0]["implementation"] {
+  return {
+    kind: "mcp",
+    server: "github",
+    tool,
+    ...(options.attestedReadOnly
+      ? { descriptor: { authenticated: true, readOnly: true } }
+      : {}),
+  } as unknown as Parameters<typeof createCapabilityCandidate>[0]["implementation"];
+}
+
+function effectGatewayClient(target: Parameters<typeof createEffectGatewayClient>[0]) {
+  return createEffectGatewayClient(target);
+}
+
+function expectedUnifiedActionId(input: {
+  readonly subject: string;
+  readonly capabilityId: string;
+  readonly idempotencyKey: string;
+  readonly requestInput?: unknown;
+  readonly requestMetadata?: Readonly<Record<string, string>>;
+}): string {
+  const actionDigest = capabilitySha256({
+    ...(input.requestInput === undefined ? {} : { input: input.requestInput }),
+    ...(input.requestMetadata === undefined ? {} : { metadata: input.requestMetadata }),
+  });
+  return capabilitySha256({
+    subject: input.subject,
+    capabilityId: input.capabilityId,
+    idempotencyKey: input.idempotencyKey,
+    actionDigest,
+  });
+}
 
 function candidate(
   overrides: Partial<Parameters<typeof createCapabilityCandidate>[0]> = {},
@@ -21,7 +59,7 @@ function candidate(
     inputSchema: { type: "object", properties: { repo: { type: "string" } }, required: ["repo"] },
     outputSchema: { type: "object" },
     sideEffect: "read",
-    sensitivity: "private",
+    sensitivity: "public",
     risk: "low",
     provenance: {
       connectorId: "github-mcp",
@@ -29,7 +67,7 @@ function candidate(
       discoveredAt: "2026-09-06T00:00:00.000Z",
       version: "1",
     },
-    implementation: { kind: "mcp", server: "github", tool: "repo.read" },
+    implementation: mcpImplementation("repo.read", { attestedReadOnly: true }),
     ...overrides,
   });
 }
@@ -95,7 +133,7 @@ test("pure stays in-process and read stays direct without calling Effect Fabric"
         capability: "json.normalize",
         description: "Normalize runtime JSON",
         inputSchema: { type: "object" },
-        implementation: { kind: "mcp", server: "github", tool: "should-never-run" },
+        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
       },
       {
         executionClass: "pure",
@@ -121,10 +159,10 @@ test("pure stays in-process and read stays direct without calling Effect Fabric"
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async (input) => {
+    effectGateway: effectGatewayClient(async (input) => {
       effectCalls.push(`${input.server}/${input.tool}`);
       return { from: "effect" };
-    },
+    }),
     pureHandlers: {
       "normalize-json": ({ request }) => ({
         normalized: request.input,
@@ -204,10 +242,10 @@ test("read re-checks subject and allowlist on every call even with a cached hand
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => {
+    effectGateway: effectGatewayClient(async () => {
       effectCalls += 1;
       return { from: "effect" };
-    },
+    }),
     policyHooks: {
       "read-auth": ({ handle, context }) => {
         authChecks += 1;
@@ -251,7 +289,7 @@ test("read re-checks subject and allowlist on every call even with a cached hand
   assert.equal(effectCalls, 0);
 });
 
-test("mutation and critical capabilities stay pinned to the effect tier", async (t) => {
+test("ordinary mutations stay on the guarded direct path while critical stays on Effect Fabric", async (t) => {
   const directCalls: string[] = [];
   const effectCalls: string[] = [];
   const phases: string[] = [];
@@ -259,9 +297,9 @@ test("mutation and critical capabilities stay pinned to the effect tier", async 
     receipts: false,
     authorizer: allowAllGatewayAuthorizer(),
     adapters: {
-      "mcp.call": async (input) => {
-        directCalls.push(`${input.server}/${input.tool}`);
-        return { direct: true };
+      "fs.write": async (input) => {
+        directCalls.push(`fs.write:${input.path}`);
+        return { bytesWritten: Buffer.byteLength(input.data) };
       },
     },
   });
@@ -269,17 +307,18 @@ test("mutation and critical capabilities stay pinned to the effect tier", async 
   await registry.register(
     runtimeCapability(
       {
-        id: "github.repo.update",
-        capability: "repo.update",
-        description: "Update repository metadata",
+        id: "runtime.state.update",
+        app: "runtime",
+        capability: "state.update",
+        description: "Update runtime state",
         sideEffect: "write",
         risk: "medium",
-        implementation: { kind: "mcp", server: "github", tool: "repo.update" },
+        sensitivity: "public",
+        implementation: { kind: "filesystem.write", path: "state.json" },
       },
       {
         executionClass: "mutation",
-        policyHookId: "mutation-guard",
-        requiresLightweightAuth: false,
+        policyHookId: "write-guard",
       },
     ),
   );
@@ -303,12 +342,12 @@ test("mutation and critical capabilities stay pinned to the effect tier", async 
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async (input) => {
+    effectGateway: effectGatewayClient(async (input) => {
       effectCalls.push(`${input.server}/${input.tool}`);
       return { server: input.server, tool: input.tool, args: input.arguments };
-    },
+    }),
     policyHooks: {
-      "mutation-guard": () => {
+      "write-guard": () => {
         phases.push("policy");
       },
     },
@@ -322,10 +361,10 @@ test("mutation and critical capabilities stay pinned to the effect tier", async 
 
   const mutation = await runtime.invokeCapability(
     {
-      id: "github.repo.update",
+      id: "runtime.state.update",
       actionId: "mut-1",
       idempotencyKey: "mut-1",
-      input: { repo: "acme/example", description: "updated" },
+      input: { data: "updated" },
     },
     { subject: "writer-1" },
   );
@@ -333,23 +372,22 @@ test("mutation and critical capabilities stay pinned to the effect tier", async 
     {
       id: "github.repo.delete",
       actionId: "crit-1",
+      idempotencyKey: "crit-1",
       input: { repo: "acme/example" },
     },
     { subject: "writer-1", allowDestructive: true },
   );
 
   assert.deepEqual(mutation, {
-    server: "github",
-    tool: "repo.update",
-    args: { repo: "acme/example", description: "updated" },
+    bytesWritten: 7,
   });
   assert.deepEqual(critical, {
     server: "github",
     tool: "repo.delete",
     args: { repo: "acme/example" },
   });
-  assert.deepEqual(directCalls, []);
-  assert.deepEqual(effectCalls, ["github/repo.update", "github/repo.delete"]);
+  assert.deepEqual(directCalls, ["fs.write:state.json"]);
+  assert.deepEqual(effectCalls, ["github/repo.delete"]);
   assert.deepEqual(phases, ["policy", "start", "success"]);
 });
 
@@ -366,11 +404,13 @@ test("guarded mutations require idempotency keys and receipts", async (t) => {
   await registry.register(
     runtimeCapability(
       {
-        id: "github.repo.patch",
-        capability: "repo.patch",
-        description: "Patch repository settings",
+        id: "runtime.state.patch",
+        app: "runtime",
+        capability: "state.patch",
+        description: "Patch runtime state",
         sideEffect: "write",
-        implementation: { kind: "mcp", server: "github", tool: "repo.patch" },
+        sensitivity: "public",
+        implementation: { kind: "filesystem.write", path: "state.json" },
       },
       {
         executionClass: "mutation",
@@ -382,13 +422,13 @@ test("guarded mutations require idempotency keys and receipts", async (t) => {
   const runtimeMissingKey = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => ({ from: "effect" }),
+    effectGateway: effectGatewayClient(async () => ({ from: "effect" })),
     receipts: receiptHooks(phases),
   });
   const runtimeMissingReceipts = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => ({ from: "effect" }),
+    effectGateway: effectGatewayClient(async () => ({ from: "effect" })),
   });
 
   t.after(async () => {
@@ -400,9 +440,9 @@ test("guarded mutations require idempotency keys and receipts", async (t) => {
   await assert.rejects(
     runtimeMissingKey.invokeCapability(
       {
-        id: "github.repo.patch",
+        id: "runtime.state.patch",
         actionId: "patch-no-key",
-        input: { repo: "acme/example" },
+        input: { data: "patched" },
       },
       { subject: "writer-1" },
     ),
@@ -411,10 +451,10 @@ test("guarded mutations require idempotency keys and receipts", async (t) => {
   await assert.rejects(
     runtimeMissingReceipts.invokeCapability(
       {
-        id: "github.repo.patch",
+        id: "runtime.state.patch",
         actionId: "patch-no-receipts",
         idempotencyKey: "patch-no-receipts",
-        input: { repo: "acme/example" },
+        input: { data: "patched" },
       },
       { subject: "writer-1" },
     ),
@@ -441,7 +481,7 @@ test("handle cache avoids a second registry resolve for repeated invokes", async
         capability: "math.increment",
         description: "Increment a counter",
         inputSchema: { type: "object" },
-        implementation: { kind: "mcp", server: "github", tool: "should-never-run" },
+        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
       },
       {
         executionClass: "pure",
@@ -453,7 +493,7 @@ test("handle cache avoids a second registry resolve for repeated invokes", async
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => ({ from: "effect" }),
+    effectGateway: effectGatewayClient(async () => ({ from: "effect" })),
     pureHandlers: {
       increment: ({ request }) => {
         const value = (request.input as { value: number }).value;
@@ -484,7 +524,6 @@ test("handle cache avoids a second registry resolve for repeated invokes", async
 
 test("effect tier fails closed when the schema digest pin drifts", async (t) => {
   let effectCalls = 0;
-  const phases: string[] = [];
   const gateway = await createAgentGateway({
     receipts: false,
     authorizer: allowAllGatewayAuthorizer(),
@@ -499,10 +538,10 @@ test("effect tier fails closed when the schema digest pin drifts", async (t) => 
       capability: "repo.write",
       description: "Write repository data",
       sideEffect: "write",
-      implementation: { kind: "mcp", server: "github", tool: "repo.write" },
+      implementation: mcpImplementation("repo.write"),
     },
     {
-      executionClass: "mutation",
+      executionClass: "critical",
       requiresLightweightAuth: false,
     },
   );
@@ -520,11 +559,10 @@ test("effect tier fails closed when the schema digest pin drifts", async (t) => 
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => {
+    effectGateway: effectGatewayClient(async () => {
       effectCalls += 1;
       return { from: "effect" };
-    },
-    receipts: receiptHooks(phases),
+    }),
   });
 
   t.after(async () => {
@@ -576,10 +614,10 @@ test("destructive effect execution stays off by default", async (t) => {
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => {
+    effectGateway: effectGatewayClient(async () => {
       effectCalls += 1;
       return { from: "effect" };
-    },
+    }),
   });
 
   t.after(async () => {
@@ -592,6 +630,7 @@ test("destructive effect execution stays off by default", async (t) => {
       {
         id: "github.repo.purge",
         actionId: "destructive-default-off",
+        idempotencyKey: "destructive-default-off",
         input: { repo: "acme/example" },
       },
       { subject: "writer-1" },
@@ -599,6 +638,116 @@ test("destructive effect execution stays off by default", async (t) => {
     RuntimeEffectExecutionDeniedError,
   );
   assert.equal(effectCalls, 0);
+});
+
+test("critical execution propagates the unified write identity into Effect Gateway trace_id", async (t) => {
+  let seenTraceId: string | undefined;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => ({ ok: true }),
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.identity-trace",
+        capability: "repo.identity-trace",
+        description: "Critical repository mutation",
+        sideEffect: "write",
+        implementation: mcpImplementation("repo.identity-trace"),
+      },
+      {
+        executionClass: "critical",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async (input) => {
+      seenTraceId = input.trace_id;
+      return { traceId: input.trace_id };
+    }),
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  const result = await runtime.invokeCapability(
+    {
+      id: "github.repo.identity-trace",
+      actionId: "caller-visible-action",
+      idempotencyKey: "critical-identity-1",
+      input: { repo: "acme/example" },
+    },
+    { subject: "writer-1" },
+  );
+
+  const expected = expectedUnifiedActionId({
+    subject: "writer-1",
+    capabilityId: "github.repo.identity-trace",
+    idempotencyKey: "critical-identity-1",
+    requestInput: { repo: "acme/example" },
+  });
+  assert.equal(seenTraceId, expected);
+  assert.deepEqual(result, { traceId: expected });
+});
+
+test("critical execution rejects a bare unapproved effect gateway function", async (t) => {
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => ({ ok: true }),
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.critical-bare-client",
+        capability: "repo.critical-bare-client",
+        description: "Critical repository mutation",
+        sideEffect: "write",
+        implementation: mcpImplementation("repo.critical-bare-client"),
+      },
+      {
+        executionClass: "critical",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: (async () => ({ from: "effect" })) as unknown as Parameters<
+      typeof createFunctionHooksRuntime
+    >[0]["effectGateway"],
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.critical-bare-client",
+        actionId: "bare-client",
+        idempotencyKey: "bare-client",
+        input: { repo: "acme/example" },
+      },
+      { subject: "writer-1" },
+    ),
+    /createEffectGatewayClient/,
+  );
 });
 
 test("call-time executionClass choice is denied", async (t) => {
@@ -629,7 +778,7 @@ test("call-time executionClass choice is denied", async (t) => {
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => ({ from: "effect" }),
+    effectGateway: effectGatewayClient(async () => ({ from: "effect" })),
     policyHooks: {
       "read-auth": () => {},
     },
@@ -650,6 +799,105 @@ test("call-time executionClass choice is denied", async (t) => {
     /admit time/,
   );
   assert.equal(directCalls, 0);
+});
+
+test("mutation and critical recheck revocation immediately before external execution", async (t) => {
+  let directCalls = 0;
+  let effectCalls = 0;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "fs.write": async () => {
+        directCalls += 1;
+        return { bytesWritten: 1 };
+      },
+      "mcp.call": async () => ({ ok: true }),
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "runtime.state.revocation-check",
+        app: "runtime",
+        capability: "state.revocation-check",
+        description: "Mutation revoked before write",
+        sideEffect: "write",
+        sensitivity: "public",
+        implementation: { kind: "filesystem.write", path: "state.json" },
+      },
+      {
+        executionClass: "mutation",
+        policyHookId: "revoke-mutation",
+      },
+    ),
+  );
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.revocation-check",
+        capability: "repo.revocation-check",
+        description: "Critical mutation revoked before effect",
+        sideEffect: "write",
+        implementation: mcpImplementation("repo.revocation-check"),
+      },
+      {
+        executionClass: "critical",
+        policyHookId: "revoke-critical",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => {
+      effectCalls += 1;
+      return { from: "effect" };
+    }),
+    policyHooks: {
+      "revoke-mutation": async ({ handle }) => {
+        await registry.revoke(handle.id, "revoked before external mutation");
+      },
+      "revoke-critical": async ({ handle }) => {
+        await registry.revoke(handle.id, "revoked before critical effect");
+      },
+    },
+    receipts: receiptHooks([]),
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "runtime.state.revocation-check",
+        actionId: "revocation-mutation",
+        idempotencyKey: "revocation-mutation",
+        input: { data: "x" },
+      },
+      { subject: "writer-1" },
+    ),
+    /cannot execute externally|stateVersion|revoked/,
+  );
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.revocation-check",
+        actionId: "revocation-critical",
+        idempotencyKey: "revocation-critical",
+        input: { repo: "acme/example" },
+      },
+      { subject: "writer-1" },
+    ),
+    /cannot execute externally|stateVersion|revoked/,
+  );
+  assert.equal(directCalls, 0);
+  assert.equal(effectCalls, 0);
 });
 
 test("pure capabilities fail closed instead of reaching MCP or other external paths", async (t) => {
@@ -674,7 +922,7 @@ test("pure capabilities fail closed instead of reaching MCP or other external pa
         capability: "math.double",
         description: "Double a value",
         inputSchema: { type: "object" },
-        implementation: { kind: "mcp", server: "github", tool: "should-never-run" },
+        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
       },
       {
         executionClass: "pure",
@@ -686,10 +934,10 @@ test("pure capabilities fail closed instead of reaching MCP or other external pa
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => {
+    effectGateway: effectGatewayClient(async () => {
       effectCalls += 1;
       return { from: "effect" };
-    },
+    }),
   });
 
   t.after(async () => {
@@ -718,7 +966,7 @@ test("class downgrade without re-admit is denied", async () => {
       description: "Destroy repository",
       sideEffect: "destructive",
       risk: "critical",
-      implementation: { kind: "mcp", server: "github", tool: "repo.destroy" },
+      implementation: mcpImplementation("repo.destroy"),
     },
     {
       executionClass: "critical",
@@ -745,7 +993,6 @@ test("class downgrade without re-admit is denied", async () => {
 
 test("effect failure never falls back to fast execution", async (t) => {
   let directCalls = 0;
-  const phases: string[] = [];
   const gateway = await createAgentGateway({
     receipts: false,
     authorizer: allowAllGatewayAuthorizer(),
@@ -764,10 +1011,10 @@ test("effect failure never falls back to fast execution", async (t) => {
         capability: "repo.archive",
         description: "Archive repository",
         sideEffect: "write",
-        implementation: { kind: "mcp", server: "github", tool: "repo.archive" },
+        implementation: mcpImplementation("repo.archive"),
       },
       {
-        executionClass: "mutation",
+        executionClass: "critical",
         requiresLightweightAuth: false,
       },
     ),
@@ -775,10 +1022,9 @@ test("effect failure never falls back to fast execution", async (t) => {
   const runtime = createFunctionHooksRuntime({
     registry,
     fastGateway: gateway,
-    effectGateway: async () => {
+    effectGateway: effectGatewayClient(async () => {
       throw new Error("fabric unavailable");
-    },
-    receipts: receiptHooks(phases),
+    }),
   });
 
   t.after(async () => {
@@ -799,5 +1045,361 @@ test("effect failure never falls back to fast execution", async (t) => {
     /fabric unavailable/,
   );
   assert.equal(directCalls, 0);
-  assert.deepEqual(phases, ["start", "failure"]);
+});
+
+test("DISGUISED_WRITE_FASTPATH regression: mutating implementations cannot admit as read", () => {
+  const cases = [
+    {
+      id: "runtime.fs.write-disguised-read",
+      capability: "fs.write",
+      implementation: { kind: "filesystem.write", path: "state.txt" } as const,
+    },
+    {
+      id: "runtime.http.post-disguised-read",
+      capability: "http.post",
+      implementation: { kind: "http", url: "https://example.com/items", method: "POST" } as const,
+    },
+    {
+      id: "runtime.process.exec-disguised-read",
+      capability: "process.exec",
+      implementation: { kind: "process", profile: "git-status" } as const,
+    },
+    {
+      id: "runtime.browser.call-disguised-read",
+      capability: "browser.call",
+      implementation: { kind: "browser", operation: "click" } as const,
+    },
+    {
+      id: "runtime.desktop.call-disguised-read",
+      capability: "desktop.call",
+      implementation: { kind: "desktop", application: "finder", operation: "click" } as const,
+    },
+  ] as const;
+
+  for (const { id, capability, implementation } of cases) {
+    assert.throws(
+      () =>
+        runtimeCapability(
+          {
+            id,
+            capability,
+            sideEffect: "read",
+            sensitivity: "public",
+            implementation,
+          },
+          {
+            executionClass: "read",
+            requiresLightweightAuth: false,
+          },
+        ),
+      RuntimeExecutionPolicyError,
+      `${implementation.kind} must not admit as executionClass=read`,
+    );
+  }
+});
+
+test("read-class MCP requires authenticated read-only descriptor evidence", () => {
+  assert.throws(
+    () =>
+      runtimeCapability(
+        {
+          id: "github.repo.read-unattested",
+          capability: "repo.read",
+          sensitivity: "public",
+          implementation: { kind: "mcp", server: "github", tool: "repo.read" },
+        },
+        {
+          executionClass: "read",
+          requiresLightweightAuth: false,
+        },
+      ),
+    RuntimeExecutionPolicyError,
+  );
+});
+
+test("private secret and unknown sensitivities cannot opt out of lightweight auth", () => {
+  for (const sensitivity of ["private", "secret", "unknown"] as const) {
+    assert.throws(
+      () =>
+        runtimeCapability(
+          {
+            id: `runtime.${sensitivity}.write`,
+            capability: `${sensitivity}.write`,
+            description: `Write ${sensitivity} runtime state`,
+            sideEffect: "write",
+            sensitivity,
+            implementation: { kind: "filesystem.write", path: `${sensitivity}.txt` },
+          },
+          {
+            executionClass: "mutation",
+            requiresLightweightAuth: false,
+          },
+        ),
+      RuntimeExecutionPolicyError,
+      `${sensitivity} capabilities must not disable lightweight auth`,
+    );
+  }
+});
+
+test("secret reads without a subject are denied before any read executes", async (t) => {
+  let readCalls = 0;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "fs.read": async () => {
+        readCalls += 1;
+        return { data: "secret", bytes: 6 };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "runtime.secret.read",
+        app: "runtime",
+        capability: "secret.read",
+        description: "Read secret runtime state",
+        sideEffect: "read",
+        sensitivity: "secret",
+        implementation: { kind: "filesystem.read", path: "secret.txt" },
+      },
+      {
+        executionClass: "read",
+        policyHookId: "secret-read-auth",
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => ({ from: "effect" })),
+    policyHooks: {
+      "secret-read-auth": () => {},
+    },
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await assert.rejects(
+    runtime.invokeCapability({
+      id: "runtime.secret.read",
+      actionId: "secret-read-no-subject",
+    }),
+    /subject|auth/i,
+  );
+  assert.equal(readCalls, 0);
+});
+
+test("same subject and idempotency key with a different payload is an IDEMPOTENCY_CONFLICT", async (t) => {
+  let directCalls = 0;
+  let effectCalls = 0;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => {
+        directCalls += 1;
+        return { from: "direct" };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.write-idempotency-conflict",
+        capability: "repo.write",
+        description: "Write repository settings",
+        sideEffect: "write",
+        sensitivity: "public",
+        implementation: mcpImplementation("repo.write"),
+      },
+      {
+        executionClass: "mutation",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => {
+      effectCalls += 1;
+      return { from: "effect" };
+    }),
+    receipts: receiptHooks([]),
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await runtime.invokeCapability(
+    {
+      id: "github.repo.write-idempotency-conflict",
+      actionId: "write-conflict-1",
+      idempotencyKey: "same-key",
+      input: { repo: "acme/example", description: "first" },
+    },
+    { subject: "tenant-a" },
+  );
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.write-idempotency-conflict",
+        actionId: "write-conflict-2",
+        idempotencyKey: "same-key",
+        input: { repo: "acme/example", description: "second" },
+      },
+      { subject: "tenant-a" },
+    ),
+    /IDEMPOTENCY_CONFLICT/,
+  );
+  assert.equal(directCalls + effectCalls, 1);
+});
+
+test("different subjects get independent idempotency namespaces", async (t) => {
+  let directCalls = 0;
+  let effectCalls = 0;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => {
+        directCalls += 1;
+        return { from: "direct" };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.write-subject-namespaces",
+        capability: "repo.write",
+        description: "Write repository settings",
+        sideEffect: "write",
+        sensitivity: "public",
+        implementation: mcpImplementation("repo.write"),
+      },
+      {
+        executionClass: "mutation",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => {
+      effectCalls += 1;
+      return { from: "effect" };
+    }),
+    receipts: receiptHooks([]),
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await runtime.invokeCapability(
+    {
+      id: "github.repo.write-subject-namespaces",
+      actionId: "subject-namespace-1",
+      idempotencyKey: "shared-key",
+      input: { repo: "acme/example", description: "same payload" },
+    },
+    { subject: "tenant-a" },
+  );
+  await runtime.invokeCapability(
+    {
+      id: "github.repo.write-subject-namespaces",
+      actionId: "subject-namespace-2",
+      idempotencyKey: "shared-key",
+      input: { repo: "acme/example", description: "same payload" },
+    },
+    { subject: "tenant-b" },
+  );
+  assert.equal(directCalls + effectCalls, 2);
+});
+
+test("receipt persistence failure after external success blocks retry instead of double-executing", async (t) => {
+  let directCalls = 0;
+  let effectCalls = 0;
+  let successCalls = 0;
+  let failureCalls = 0;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => {
+        directCalls += 1;
+        return { from: "direct" };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.write-receipt-failure",
+        capability: "repo.write",
+        description: "Write repository settings",
+        sideEffect: "write",
+        sensitivity: "public",
+        implementation: mcpImplementation("repo.write"),
+      },
+      {
+        executionClass: "mutation",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => {
+      effectCalls += 1;
+      return { from: "effect" };
+    }),
+    receipts: {
+      onStart: () => {},
+      onSuccess: () => {
+        successCalls += 1;
+        throw new Error("receipt write failed after external effect");
+      },
+      onFailure: () => {
+        failureCalls += 1;
+      },
+    },
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  const invoke = (actionId: string) =>
+    runtime.invokeCapability(
+      {
+        id: "github.repo.write-receipt-failure",
+        actionId,
+        idempotencyKey: "receipt-failure-key",
+        input: { repo: "acme/example", description: "pending receipt" },
+      },
+      { subject: "tenant-a" },
+    );
+
+  await assert.rejects(invoke("receipt-failure-1"), /NEEDS_RECONCILIATION|receipt write failed/);
+  await assert.rejects(invoke("receipt-failure-2"), /NEEDS_RECONCILIATION|receipt write failed/);
+  assert.equal(directCalls + effectCalls, 1);
+  assert.equal(successCalls, 1);
+  assert.ok(failureCalls <= 1);
 });

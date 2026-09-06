@@ -1,8 +1,11 @@
-# Function Hooks Runtime 0.12 scaffold
+# Function Hooks Runtime 0.12 scaffold / v0.13 correctness track
 
 This package starts a **parallel 0.12 track** without changing the frozen
 `mcp-hooks` v0.1.1 behavior on `main`. The existing adapter tree, smoke path,
-and Makefile targets remain the same.
+and Makefile targets remain the same. The current scope is a **v0.13
+correctness release only**: close admit-time class drift, auth, idempotency,
+and effect-client boundary bugs without relaxing the sealed adapter,
+`effect-fabric`, or `function-hooks-core-reference` freezes.
 
 ## Where `executionClass` is admitted
 
@@ -22,6 +25,26 @@ and Makefile targets remain the same.
 
 That policy is stored beside the admitted capability in the 0.12 runtime
 registry, instead of retrofitting the frozen 0.11.0 package APIs.
+
+## Admit-time compatibility matrix
+
+Admission now checks **implementation semantics**, not just `sideEffect`:
+
+| executionClass | Allowed implementation kinds | Notes |
+| --- | --- | --- |
+| `pure` | `filesystem.read`, HTTP `GET`/`HEAD`/`OPTIONS`, MCP only when `implementation.descriptor.authenticated=true` and `implementation.descriptor.readOnly=true` | `pure` still must pin `pureHandlerId`; no external fallback |
+| `read` | `filesystem.read`, HTTP `GET`/`HEAD`/`OPTIONS`, MCP only when `implementation.descriptor.authenticated=true` and `implementation.descriptor.readOnly=true` | mutating implementations fail closed at admit time |
+| `mutation` | `filesystem.write`, mutating HTTP methods, `process`, `browser`, `desktop`, `mcp` | executes through guarded direct Function Hooks dispatch |
+| `critical` | `mcp` only | reserved for the governed Effect Gateway client path in v0.13 |
+
+Implications:
+
+- `filesystem.write`, mutating HTTP, `process`, `browser`, and `desktop`
+  **cannot** admit as `pure` or `read`.
+- Non-MCP `critical` capabilities fail closed in this scaffold.
+- The `implementation.descriptor.{authenticated,readOnly}` object is a
+  **minimal bridge** for MCP read semantics because the frozen 0.11.0 capability
+  types do not yet model authenticated MCP descriptor evidence directly.
 
 ## Handle cache and compiled execution
 
@@ -44,6 +67,8 @@ Runtime invocation rechecks the cached handle pin before execution:
 - `schemaHash`
 - schema/class digest
 - pinned hook ids
+- `requiresLightweightAuth`
+- `trustedRead`
 
 `src/handle-cache.ts` caches those handles by capability id. The in-memory 0.12
 registry exposes `subscribe(...)`, so the runtime can invalidate a cached handle
@@ -60,15 +85,29 @@ when that capability record changes.
 
 - `GuardedExecutor`
   - First-tier executor for `mutation`
+  - Executes ordinary writes through direct Function Hooks routing
   - Requires idempotency keys
   - Requires receipt hooks
-  - Adds scaffold hooks for lightweight policy, idempotency, and receipts
-  - Delegates actual mutation execution to `EffectExecutor`
+  - Runs a fresh registry epoch/revocation check after policy and immediately
+    before external I/O
+  - Rechecks lightweight policy/auth on every call
+  - Uses subject-scoped idempotency keyed by
+    `subject + capability id + idempotencyKey + canonical action digest`
+  - Derives one unified write identity from that tuple and uses it as the
+    downstream guarded action id while preserving the caller's original
+    `request.actionId` in metadata for audit correlation
+  - Same key + different digest is `IDEMPOTENCY_CONFLICT`
+  - If receipt persistence fails after an external attempt, the cached entry is
+    retained and the call fails `NEEDS_RECONCILIATION` instead of re-executing
 
 - `EffectExecutor`
   - Handles `critical` directly
-  - Executes the guarded mutation inner step
-  - Reuses the locked Effect Gateway transport helper from `adapter/ts`
+  - Accepts only a branded Effect Gateway client created by
+    `createEffectGatewayClient(...)`
+  - Requires the same write identity tuple as `mutation`
+  - Runs the same fresh registry epoch/revocation check after policy and
+    immediately before the Effect Gateway call
+  - Propagates the unified write identity into Effect Gateway `trace_id`
   - Preserves fail-closed checks on the effect path:
     - object args only
     - subject authority required
@@ -81,13 +120,24 @@ Pure/read capabilities do **not** go through Effect Fabric in this scaffold,
 but they also do **not** get a silent auth bypass.
 
 `read` defaults to `requiresLightweightAuth: true` unless admission explicitly
-opts out. When lightweight auth is required, a `policyHookId` must be present at
-admission time or admission fails closed. Public reads can opt out deliberately;
-private reads must stay explicit. Cached handles do not cache auth; the read
-policy hook runs every invoke.
+opts out. `private`, `secret`, and `unknown` sensitivity can **never** opt out
+of lightweight auth. When lightweight auth is required, a `policyHookId` must
+be present at admission time or admission fails closed. Cached handles do not
+cache auth; the policy hook runs every invoke.
+
+Guarded writes also require a non-empty subject even when lightweight auth is
+disabled for a public capability, because the subject is part of the idempotency
+namespace and prevents cross-tenant aliasing.
 
 `pure` is stricter: it must pin an in-process `pureHandlerId` at admission time
 and never compiles an external route. There is no MCP/network/FS fallback.
+
+## Effect Gateway bridge
+
+`src/effect-gateway-bridge.ts` now owns its own minimal bridge logic instead of
+dynamically importing `../../adapter/ts/*.ts` at runtime. The runtime accepts a
+branded/opaque Effect Gateway client created by `createEffectGatewayClient(...)`
+and refuses a bare function shape.
 
 ## Curated host surface
 
@@ -103,9 +153,18 @@ MCP host bypass APIs.
 
 - No persistent handle cache yet; current cache is in-memory only.
 - No numeric indexing yet; the handle shape is chosen so that can come later.
-- `GuardedExecutor` idempotency is an in-memory scaffold, not a durable store.
-- Effect-tier execution is currently limited to admitted MCP-backed capabilities;
-  non-MCP high-tier capabilities fail closed until a separate design exists.
+- `GuardedExecutor` idempotency is still in-memory, not durable across process
+  restart.
+- In-flight revocation versus already-resolved cached handle execution remains a
+  race; v0.13 only rechecks the cached pin/auth surface on invoke.
+- MCP semantic discovery is still intentionally thin. Beyond the temporary
+  `implementation.descriptor.authenticated/readOnly` bridge, richer MCP
+  classification can wait.
+- Effect-tier execution is currently limited to admitted MCP-backed
+  capabilities; non-MCP `critical` capabilities fail closed until a governed
+  backend exists.
+- The MCP server entrypoint story beyond the current host gateway composition
+  can wait; v0.13 only fixes the runtime-side bridge and approved client shape.
 - Read allowlists are implemented through pinned policy hooks today; a richer
   declarative allowlist format can be layered on later without changing the
   admit-time pinning contract.
