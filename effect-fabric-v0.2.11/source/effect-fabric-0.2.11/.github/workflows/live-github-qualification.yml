@@ -1,0 +1,31 @@
+name: live-github-qualification
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: owner/repo containing a disposable issue
+        required: true
+      issue:
+        description: disposable issue number
+        required: true
+      label:
+        description: pre-existing label not currently attached to the issue
+        required: true
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    environment: live-provider-qualification
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[dev]'
+      - name: Run explicit mutating qualification
+        env:
+          EFFECT_FABRIC_GITHUB_TOKEN: ${{ secrets.EFFECT_FABRIC_GITHUB_TOKEN }}
+          EFFECT_FABRIC_GITHUB_REPO: ${{ inputs.repo }}
+          EFFECT_FABRIC_GITHUB_ISSUE: ${{ inputs.issue }}
+          EFFECT_FABRIC_GITHUB_LABEL: ${{ inputs.label }}
+          EFFECT_FABRIC_LIVE_GITHUB_ACK: I_UNDERSTAND_THIS_MUTATES_A_DISPOSABLE_GITHUB_ISSUE
+        run: python scripts/live_github_qualify.py

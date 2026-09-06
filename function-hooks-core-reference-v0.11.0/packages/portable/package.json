@@ -1,0 +1,35 @@
+{
+  "name": "@function-hooks/portable",
+  "version": "0.11.0",
+  "description": "Independent portable Function Hooks kernel implementation using explicit dispatch-frame propagation instead of AsyncLocalStorage.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist dist-tests",
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.tests.json && node --test dist-tests/tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@function-hooks/core": "0.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  }
+}

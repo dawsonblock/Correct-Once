@@ -1,0 +1,22 @@
+{
+  "package": "@function-hooks/replay",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "d099d83388e179bdcffe8cb714802b63b6059d9f7f27bd5cec0c011e09e004d8",
+  "files": [
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "b66d7b547a847306c0c189d61c3cf1b4ca422530bacc5aa68635be843df82ff3"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "dde009f494242160578b2155e1ea279f2c43814c932b61cbbce3d5fed8e2b0e2"
+    },
+    {
+      "path": "dist/replay.d.ts",
+      "sha256": "a13111d1f10f9d5a045356d3817978dae84c54687219c44ac755e9ccba297349"
+    }
+  ]
+}

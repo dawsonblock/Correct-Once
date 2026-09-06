@@ -1,0 +1,1 @@
+{"version":3,"file":"ledger.d.ts","sourceRoot":"","sources":["../src/ledger.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,oBAAoB,EAAE,MAAM,uBAAuB,CAAC;AAClE,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,YAAY,CAAC;AAEnD,kFAAkF;AAClF,wBAAgB,yBAAyB,CAAC,MAAM,EAAE,oBAAoB,GAAG,gBAAgB,CAWxF"}

@@ -1,0 +1,164 @@
+{
+  "package": "function-hooks-core-reference",
+  "version": "0.11.0",
+  "scoped_packages": {
+    "@function-hooks/assurance": "0.11.0",
+    "@function-hooks/audit": "0.11.0",
+    "@function-hooks/capabilities": "0.11.0",
+    "@function-hooks/compat": "0.11.0",
+    "@function-hooks/core": "0.11.0",
+    "@function-hooks/enterprise": "0.11.0",
+    "@function-hooks/events": "0.11.0",
+    "@function-hooks/gateway": "0.11.0",
+    "@function-hooks/isolation": "0.11.0",
+    "@function-hooks/plugins": "0.11.0",
+    "@function-hooks/portable": "0.11.0",
+    "@function-hooks/replay": "0.11.0",
+    "@function-hooks/router": "0.11.0"
+  },
+  "qualification_date": "2026-09-05",
+  "node": "v22.16.0",
+  "typescript": "Version 5.8.3",
+  "semantic_contract": {
+    "version": "1.0-rc.1",
+    "sha256": "aef14d3c4b77d9874496d0d020241ec976b9b038c8d2274c1e0c6bfd1939c708",
+    "cases": 21,
+    "frozen": true,
+    "changed_in_0_11_0": false
+  },
+  "api_snapshots": {
+    "passed": 14,
+    "failed": 0,
+    "total": 14,
+    "aggregate_sha256_by_package": {
+      "@function-hooks/assurance": "6885441f7d656c5eb4828614488d8169e6cbf01ef8640214b893aec243e43d79",
+      "@function-hooks/audit": "adfc967955ef971ce0dc6dc56fde1b654fb4bd92fbe410a86995ab669aba583b",
+      "@function-hooks/capabilities": "b11c07cafa54563200a004417dcff9e8904e80b17e03ff09daabb4a9a80117b3",
+      "@function-hooks/compat": "41bd490bc31520d7b9fc9b41cd5c55bef6740cfd188862ccd4ff5dd985cbaeee",
+      "function-hooks-core-reference": "71469a54dc8a043cd55cbe645fb4b985cb5efe2b6279465e4df604398dbef586",
+      "@function-hooks/core": "5355b50871c137d2472011d29cbed73f6f461578566fbd795be1a926ea776460",
+      "@function-hooks/enterprise": "4f657d2e89011e637a24dd615a93e10d4380a05be3fe63349afc65afad75da1c",
+      "@function-hooks/events": "bab99526c9de8bc97ab3dbb87353b5c7eadfc8fb3c66704cda2f490770a4e4d6",
+      "@function-hooks/gateway": "62c6a0f5c332202feffae96e53f0f2abb5477fde826214057dae2fb036081b8a",
+      "@function-hooks/isolation": "d31887e44debc5f20fdcbeedf2506312f87b4b3d810a86075461b401d0c7df61",
+      "@function-hooks/plugins": "799571b2838c08ddaadbaffcc727fce1e261eddf91f4a9f986b437294f4afcfb",
+      "@function-hooks/portable": "93c66e11c33e7cf8373d448635a7decbea6a8d7ed33c60cf27debef6e5a2462e",
+      "@function-hooks/replay": "d099d83388e179bdcffe8cb714802b63b6059d9f7f27bd5cec0c011e09e004d8",
+      "@function-hooks/router": "6bcdd83b62185d4a433c40d3994c64246966fcbab2cf0ea094a56b627a543fae"
+    }
+  },
+  "qualification": {
+    "reference_kernel_node_tests": {
+      "passed": 17,
+      "failed": 0,
+      "total": 17
+    },
+    "portable_kernel_node_tests": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2
+    },
+    "top_level_node_test_entries": {
+      "passed": 91,
+      "failed": 0,
+      "total": 91
+    },
+    "total_node_test_entries": {
+      "passed": 110,
+      "failed": 0,
+      "total": 110
+    },
+    "reference_published_conformance": {
+      "passed": 21,
+      "failed": 0,
+      "total": 21
+    },
+    "portable_published_conformance": {
+      "passed": 21,
+      "failed": 0,
+      "total": 21
+    },
+    "dual_runtime_differential": {
+      "generated_chains": 256,
+      "dispatches": 768,
+      "divergences": 0
+    },
+    "v0_11_capability_tests": {
+      "passed": 10,
+      "failed": 0,
+      "total": 10,
+      "coverage": [
+        "deterministic schema/descriptor/candidate hashing",
+        "schema drift changes fingerprints",
+        "cross-connector semantic identity",
+        "raw-candidate routing rejection",
+        "registry terminal lifecycle",
+        "active-only safe agent catalog",
+        "automatic admitted route compilation",
+        "trusted admission metadata anti-forgery",
+        "manual route coexistence",
+        "structured HTTP route compilation"
+      ]
+    },
+    "retained_v0_10_hardening_tests": {
+      "passed": 8,
+      "failed": 0,
+      "total": 8
+    },
+    "package_dependency_dag_check": "PASS",
+    "core_boundary_check": "PASS",
+    "portable_independence_check": "PASS",
+    "portable_web_typescript_compile": "PASS",
+    "umbrella_stable_surface_check": "PASS",
+    "api_snapshot_check": "PASS",
+    "semantics_freeze_check": "PASS",
+    "demos": {
+      "stable_root": "PASS",
+      "isolated_process": "PASS",
+      "split_package": "PASS",
+      "reference_conformance": "PASS",
+      "portable_conformance": "PASS",
+      "dual_runtime_equivalence": "PASS",
+      "compat_package": "PASS",
+      "differential_qualification": "PASS",
+      "agent_gateway": "PASS",
+      "execution_router": "PASS",
+      "capability_registry": "PASS"
+    },
+    "npm_tarballs": {
+      "status": "PASS",
+      "count": 14,
+      "embedded_scoped_sha256": {
+        "function-hooks-assurance-0.11.0.tgz": "4d0b052a0c78e94b15f4425ddaf3963f20528463a3185d40984ebd9b3f08cffe",
+        "function-hooks-audit-0.11.0.tgz": "984a48381fa269280cb91e11a3a9a68d5514b849087cda00b268d31c7f5a3a02",
+        "function-hooks-capabilities-0.11.0.tgz": "13a162c93e32eea5f7606d58b4c2d4084fa93dd3f2bb252ad9aab5997d819f10",
+        "function-hooks-compat-0.11.0.tgz": "792928c972ea12a26a2629de19fc25852a5c9e733819a23dc3f47bf1a8d8221f",
+        "function-hooks-core-0.11.0.tgz": "54fdc7c3cb1cc890d40b92029aaa5fde24738dee15c18f8dff982e40c5a341a0",
+        "function-hooks-enterprise-0.11.0.tgz": "6a93faace2944cb476099c0d27fc0679747f060bd2d8bbf709800a6db1c8897b",
+        "function-hooks-events-0.11.0.tgz": "60e8fa65fe40b6f7a591da654db5bcc3c452bb4f3fcd4e2df116382d2e6a800a",
+        "function-hooks-gateway-0.11.0.tgz": "dcfe22273ef5a9c9cd317ea5f34a110324080ec9201f012e5fed07a83e302d08",
+        "function-hooks-isolation-0.11.0.tgz": "fce092112fa51dd24456922992320ec39628fdf14300c2a0c28d2453d5f141bc",
+        "function-hooks-plugins-0.11.0.tgz": "c8cc663b61944a8e689d9aea87ba83fb4e9bfcba550177e85ac24b81c33f0915",
+        "function-hooks-portable-0.11.0.tgz": "7eb456a79eb7eff887f41c15ef3ad8f0ed4f9efb3445fbf5dd1684a399a7c780",
+        "function-hooks-replay-0.11.0.tgz": "c32ff8af0aa9eb81a3956319f569f1a675f3cd8657203d8744916f1640f72bd1",
+        "function-hooks-router-0.11.0.tgz": "fa0d5da7a09e67641ea431f33fc11bda72da21049ad7506dca13d7a9e2c10e3f"
+      },
+      "umbrella_checksum_location": "release/npm/SHA256SUMS (external to the umbrella tarball to avoid self-reference)"
+    },
+    "fresh_offline_scoped_install": "PASS",
+    "fresh_offline_umbrella_install": "PASS",
+    "packed_reference_conformance": "21/21 PASS",
+    "packed_portable_conformance": "21/21 PASS",
+    "packed_capability_registry_router_smoke": "PASS",
+    "clean_checkout_qualification": "PASS",
+    "exact_zip_manifest_verification": "PASS",
+    "exact_zip_qualification": "PASS"
+  },
+  "evidence_boundaries": [
+    "Capability discovery candidates have zero execution authority until separately admitted.",
+    "Admission evidence is hash-bound integrity metadata, not a digital signature or authenticated human approval.",
+    "The v0.11 registry is in-memory; CapabilityRegistryPersistence is only an interface contract.",
+    "Routers snapshot active registry state at construction; live revocation propagation is deferred.",
+    "v0.10 shared-filesystem locks are not distributed consensus and process groups are not malicious-code isolation."
+  ]
+}

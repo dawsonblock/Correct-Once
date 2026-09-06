@@ -1,0 +1,81 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # PostgreSQL types are installed in the quality job so database-bound typing is checked,
+      # even though PostgreSQL remains an optional runtime dependency for normal installations.
+      - run: python -m pip install -e '.[dev,postgres]'
+      - run: ruff check .
+      - run: mypy src scripts
+      - run: python -m compileall -q src tests scripts
+      - run: python -m pip check
+
+  core:
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -e '.[dev]'
+      - run: pytest -ra
+      - run: python scripts/qualify_provider.py --output PROVIDER_QUALIFICATION.json
+      - run: python scripts/qualify_evidence.py
+      - run: python scripts/qualify_transactional_evidence.py > TRANSACTIONAL_EVIDENCE_QUALIFICATION.json
+      - run: python scripts/qualify_donor_compatibility.py --output DONOR_COMPATIBILITY_QUALIFICATION.json
+      - run: python scripts/qualify_reducer_equivalence.py --output REDUCER_EQUIVALENCE_QUALIFICATION.json
+      - run: python scripts/qualify_negative_controls.py --output REDUCER_NEGATIVE_CONTROL_QUALIFICATION.json
+      - run: python scripts/generate_release_status.py --ruff NOT_RUN --mypy NOT_RUN
+      - run: python scripts/capture_run_metadata.py
+
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: effect
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: effect_fabric
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U effect -d effect_fabric"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
+    env:
+      EFFECT_FABRIC_TEST_POSTGRES_DSN: postgresql://effect:ci-only-password@127.0.0.1:5432/effect_fabric
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[dev,postgres]'
+      - name: Record PostgreSQL image identity
+        run: |
+          docker inspect '${{ job.services.postgres.id }}' > postgres-container-inspect.json
+          docker image inspect postgres:17 > postgres-image-inspect.json
+      - run: python scripts/qualify_postgres.py --output POSTGRES_QUALIFICATION.json
+      - name: Ensure full suite has no PostgreSQL skips
+        run: pytest -ra
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postgres-qualification
+          path: |
+            POSTGRES_QUALIFICATION.json
+            postgres-container-inspect.json
+            postgres-image-inspect.json

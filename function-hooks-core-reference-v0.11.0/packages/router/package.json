@@ -1,0 +1,35 @@
+{
+  "name": "@function-hooks/router",
+  "version": "0.11.0",
+  "description": "Application-capability execution router that maps reusable app configuration onto Function Hooks gateway backends.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@function-hooks/gateway": "0.11.0",
+    "@function-hooks/capabilities": "0.11.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

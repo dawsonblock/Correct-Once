@@ -1,0 +1,185 @@
+{
+  "all_passed": true,
+  "mutation_score": {
+    "killed": 8,
+    "total": 8
+  },
+  "non_claim": "These are Effect Fabric Python negative-control ports of the published donor bug families, not execution of the upstream TypeScript mutant implementations.",
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "03148cceee4eb5e6d5a20b6159bd6896ae6029a632af1114a3733fe26cf8ee48",
+    "pyproject_sha256": "9008db7cd676ea836e9ff8f2d51095efd4214a8dee6354a26f5c2319d87d66cf",
+    "qualification_inputs_sha256": "de143f9c625e0b34b30c513be6b5414b3bed566b981a7f80554673852b6b95d7",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.11"
+  },
+  "results": [
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "unknownWaitsForReceipt",
+        "unknownRevokeLanded",
+        "unknownRevokeNotLanded"
+      ],
+      "mutant": "eagerResolve",
+      "passed_suite": false,
+      "required_failures": [
+        "unknownWaitsForReceipt",
+        "unknownRevokeLanded",
+        "unknownRevokeNotLanded"
+      ],
+      "required_failures_observed": true
+    },
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "ackedCannotBecomeRevoked"
+      ],
+      "mutant": "ackedRevoked",
+      "passed_suite": false,
+      "required_failures": [
+        "ackedCannotBecomeRevoked"
+      ],
+      "required_failures_observed": true
+    },
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "unknownRevokeLanded",
+        "unknownRevokeNotLanded",
+        "ackedCannotBecomeRevoked",
+        "progressUnderInDoubt",
+        "supersessionAfter",
+        "idempotencyKeyStability",
+        "receiptReplayIsNoop",
+        "inDoubtDrains",
+        "forgedReceiptRefused",
+        "receiptRedeliveryIsIdempotent"
+      ],
+      "mutant": "strandsInDoubt",
+      "passed_suite": false,
+      "required_failures": [
+        "progressUnderInDoubt",
+        "inDoubtDrains"
+      ],
+      "required_failures_observed": true
+    },
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "duplicateDelivery",
+        "idempotencyKeyStability"
+      ],
+      "mutant": "deliveryKeyed",
+      "passed_suite": false,
+      "required_failures": [
+        "duplicateDelivery",
+        "idempotencyKeyStability"
+      ],
+      "required_failures_observed": true
+    },
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "crashAfterIntent",
+        "unknownWaitsForReceipt",
+        "unknownRevokeLanded",
+        "unknownRevokeNotLanded",
+        "ackedCannotBecomeRevoked",
+        "progressUnderInDoubt",
+        "supersessionBefore",
+        "supersessionAfter",
+        "idempotencyKeyStability",
+        "inDoubtDrains",
+        "expectedExecutions",
+        "receiptSourceCompleteness",
+        "receiptRedeliveryIsIdempotent"
+      ],
+      "mutant": "selfRevoke",
+      "passed_suite": false,
+      "required_failures": [
+        "expectedExecutions"
+      ],
+      "required_failures_observed": true
+    },
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "forgedReceiptRefused"
+      ],
+      "mutant": "trustsAnyReceipt",
+      "passed_suite": false,
+      "required_failures": [
+        "forgedReceiptRefused"
+      ],
+      "required_failures_observed": true
+    },
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "receiptRedeliveryIsIdempotent"
+      ],
+      "mutant": "noncesAreConsumed",
+      "passed_suite": false,
+      "required_failures": [
+        "receiptRedeliveryIsIdempotent"
+      ],
+      "required_failures_observed": true
+    },
+    {
+      "crashed": false,
+      "error": null,
+      "failed_scenarios": [
+        "duplicateDelivery",
+        "crashAfterIntent",
+        "unknownWaitsForReceipt",
+        "unknownRevokeLanded",
+        "unknownRevokeNotLanded",
+        "ackedCannotBecomeRevoked",
+        "progressUnderInDoubt",
+        "supersessionBefore",
+        "supersessionAfter",
+        "staleEpochNoop",
+        "idempotencyKeyStability",
+        "receiptReplayIsNoop",
+        "inDoubtDrains",
+        "expectedExecutions",
+        "receiptSourceCompleteness",
+        "forgedReceiptRefused",
+        "receiptRedeliveryIsIdempotent"
+      ],
+      "mutant": "nop",
+      "passed_suite": false,
+      "required_failures": [
+        "duplicateDelivery",
+        "crashAfterIntent",
+        "unknownWaitsForReceipt",
+        "unknownRevokeLanded",
+        "unknownRevokeNotLanded",
+        "ackedCannotBecomeRevoked",
+        "progressUnderInDoubt",
+        "supersessionBefore",
+        "supersessionAfter",
+        "staleEpochNoop",
+        "idempotencyKeyStability",
+        "receiptReplayIsNoop",
+        "inDoubtDrains",
+        "expectedExecutions",
+        "receiptSourceCompleteness",
+        "forgedReceiptRefused",
+        "receiptRedeliveryIsIdempotent"
+      ],
+      "required_failures_observed": true
+    }
+  ],
+  "schema": "effect-fabric/reducer-negative-control-qualification/v1",
+  "status": "PASS",
+  "version": "0.2.11"
+}

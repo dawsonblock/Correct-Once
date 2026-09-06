@@ -1,0 +1,28 @@
+{
+  "artifacts": [
+    {
+      "bytes": 206222,
+      "path": "effect-fabric-0.2.11.tar.gz",
+      "sha256": "37729ba15a8af31c0af25ed8020ea6c57f99b5b2828d7865aa8f0ba4b286dcfa"
+    },
+    {
+      "bytes": 134859,
+      "path": "wheel/effect_fabric-0.2.11-py3-none-any.whl",
+      "sha256": "e0b53d89bb138d6c42c7fa48348f4fc873b77d3315090fab814f29dfa59e7a42"
+    },
+    {
+      "bytes": 1707,
+      "path": "WHEEL_CONTENTS_CHECK.json",
+      "sha256": "d6324f5852a8fe0ed4c4763fec33032db3c19c04cfa6c5c048d56561d970fc5b"
+    },
+    {
+      "bytes": 386,
+      "path": "QUALIFICATION_RUN.json",
+      "sha256": "90d26d94eec6b641be38448e1d82f68ccdccd996dee1f307e22df2903e8290c3"
+    }
+  ],
+  "schema": "effect-fabric/artifact-manifest/v3",
+  "source_date_epoch": 946684800,
+  "version": "0.2.11",
+  "wheel_contents_verified": true
+}

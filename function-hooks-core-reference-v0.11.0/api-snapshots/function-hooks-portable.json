@@ -1,0 +1,14 @@
+{
+  "package": "@function-hooks/portable",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "93c66e11c33e7cf8373d448635a7decbea6a8d7ed33c60cf27debef6e5a2462e",
+  "files": [
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "9fb0e7ee15cac1fb2ea260e4162ff136b596d854a817dd37c5185465928543c8"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "package": "@function-hooks/core",
+  "exportedTypeEntrypoints": [
+    "./dist/conformance.d.ts",
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "5355b50871c137d2472011d29cbed73f6f461578566fbd795be1a926ea776460",
+  "files": [
+    {
+      "path": "dist/blueprint.d.ts",
+      "sha256": "049d381af752a113adc5fa7aa2d107297527cf132bed505d15e6f1716dcb4f63"
+    },
+    {
+      "path": "dist/conformance.d.ts",
+      "sha256": "b393c4c39649e24548def462fe2201a21895719fa0da58ad04c3ac62c34682e8"
+    },
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "6f2e9cf89e8e877573905149ea82f98d0b4c80f5dd7e82df8e28e542bdf5b5bc"
+    },
+    {
+      "path": "dist/freeze.d.ts",
+      "sha256": "9075d622420d336288796915bc4787153bc7809620b728b1937b384a6dd983b4"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "42689ae229c8724aa4b8b466a2ffcc5d9e088905b85685f2bdb2c804fad305ed"
+    },
+    {
+      "path": "dist/matcher.d.ts",
+      "sha256": "dc066006ef810d8d50e2b93586990244a7f29991e48bfe9a651371f959c3a638"
+    },
+    {
+      "path": "dist/runtime.d.ts",
+      "sha256": "73efa317c691d04b1a7f55cb96ffe032e2bfe8ecbd308ac8641d9a501d06ca6b"
+    },
+    {
+      "path": "dist/types.d.ts",
+      "sha256": "2a7ddf37deefc2a8f624bc865d4a6c02e356cecdafa9687ecf89d2674d295fd5"
+    }
+  ]
+}

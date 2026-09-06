@@ -1,0 +1,22 @@
+import { createKernel } from "@function-hooks/core";
+import { createStandardEventBlueprint, type StandardEvents } from "@function-hooks/events";
+import { registerActionReceiptHooks, InMemoryActionReceiptStore } from "@function-hooks/assurance";
+import { HashChainAuditLedger, registerHashChainAuditHooks } from "@function-hooks/audit";
+import { ReplayLog, registerReplayHooks } from "@function-hooks/replay";
+import { registerOriginAllowlistHooks } from "@function-hooks/enterprise";
+
+const ledger = new HashChainAuditLedger();
+const replay = new ReplayLog();
+const receipts = new InMemoryActionReceiptStore();
+const builder = createKernel<StandardEvents>();
+builder.defineEngine(createStandardEventBlueprint({ toolCall: async (input) => ({ ok: true, input }) }));
+registerOriginAllowlistHooks(builder, 0, { "tool.call": ["demo"] });
+registerActionReceiptHooks(builder, 10, receipts, { events: new Set(["tool.call"]), actionId: (_event, input) => String((input as any)?.args?.actionId ?? "") });
+registerHashChainAuditHooks(builder, 20, ["tool.call"], ledger);
+registerReplayHooks(builder, 30, ["tool.call"], replay);
+const runtime = builder.build();
+await runtime.start();
+const result = await runtime.dispatch("tool.call", { tool: "Echo", args: { actionId: "demo-1" } }, { origin: "demo" });
+if ((result as any)?.ok !== true || ledger.entries().length !== 1 || replay.records().length !== 1) throw new Error("split demo failed");
+await runtime.close();
+console.log("split package kernel demo: PASS");

@@ -1,0 +1,66 @@
+{
+  "semanticsVersion": "1.0-rc.1",
+  "caseNames": [
+    "registration ordering and tie stability",
+    "short circuit replaces lower chain",
+    "caller input and forwarded input are immutable clones",
+    "base receives immutable input",
+    "unsupported mutable containers fail explicitly",
+    "engine blueprint is snapshotted",
+    "matcher sees rewritten downstream event",
+    "next is one-shot",
+    "recursive nested dispatch suppresses only current hook",
+    "concurrent dispatch recursion frames are isolated",
+    "engine surface is blueprint-only and unknown events fail",
+    "lifecycle is created started closed and builder freezes",
+    "hook and base failures have distinct semantic errors and causes",
+    "caller cancellation and deadline are distinct",
+    "next.signal carries cooperative cancellation",
+    "close aborts in-flight dispatch as RuntimeClosedError",
+    "origin is diagnostic and visible to hooks",
+    "matcher array-any and empty-array-never semantics",
+    "next metadata is immutable and identifies the active event",
+    "default runtime deadline applies when dispatch has no override",
+    "golden three-hook trace is deterministic"
+  ],
+  "goldenTrace": [
+    {
+      "phase": "dispatch.start"
+    },
+    {
+      "phase": "hook.enter",
+      "plugin": "outer"
+    },
+    {
+      "phase": "hook.enter",
+      "plugin": "middle"
+    },
+    {
+      "phase": "hook.enter",
+      "plugin": "inner"
+    },
+    {
+      "phase": "base.enter"
+    },
+    {
+      "phase": "base.exit"
+    },
+    {
+      "phase": "hook.exit",
+      "plugin": "inner"
+    },
+    {
+      "phase": "hook.exit",
+      "plugin": "middle"
+    },
+    {
+      "phase": "hook.exit",
+      "plugin": "outer"
+    },
+    {
+      "phase": "dispatch.end"
+    }
+  ],
+  "semanticsMdSha256": "f15813eb4251f9da3b8f7e946880712abcbc536ab719fd142c2a0a646437c9dd",
+  "contractSha256": "aef14d3c4b77d9874496d0d020241ec976b9b038c8d2274c1e0c6bfd1939c708"
+}

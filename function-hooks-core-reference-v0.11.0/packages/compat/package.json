@@ -1,0 +1,63 @@
+{
+  "name": "@function-hooks/compat",
+  "version": "0.11.0",
+  "description": "Deprecated compatibility runtime for pre-kernel Function Hooks wildcard, engine.create, schema, and budget semantics.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./runtime/types": {
+      "types": "./dist/runtime/types.d.ts",
+      "import": "./dist/runtime/types.js"
+    },
+    "./runtime/errors": {
+      "types": "./dist/runtime/errors.d.ts",
+      "import": "./dist/runtime/errors.js"
+    },
+    "./runtime/freeze": {
+      "types": "./dist/runtime/freeze.d.ts",
+      "import": "./dist/runtime/freeze.js"
+    },
+    "./runtime/matcher": {
+      "types": "./dist/runtime/matcher.d.ts",
+      "import": "./dist/runtime/matcher.js"
+    },
+    "./runtime/blueprint": {
+      "types": "./dist/runtime/blueprint.d.ts",
+      "import": "./dist/runtime/blueprint.js"
+    },
+    "./runtime/runtime": {
+      "types": "./dist/runtime/runtime.d.ts",
+      "import": "./dist/runtime/runtime.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@function-hooks/assurance": "0.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  }
+}

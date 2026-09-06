@@ -1,0 +1,54 @@
+{
+  "package": "@function-hooks/plugins",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "799571b2838c08ddaadbaffcc727fce1e261eddf91f4a9f986b437294f4afcfb",
+  "files": [
+    {
+      "path": "dist/admission.d.ts",
+      "sha256": "4a5215aff1428a1eb4c52a506d38317adc90c457203b837beefb8e31b91d7744"
+    },
+    {
+      "path": "dist/digest.d.ts",
+      "sha256": "b272014e1dc583607a0840da92e71db63fe059f49fe0836e46f5279399d3e60e"
+    },
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "a7eea630970c41d1469cd9e0cf7606da949286d8a732f737d6e074254c079e06"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "3b19422cde68965c0a771728c98b7f5c2ca6cec6f9611595fdf289f60979ea8c"
+    },
+    {
+      "path": "dist/kernel-adapter.d.ts",
+      "sha256": "eeac5a61d9a686860468923b1b7b9bef87b083c1c8df5514f4b501719189b498"
+    },
+    {
+      "path": "dist/lifecycle.d.ts",
+      "sha256": "52bd7d0f31f1100169d295017efe6e41c0ba8b7399401c4250147a66907122f0"
+    },
+    {
+      "path": "dist/loader.d.ts",
+      "sha256": "3f49fcbf408136b7047d5971d41093d6de616801cc9308be8a73be964f9cf95d"
+    },
+    {
+      "path": "dist/manager.d.ts",
+      "sha256": "7500236259813d281965f47b502fb794a70c1f27c3bda2e8bafb1ab377f2ab19"
+    },
+    {
+      "path": "dist/manifest.d.ts",
+      "sha256": "a484dc31cb06765f60b7a3267abd009076bc786971a246bcd5a785d70fb788cc"
+    },
+    {
+      "path": "dist/order.d.ts",
+      "sha256": "cb2b963007b018b13a0b6aef78ed84b5655f992623e7147ddf1821f0435e987e"
+    },
+    {
+      "path": "dist/validate.d.ts",
+      "sha256": "acc4e88913fe6b28a55bff25af1a9081d78b4039f4cb1a3ce97ffd93d00b10cb"
+    }
+  ]
+}

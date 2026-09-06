@@ -1,0 +1,18 @@
+{
+  "missing": [],
+  "required": {
+    "share/effect-fabric/bridges/durable-agent-outbox/effect_fabric_native_reduce.ts": "effect_fabric-0.2.11.data/data/share/effect-fabric/bridges/durable-agent-outbox/effect_fabric_native_reduce.ts",
+    "share/effect-fabric/bridges/durable-agent-outbox/generated_transition_table.ts": "effect_fabric-0.2.11.data/data/share/effect-fabric/bridges/durable-agent-outbox/generated_transition_table.ts",
+    "share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_native_engine.mjs": "effect_fabric-0.2.11.data/data/share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_native_engine.mjs",
+    "share/effect-fabric/licenses/THIRD_PARTY_NOTICES.md": "effect_fabric-0.2.11.data/data/share/effect-fabric/licenses/THIRD_PARTY_NOTICES.md",
+    "share/effect-fabric/licenses/durable-agent-outbox-MIT.txt": "effect_fabric-0.2.11.data/data/share/effect-fabric/licenses/durable-agent-outbox-MIT.txt",
+    "share/effect-fabric/migrations/001_core.sql": "effect_fabric-0.2.11.data/data/share/effect-fabric/migrations/001_core.sql",
+    "share/effect-fabric/migrations/006_postgres_fencing_claim_tokens.sql": "effect_fabric-0.2.11.data/data/share/effect-fabric/migrations/006_postgres_fencing_claim_tokens.sql",
+    "share/effect-fabric/migrations/007_workload_identity.sql": "effect_fabric-0.2.11.data/data/share/effect-fabric/migrations/007_workload_identity.sql",
+    "share/effect-fabric/spec/effect-transition-v1.json": "effect_fabric-0.2.11.data/data/share/effect-fabric/spec/effect-transition-v1.json"
+  },
+  "schema": "effect-fabric/wheel-contents-check/v1",
+  "status": "PASS",
+  "version": "0.2.11",
+  "wheel": "effect_fabric-0.2.11-py3-none-any.whl"
+}
