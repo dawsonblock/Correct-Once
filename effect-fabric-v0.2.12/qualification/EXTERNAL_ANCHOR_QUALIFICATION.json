@@ -1,0 +1,24 @@
+{
+  "checks": {
+    "anchor_chain_valid": true,
+    "duplicate_anchor_append_rejected": true,
+    "environment_binding_enforced": true,
+    "first_prefix_still_verifies": true,
+    "latest_root_verifies": true,
+    "release_bound": true,
+    "tampered_anchor_rejected": true,
+    "two_independent_checkpoints_persisted": true
+  },
+  "claim": "Signed checkpoints can be persisted to an independently located append-only directory, chain/prefix verified, and bound to environment+release. This local qualification does not establish external WORM/Object-Lock semantics.",
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.12"
+  },
+  "schema": "effect-fabric/external-anchor-qualification/v1",
+  "status": "PASS",
+  "version": "0.2.12"
+}

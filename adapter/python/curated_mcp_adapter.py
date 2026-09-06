@@ -8,8 +8,13 @@ from typing import Any
 
 from effect_fabric.canonical import digest_document
 from effect_fabric.effect_registry import McpToolIdentity, MutationClass
+from effect_fabric.errors import DuplicateIdempotencyConflict
 from effect_fabric.gateway import EffectDefinitionFactory, EffectGateway
 from effect_fabric.gateway_policy import StaticGatewayPolicy
+from effect_fabric.json_schema import (
+    JsonSchemaValidationError,
+    assert_valid_input_schema_instance,
+)
 from effect_fabric.models import (
     EffectContract,
     IdempotencyContract,
@@ -58,14 +63,20 @@ class RegistrationPin:
     execution_class: str | None = None
     executor: str | None = None
     schema_class_digest: str | None = None
+    read_descriptor_digest: str | None = None
     requires_lightweight_auth: bool | None = None
     trusted_read: bool | None = None
 
 
 @dataclass(frozen=True)
 class TrustedWriteIdentity:
-    idempotency_key: str
-    action_id: str
+    caller_idempotency_key: str
+    caller_correlation_id: str | None
+    semantic_metadata: dict[str, str] | None
+    action_digest: str
+    trusted_idempotency_key: str
+    trusted_action_id: str
+    trace_id: str
 
 
 def _require(obj: dict[str, Any], key: str) -> Any:
@@ -144,6 +155,7 @@ def _parse_execution_pin(record: dict[str, Any]) -> dict[str, Any]:
     execution_class = str(_require(execution, "executionClass"))
     executor = str(_require(execution, "executor"))
     schema_class_digest = str(_require(execution, "schemaClassDigest"))
+    read_descriptor_digest = execution.get("readDescriptorDigest")
     requires_lightweight_auth = execution.get("requiresLightweightAuth")
     trusted_read = execution.get("trustedRead")
     if not execution_class:
@@ -152,6 +164,10 @@ def _parse_execution_pin(record: dict[str, Any]) -> dict[str, Any]:
         raise AdapterError("execution.executor must be non-empty")
     if not schema_class_digest:
         raise AdapterError("execution.schemaClassDigest must be non-empty")
+    if read_descriptor_digest is not None and (
+        not isinstance(read_descriptor_digest, str) or not read_descriptor_digest
+    ):
+        raise AdapterError("execution.readDescriptorDigest must be a non-empty string when present")
     if not isinstance(requires_lightweight_auth, bool):
         raise AdapterError("execution.requiresLightweightAuth must be a boolean")
     if not isinstance(trusted_read, bool):
@@ -160,6 +176,7 @@ def _parse_execution_pin(record: dict[str, Any]) -> dict[str, Any]:
         "execution_class": execution_class,
         "executor": executor,
         "schema_class_digest": schema_class_digest,
+        "read_descriptor_digest": read_descriptor_digest,
         "requires_lightweight_auth": requires_lightweight_auth,
         "trusted_read": trusted_read,
     }
@@ -200,18 +217,76 @@ def _optional_non_empty(value: str | None, field: str) -> str | None:
     return normalized
 
 
-def _trusted_write_identity(
+def _normalized_string_record(
+    value: dict[str, Any] | None, field: str
+) -> dict[str, str] | None:
+    if value is None:
+        return None
+    normalized: dict[str, str] = {}
+    for key, entry in value.items():
+        key_text = key.strip()
+        if not key_text:
+            raise AdapterError(f"{field} keys must be non-empty strings")
+        if not isinstance(entry, str):
+            raise AdapterError(f"{field}.{key} must be a string")
+        normalized[key] = entry
+    return normalized
+
+
+def normalized_caller_correlation_id(
+    caller_correlation_id: str | None,
+    action_id: str | None,
+) -> str | None:
+    explicit = _optional_non_empty(caller_correlation_id, "caller_correlation_id")
+    legacy = _optional_non_empty(action_id, "action_id")
+    if explicit is not None and legacy is not None and explicit != legacy:
+        raise AdapterError(
+            "caller_correlation_id and action_id must match when both are provided"
+        )
+    return explicit if explicit is not None else legacy
+
+
+def normalized_semantic_metadata(
+    semantic_metadata: dict[str, Any] | None,
+) -> dict[str, str] | None:
+    return _normalized_string_record(semantic_metadata, "semantic_metadata")
+
+
+def semantic_action_digest(
+    *,
+    arguments: dict[str, Any],
+    semantic_metadata: dict[str, str] | None,
+) -> str:
+    body: dict[str, Any] = {"input": arguments}
+    if semantic_metadata:
+        body["metadata"] = semantic_metadata
+    return digest_document(body)
+
+
+def derive_trusted_write_identity(
     *,
     subject: str,
     capability_id: str,
     arguments: dict[str, Any],
+    caller_correlation_id: str | None,
+    metadata: dict[str, Any] | None,
+    semantic_metadata: dict[str, Any] | None,
     idempotency_key: str | None,
     action_id: str | None,
 ) -> TrustedWriteIdentity:
-    request_action_digest = digest_document({"input": arguments})
+    _normalized_string_record(metadata, "metadata")
+    caller_correlation = normalized_caller_correlation_id(
+        caller_correlation_id=caller_correlation_id,
+        action_id=action_id,
+    )
+    semantic = normalized_semantic_metadata(semantic_metadata)
+    request_action_digest = semantic_action_digest(
+        arguments=arguments,
+        semantic_metadata=semantic,
+    )
     caller_key = _optional_non_empty(idempotency_key, "idempotency_key")
     if caller_key is None:
-        caller_key = request_action_digest
+        raise AdapterError("idempotency_key is required for mutating calls")
     trusted_idempotency_key = digest_document(
         {
             "subject": subject,
@@ -219,19 +294,22 @@ def _trusted_write_identity(
             "idempotencyKey": caller_key,
         }
     )
-    trusted_action_id = _optional_non_empty(action_id, "action_id")
-    if trusted_action_id is None:
-        trusted_action_id = digest_document(
-            {
-                "subject": subject,
-                "capabilityId": capability_id,
-                "idempotencyKey": caller_key,
-                "actionDigest": request_action_digest,
-            }
-        )
+    trusted_action_id = digest_document(
+        {
+            "subject": subject,
+            "capabilityId": capability_id,
+            "idempotencyKey": caller_key,
+            "actionDigest": request_action_digest,
+        }
+    )
     return TrustedWriteIdentity(
-        idempotency_key=trusted_idempotency_key,
-        action_id=trusted_action_id,
+        caller_idempotency_key=caller_key,
+        caller_correlation_id=caller_correlation,
+        semantic_metadata=semantic,
+        action_digest=request_action_digest,
+        trusted_idempotency_key=trusted_idempotency_key,
+        trusted_action_id=trusted_action_id,
+        trace_id=caller_correlation if caller_correlation is not None else trusted_action_id,
     )
 
 
@@ -392,6 +470,7 @@ class CuratedMcpAdapter:
         self._pins_by_id: dict[str, RegistrationPin] = {}
         self._pins_by_mcp: dict[tuple[str, str], RegistrationPin] = {}
         self._catalog: dict[str, dict[str, Any]] = {}
+        self._seen_write_digests: dict[str, str] = {}
         self._subjects = subjects or {}
         self._pending_allowed_ops = allowed_operations
         self._snapshot_path: Path | None = None
@@ -504,8 +583,11 @@ class CuratedMcpAdapter:
         subject: str,
         capability_id: str,
         arguments: dict[str, Any] | None = None,
-        trace_id: str | None = None,
+        caller_correlation_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        semantic_metadata: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        # Deprecated legacy alias for caller_correlation_id. Never authoritative.
         action_id: str | None = None,
         approval_token: str | None = None,
     ) -> Any:
@@ -530,29 +612,71 @@ class CuratedMcpAdapter:
 
         # Gate 3: pass clean args only — policy looks up pin by server+tool.
         args = dict(arguments or {})
+        try:
+            assert_valid_input_schema_instance(
+                schema=pin.input_schema,
+                instance=args,
+                label=f"Capability {capability_id} arguments",
+            )
+        except JsonSchemaValidationError as exc:
+            raise AdapterDenied(str(exc)) from exc
         trusted_write = None
         if pin.mutation_class is not MutationClass.READ_ONLY:
-            trusted_write = _trusted_write_identity(
+            trusted_write = derive_trusted_write_identity(
                 subject=subject,
                 capability_id=capability_id,
                 arguments=args,
+                caller_correlation_id=caller_correlation_id,
+                metadata=metadata,
+                semantic_metadata=semantic_metadata,
                 idempotency_key=idempotency_key,
                 action_id=action_id,
             )
-        return await self.gateway.call_tool(
+            prior_digest = self._seen_write_digests.get(
+                trusted_write.trusted_idempotency_key
+            )
+            if prior_digest is not None and prior_digest != trusted_write.action_digest:
+                raise DuplicateIdempotencyConflict(
+                    "trusted idempotency key was reused with a different semantic action digest"
+                )
+        else:
+            _normalized_string_record(metadata, "metadata")
+            _normalized_string_record(semantic_metadata, "semantic_metadata")
+
+        caller_trace_id = normalized_caller_correlation_id(
+            caller_correlation_id=caller_correlation_id,
+            action_id=action_id,
+        )
+        result = await self.gateway.call_tool(
             subject=subject,
             server=pin.server,
             tool=pin.tool,
             arguments=args,
-            trace_id=trace_id if trace_id is not None else (
-                trusted_write.action_id if trusted_write is not None else None
+            trace_id=(
+                trusted_write.trace_id
+                if trusted_write is not None
+                else caller_trace_id
+            ),
+            semantic_metadata=(
+                trusted_write.semantic_metadata
+                if trusted_write is not None
+                else None
             ),
             idempotency_key=(
-                trusted_write.idempotency_key if trusted_write is not None else None
+                trusted_write.trusted_idempotency_key
+                if trusted_write is not None
+                else None
             ),
-            action_id=trusted_write.action_id if trusted_write is not None else None,
+            action_id=(
+                trusted_write.trusted_action_id if trusted_write is not None else None
+            ),
             approval_token=approval_token,
         )
+        if trusted_write is not None:
+            self._seen_write_digests[
+                trusted_write.trusted_idempotency_key
+            ] = trusted_write.action_digest
+        return result
 
 
 CATALOG_TOOL_SEARCH = "search_capabilities"

@@ -1,0 +1,50 @@
+{
+  "crash_semantics": {
+    "90": "reserved_pre_start_process_death",
+    "91": "process_death_after_started_commit",
+    "92": "process_death_after_ledger_append_before_outbox_ack",
+    "93": "process_death_after_external_effect_before_receipt",
+    "94": "process_death_after_receipt_commit",
+    "95": "process_death_after_outbox_claim"
+  },
+  "live_database": false,
+  "migrations": [
+    "migrations/001_core.sql",
+    "migrations/002_capability_transaction_binding.sql",
+    "migrations/003_attempt_leases.sql",
+    "migrations/004_evidence_hardening.sql",
+    "migrations/005_transactional_evidence_outbox.sql",
+    "migrations/006_postgres_fencing_claim_tokens.sql",
+    "migrations/007_workload_identity.sql"
+  ],
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.12"
+  },
+  "reason": "EFFECT_FABRIC_TEST_POSTGRES_DSN not set",
+  "required_scenarios": [
+    "parallel_capability_consumption_single_owner",
+    "database_unique_active_attempt_guard",
+    "orphan_takeover_increments_fence",
+    "stale_attempt_cannot_finalize_with_new_epoch",
+    "orphan_reconciliation_uses_current_transaction_fence",
+    "outbox_claim_token_fences_reused_worker_id",
+    "sigkill_after_started_commit",
+    "sigkill_after_external_effect_before_receipt",
+    "sigkill_after_receipt_commit",
+    "sigkill_after_outbox_claim",
+    "sigkill_after_ledger_append_before_ack",
+    "outbox_redelivery_deduplicates_ledger_event"
+  ],
+  "schema": "effect-fabric/postgres-qualification/v2",
+  "status": "NOT_RUN",
+  "suites": [
+    "tests/test_postgres_integration.py",
+    "tests/test_postgres_failure_matrix.py"
+  ],
+  "version": "0.2.12"
+}

@@ -178,6 +178,9 @@ export async function projectRuntimeCapabilityCatalog(
         ...(capability.execution.pureHandlerId
           ? { pureHandlerId: capability.execution.pureHandlerId }
           : {}),
+        ...(capability.execution.readDescriptorDigest
+          ? { readDescriptorDigest: capability.execution.readDescriptorDigest }
+          : {}),
         requiresLightweightAuth: capability.execution.requiresLightweightAuth,
         trustedRead: capability.execution.trustedRead,
       }),

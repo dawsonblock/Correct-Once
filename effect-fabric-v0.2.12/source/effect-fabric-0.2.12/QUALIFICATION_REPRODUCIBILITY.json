@@ -1,0 +1,110 @@
+{
+  "aggregate_sha256": "54c2606f56c440c9786259376398f027555aafb9691c57e569b5a7c35cd61b91",
+  "claim": "Generated local qualification artifacts have a stable canonical JSON representation for the current qualification input tree; this gate does not claim external-system or timing reproducibility.",
+  "failures": [],
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.12"
+  },
+  "reports": {
+    "CORE_TEST_QUALIFICATION.json": {
+      "canonical_bytes": 584,
+      "canonical_sha256": "e55318ac564b71106e6f67f5f077098429159e74bead12766da201dd5493b035"
+    },
+    "DONOR_COMPATIBILITY_QUALIFICATION.json": {
+      "canonical_bytes": 1613,
+      "canonical_sha256": "27c9112f38085d0d15c30c5a752ef56d8a886e7442d512ffa1913817fa31eae8"
+    },
+    "EVIDENCE_QUALIFICATION.json": {
+      "canonical_bytes": 511,
+      "canonical_sha256": "a26da52ef8379b654a08575aecb4dd8602311df93aa8ddd3acfb5e4c1e9ca486"
+    },
+    "EXTERNAL_ANCHOR_QUALIFICATION.json": {
+      "canonical_bytes": 603,
+      "canonical_sha256": "5e355a01e3d06400dabbfa736860300d89fe2fa9e100481cb61791940eb99ea5"
+    },
+    "GATEWAY_QUALIFICATION.json": {
+      "canonical_bytes": 440,
+      "canonical_sha256": "bfd7beed3270995248672f4184f666f8ab089bd453a142e3387ef87d4c9fad9d"
+    },
+    "POSTGRES_QUALIFICATION.json": {
+      "canonical_bytes": 1378,
+      "canonical_sha256": "eb9349464b46444244087ccf7df9ad0bfde59d575bd9f41df93c6a7a15f05c66"
+    },
+    "PROVIDER_QUALIFICATION.json": {
+      "canonical_bytes": 3404,
+      "canonical_sha256": "48125c8fbf0e117a572e4cd01c4dd98fb53573bc465887c2c86e1ed48a333782"
+    },
+    "REDUCER_EQUIVALENCE_QUALIFICATION.json": {
+      "canonical_bytes": 2105,
+      "canonical_sha256": "999a6e56df50ad9db8f8dffc1e7a81136875a7e3b1b883bd80c841eb8e612d2a"
+    },
+    "REDUCER_NEGATIVE_CONTROL_QUALIFICATION.json": {
+      "canonical_bytes": 3343,
+      "canonical_sha256": "32d2960f227b2df96d72af09115f6ef84d7b5e414e4b2c44ba98f09240013c4c"
+    },
+    "STATIC_QUALIFICATION.json": {
+      "canonical_bytes": 143,
+      "canonical_sha256": "61229818e43026c512d9be2d28a29fe6d3cc2f9c0c6c567bae1f2340040f4c12"
+    },
+    "TRANSACTIONAL_EVIDENCE_QUALIFICATION.json": {
+      "canonical_bytes": 705,
+      "canonical_sha256": "cdf2e5b63c6a8d85efd3b6b2e94216c59f0c13506bddd2eeefc68f743caade9d"
+    },
+    "TRANSITION_KERNEL_QUALIFICATION.json": {
+      "canonical_bytes": 1369,
+      "canonical_sha256": "5088c347e60a6f031ed32a2e49c335a80173808dec78e318f2390beb361325d1"
+    },
+    "UPSTREAM_DAO_ACTIVE_ENGINE_QUALIFICATION.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_ACTIVE_ENGINE_REPRODUCIBILITY.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_DIRECT_STORE_QUALIFICATION.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_DIRECT_STORE_REPRODUCIBILITY.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_ENGINE_INTERFACE_QUALIFICATION.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_ENGINE_INTERFACE_REPRODUCIBILITY.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_NATIVE_ENGINE_QUALIFICATION.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_NATIVE_ENGINE_REPRODUCIBILITY.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_QUALIFICATION.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "UPSTREAM_DAO_REPRODUCIBILITY.json": {
+      "canonical_bytes": 611,
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
+    },
+    "WORKLOAD_IDENTITY_QUALIFICATION.json": {
+      "canonical_bytes": 648,
+      "canonical_sha256": "6cbb54334dce5ba3e211f870c52f7077fc3b44a814fa688742d23d7e4e9bf3e1"
+    }
+  },
+  "schema": "effect-fabric/qualification-artifact-determinism/v1",
+  "status": "PASS",
+  "version": "0.2.12"
+}

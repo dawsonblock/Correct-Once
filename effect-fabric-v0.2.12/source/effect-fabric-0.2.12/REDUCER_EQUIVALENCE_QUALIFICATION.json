@@ -1,0 +1,96 @@
+{
+  "all_passed": true,
+  "non_claim": "Passing this gate proves equivalence only for the listed common in-memory semantic traces. It does not promote the reducer or replace database/provider qualification.",
+  "not_covered": [
+    "withdrawal/supersession runtime equivalence (active runtime has no public command yet)",
+    "live PostgreSQL multi-process equivalence",
+    "actual upstream durable-agent-outbox TypeScript conformance adapter"
+  ],
+  "passed": 10,
+  "promotion_decision": "KEEP_ACTIVE_ENGINE",
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.12"
+  },
+  "results": [
+    {
+      "detail": "PLANNED -> PREPARED",
+      "passed": true,
+      "reducer_state": "prepared",
+      "runtime_state": "prepared",
+      "scenario": "prepare"
+    },
+    {
+      "detail": "PREPARED -> AUTHORIZED",
+      "passed": true,
+      "reducer_state": "authorized",
+      "runtime_state": "authorized",
+      "scenario": "authorize"
+    },
+    {
+      "detail": "commit before provider I/O",
+      "passed": true,
+      "reducer_state": "started",
+      "runtime_state": "started",
+      "scenario": "started_boundary"
+    },
+    {
+      "detail": "provider response persisted",
+      "passed": true,
+      "reducer_state": "receipt_recorded",
+      "runtime_state": "receipt_recorded",
+      "scenario": "receipt_success"
+    },
+    {
+      "detail": "ambiguous effect is not retried",
+      "passed": true,
+      "reducer_state": "in_doubt",
+      "runtime_state": "unknown",
+      "scenario": "ambiguous_unknown"
+    },
+    {
+      "detail": "status=happened",
+      "passed": true,
+      "reducer_state": "reconciled",
+      "runtime_state": "reconciled",
+      "scenario": "reconcile_landed"
+    },
+    {
+      "detail": "status=not_happened",
+      "passed": true,
+      "reducer_state": "prepared",
+      "runtime_state": "prepared",
+      "scenario": "reconcile_not_landed"
+    },
+    {
+      "detail": "fresh auth required",
+      "passed": true,
+      "reducer_state": "prepared",
+      "runtime_state": "prepared",
+      "scenario": "retryable_pre_effect_failure"
+    },
+    {
+      "detail": "terminal provider rejection",
+      "passed": true,
+      "reducer_state": "execution_failed",
+      "runtime_state": "execution_failed",
+      "scenario": "definitive_failure"
+    },
+    {
+      "detail": "fencing epoch advanced; runtime_epoch=2; reducer_epoch=2",
+      "passed": true,
+      "reducer_state": "in_doubt",
+      "runtime_state": "unknown",
+      "scenario": "orphan_recovery"
+    }
+  ],
+  "schema": "effect-fabric/reducer-equivalence-qualification/v1",
+  "scope": "common execution lifecycle shared by active EffectEngine and candidate pure reducer",
+  "status": "PASS",
+  "total": 10,
+  "version": "0.2.12"
+}

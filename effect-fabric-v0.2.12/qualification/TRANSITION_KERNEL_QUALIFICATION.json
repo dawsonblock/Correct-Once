@@ -1,0 +1,52 @@
+{
+  "checks": {
+    "command_table_nonempty": true,
+    "dao_crosswalk_locked": true,
+    "generated_tables_current": true,
+    "legal_edges_nonempty": true,
+    "runtime_execution_state_writes_centralized": true,
+    "runtime_state_coverage": true,
+    "spec_hash_matches_generated": true
+  },
+  "commands": [
+    "authorize",
+    "mark_unknown",
+    "prepare",
+    "provider_definitive_failure",
+    "provider_retryable_pre_effect_failure",
+    "reconcile_happened",
+    "reconcile_not_happened_retry",
+    "reconcile_not_happened_terminal",
+    "record_receipt",
+    "recover_orphan",
+    "start"
+  ],
+  "dao_crosswalk_status_count": 12,
+  "direct_execution_state_write_offenders": [],
+  "execution_states": [
+    "authorized",
+    "execution_failed",
+    "planned",
+    "prepared",
+    "receipt_recorded",
+    "reconciled",
+    "started",
+    "unknown"
+  ],
+  "generated_table_check_stderr": "",
+  "generated_table_check_stdout": "{\n  \"status\": \"PASS\",\n  \"spec_sha256\": \"06b7d68f0104180e779a09c470d988f7b1f8a5d8ff595251d457f4acd9bb3f86\",\n  \"generated_files\": [\n    \"src/effect_fabric/_generated_transition_table.py\",\n    \"bridges/durable-agent-outbox/generated_transition_table.ts\"\n  ]\n}",
+  "legal_edge_count": 11,
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.12"
+  },
+  "schema": "effect-fabric/transition-kernel-qualification/v1",
+  "scope": "structural execution-state algebra and runtime write centralization; not live provider/database qualification",
+  "status": "PASS",
+  "transition_spec_sha256": "06b7d68f0104180e779a09c470d988f7b1f8a5d8ff595251d457f4acd9bb3f86",
+  "version": "0.2.12"
+}

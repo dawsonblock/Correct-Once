@@ -17,6 +17,7 @@ from adapter.python.curated_mcp_adapter import (
     load_admitted_registry,
     parse_active_mcp_pin,
 )
+import effect_fabric
 from effect_fabric.errors import AmbiguousEffectError
 from effect_fabric.gateway import EffectGateway
 from effect_fabric.gateway_api import create_gateway_app
@@ -308,6 +309,13 @@ def create_app(snapshot_path: Path, control_path: Path, token: str):
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="transaction not found") from exc
         return tx.model_dump(mode="json")
+
+    @app.get("/debug/environment")
+    async def environment() -> dict[str, Any]:
+        return {
+            "effect_fabric_version": effect_fabric.__version__,
+            "effect_fabric_module": str(Path(effect_fabric.__file__).resolve()),
+        }
 
     return app
 

@@ -1,7 +1,7 @@
 # Correct-Once
 
 `Correct-Once` now contains the full in-tree freeze for **MCP Hooks Upgraded
-v0.1.1**: the adapter source drop, the `effect-fabric` v0.2.11 freeze tree,
+v0.1.1**: the adapter source drop, the `effect-fabric` v0.2.12 freeze tree,
 and the `function-hooks-core-reference` v0.11.0 freeze tree.
 
 It also contains the merged `function-hooks-runtime-v0.12/` scaffold. That
@@ -25,7 +25,7 @@ That exact checksum is also stored in `mcp-hooks-upgraded-v0.1.1.sha256`.
 
 | Component | Version | Role |
 | --- | --- | --- |
-| `effect-fabric` | `0.2.11` | A executes admitted effects |
+| `effect-fabric` | `0.2.12` | A executes admitted effects |
 | `function-hooks-core-reference` | `0.11.0` | B admits and gates capability traffic |
 | `adapter` | `0.1.1` | Locked adapter surface and smoke fixtures |
 | `function-hooks-runtime` | `0.12 scaffold` | v0.13 correctness-only runtime track; not a production 0.12 release |
@@ -72,7 +72,7 @@ The freeze tree is now vendored directly at repo root:
 ├── README.md
 ├── RELEASE.md
 ├── adapter/
-├── effect-fabric-v0.2.11/
+├── effect-fabric-v0.2.12/
 ├── function-hooks-runtime-v0.12/
 ├── function-hooks-core-reference-v0.11.0/
 └── mcp-hooks-upgraded-v0.1.1.sha256
@@ -81,9 +81,9 @@ The freeze tree is now vendored directly at repo root:
 Notes:
 
 - `adapter/` is the freeze adapter 0.1.1 source tree.
-- `effect-fabric-v0.2.11/` preserves the shipped freeze wrapper; the actual
+- `effect-fabric-v0.2.12/` preserves the shipped freeze wrapper; the actual
   Python install root is
-  `effect-fabric-v0.2.11/source/effect-fabric-0.2.11/`.
+  `effect-fabric-v0.2.12/source/effect-fabric-0.2.12/`.
 - `function-hooks-runtime-v0.12/` is the parallel runtime scaffold now being
   corrected in-place for the v0.13 correctness release. It is first-class for
   install/typecheck/test/smoke, but it is not blessed as production 0.12.
@@ -101,12 +101,12 @@ Prereqs:
 
 You can use the root `Makefile` helpers or run the commands directly.
 
-### Install A (`effect-fabric` 0.2.11)
+### Install A (`effect-fabric` 0.2.12)
 
 Direct command:
 
 ```bash
-python3 -m pip install -e "effect-fabric-v0.2.11/source/effect-fabric-0.2.11[api,dev]"
+python3 -m pip install -e "effect-fabric-v0.2.12/source/effect-fabric-0.2.12[api,dev]"
 ```
 
 Make target:
@@ -178,10 +178,12 @@ make qualify
 
 It runs:
 
+- the mandatory `effect-fabric` v0.2.12 release-integrity verifier;
 - the locked `function-hooks-core-reference-v0.11.0/` rebuild;
-- `function-hooks-runtime-v0.12/` typecheck plus runtime unit tests;
+- `function-hooks-runtime-v0.12/` typecheck plus `qualification/**` typecheck and runtime unit tests;
 - the live Python adapter + Effect Fabric tests;
-- the TS -> Effect Fabric -> fake-MCP cross-language suite; and
+- a clean-vendored-wheel build of `effect-fabric` v0.2.12; 
+- the TS -> installed-wheel Effect Fabric -> fake-MCP cross-language suite in a clean venv; and
 - `sha256sum --check function-hooks-core-reference-v0.11.0/MANIFEST.sha256`.
 
 It does **not** claim the PostgreSQL-only Effect Fabric gates passed locally. Those

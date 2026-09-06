@@ -9,6 +9,7 @@ export interface EffectGatewayCallTool {
     readonly tool: string;
     readonly arguments?: Record<string, unknown>;
     readonly trace_id?: string;
+    readonly semantic_metadata?: Readonly<Record<string, string>>;
     readonly idempotency_key?: string;
     readonly action_id?: string;
     readonly approval_token?: string;
@@ -80,6 +81,7 @@ export async function callLockedEffectGateway(
     readonly tool: string;
     readonly args?: Record<string, unknown>;
     readonly traceId?: string;
+    readonly semanticMetadata?: Readonly<Record<string, string>>;
     readonly idempotencyKey?: string;
     readonly actionId?: string;
     readonly approvalToken?: string;
@@ -93,6 +95,9 @@ export async function callLockedEffectGateway(
       tool: input.tool,
       arguments: input.args ?? {},
       ...(input.traceId === undefined ? {} : { trace_id: input.traceId }),
+      ...(input.semanticMetadata === undefined
+        ? {}
+        : { semantic_metadata: input.semanticMetadata }),
       ...(input.idempotencyKey === undefined ? {} : { idempotency_key: input.idempotencyKey }),
       ...(input.actionId === undefined ? {} : { action_id: input.actionId }),
       ...(input.approvalToken === undefined ? {} : { approval_token: input.approvalToken }),
@@ -112,6 +117,7 @@ export async function callLockedEffectGateway(
       tool: input.tool,
       arguments: input.args ?? {},
       trace_id: input.traceId,
+      semantic_metadata: input.semanticMetadata,
       idempotency_key: input.idempotencyKey,
       action_id: input.actionId,
       approval_token: input.approvalToken,

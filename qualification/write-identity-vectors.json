@@ -1,0 +1,63 @@
+{
+  "schema": "correct-once/write-identity-v1",
+  "cases": [
+    {
+      "name": "baseline",
+      "subject": "tenant-a",
+      "capabilityId": "github.repo.settings",
+      "input": {
+        "repo": "acme/example",
+        "mode": "strict"
+      },
+      "idempotencyKey": "shared-write-key",
+      "callerCorrelationId": "corr-baseline",
+      "metadata": {},
+      "semanticMetadata": {},
+      "expectedActionDigest": "6103da483bf268626c8a01acbbf743f6b30b3858728b3772ee5095cf010c6463",
+      "expectedTrustedIdempotencyKey": "96b07603125a269eac351d81c1681520f134bb362a06cddef83c5fbae7f99a9f",
+      "expectedTrustedActionId": "9d4743f0f696eec2bf9c0d238102c58db42dc52cd8a8614c32f0ab98fd331e54",
+      "expectedTraceId": "corr-baseline"
+    },
+    {
+      "name": "metadata-nonsemantic",
+      "subject": "tenant-a",
+      "capabilityId": "github.repo.settings",
+      "input": {
+        "repo": "acme/example",
+        "mode": "strict"
+      },
+      "idempotencyKey": "shared-write-key",
+      "callerCorrelationId": "corr-nonsemantic",
+      "metadata": {
+        "request-id": "req-123",
+        "ui-theme": "dark"
+      },
+      "semanticMetadata": {},
+      "expectedActionDigest": "6103da483bf268626c8a01acbbf743f6b30b3858728b3772ee5095cf010c6463",
+      "expectedTrustedIdempotencyKey": "96b07603125a269eac351d81c1681520f134bb362a06cddef83c5fbae7f99a9f",
+      "expectedTrustedActionId": "9d4743f0f696eec2bf9c0d238102c58db42dc52cd8a8614c32f0ab98fd331e54",
+      "expectedTraceId": "corr-nonsemantic"
+    },
+    {
+      "name": "semantic-metadata",
+      "subject": "tenant-a",
+      "capabilityId": "github.repo.settings",
+      "input": {
+        "repo": "acme/example",
+        "mode": "strict"
+      },
+      "idempotencyKey": "shared-write-key",
+      "callerCorrelationId": "corr-semantic",
+      "metadata": {
+        "request-id": "req-456"
+      },
+      "semanticMetadata": {
+        "consistency": "strong"
+      },
+      "expectedActionDigest": "d02a5a9a2819d5e5c686e7e5f87f6c59a68c4c9ae91514a23550af0e4d22ae23",
+      "expectedTrustedIdempotencyKey": "96b07603125a269eac351d81c1681520f134bb362a06cddef83c5fbae7f99a9f",
+      "expectedTrustedActionId": "9c8fb9a077bd85ed2c5665642783b1e6044df81761b0b6dde83f8591efb7ff9b",
+      "expectedTraceId": "corr-semantic"
+    }
+  ]
+}

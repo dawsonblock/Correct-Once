@@ -1,0 +1,9 @@
+{
+  "errors": 0,
+  "failures": 0,
+  "schema": "effect-fabric/sdist-test-verification/v1",
+  "skipped": 2,
+  "status": "PASS",
+  "tests": 177,
+  "version": "0.2.12"
+}

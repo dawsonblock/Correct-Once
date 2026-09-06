@@ -1,7 +1,7 @@
 # Curated MCP catalog adapter — B admission → A effect gateway
 
 Freeze contract for mapping **function-hooks-core-reference v0.11.0** (archive B)
-admitted capabilities onto **effect-fabric v0.2.11** (archive A) Effect Gateway.
+admitted capabilities onto **effect-fabric v0.2.12** (archive A) Effect Gateway.
 
 ## Decision lock (do not reopen)
 
@@ -19,7 +19,7 @@ admitted capabilities onto **effect-fabric v0.2.11** (archive A) Effect Gateway.
 
 | Side | Artifact | Version |
 |------|---------|--------|
-| A | effect-fabric | `0.2.11` |
+| A | effect-fabric | `0.2.12` |
 | B | function-hooks-core-reference / `@function-hooks/capabilities` | `0.11.0` |
 | Adapter DTO | `function-hooks.capability-registry.v1` → adapter snapshot | `adapter/admitted-registry/v1` |
 
@@ -43,9 +43,11 @@ A GatewayPolicy.authorize + adapter call-time re-check → EffectGateway.call_to
 
 For mutating calls, `invoke_capability(...)` derives a trusted idempotency
 namespace from `subject + capability id + caller idempotency key`, derives a
-stable action id from that tuple plus the canonical input digest, and passes
-both into Effect Gateway / Effect Fabric. Same-key different-payload reuse now
-conflicts, while different subjects stay isolated.
+stable action id from that tuple plus the canonical semantic action digest, and
+passes both into Effect Gateway / Effect Fabric. `caller_correlation_id`
+remains trace-only and non-authoritative, request metadata is non-semantic by
+default, and same-key semantic drift now conflicts while different subjects
+stay isolated.
 
 ## What this scaffold is / is not
 
@@ -56,7 +58,7 @@ conflicts, while different subjects stay isolated.
 
 Prefer reading sources under the extracted trees. Do not `npm install` / `pip install`
 both archives unless type-checking requires it. Point `PYTHONPATH` at A's
-`source/effect-fabric-0.2.11/src` when importing `effect_fabric.*`.
+`source/effect-fabric-0.2.12/src` when importing `effect_fabric.*`.
 
 ## Key symbols (verified)
 

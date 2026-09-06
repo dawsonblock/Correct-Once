@@ -1,0 +1,110 @@
+{
+  "all_passed": true,
+  "internal_semantic_port": {
+    "all_passed": true,
+    "passed": 17,
+    "results": [
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "duplicateDelivery"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "crashAfterIntent"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "unknownWaitsForReceipt"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "unknownRevokeLanded"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "unknownRevokeNotLanded"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "ackedCannotBecomeRevoked"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "progressUnderInDoubt"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "supersessionBefore"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "supersessionAfter"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "staleEpochNoop"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "idempotencyKeyStability"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "receiptReplayIsNoop"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "inDoubtDrains"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "expectedExecutions"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "receiptSourceCompleteness"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "forgedReceiptRefused"
+      },
+      {
+        "detail": "pass",
+        "passed": true,
+        "scenario": "receiptRedeliveryIsIdempotent"
+      }
+    ],
+    "source": "durable-agent-outbox named conformance scenarios",
+    "total": 17
+  },
+  "non_claim": "This qualifies Effect Fabric's internal semantic port only; it does not claim that the upstream TypeScript conformance package executed against Effect Fabric.",
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.12"
+  },
+  "schema": "effect-fabric/donor-compatibility-qualification/v1",
+  "status": "PASS",
+  "upstream_suite_executed": false,
+  "upstream_suite_status": "NOT_RUN",
+  "version": "0.2.12"
+}

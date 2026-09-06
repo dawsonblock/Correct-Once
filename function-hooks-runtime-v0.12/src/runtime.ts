@@ -1,13 +1,19 @@
 import { createExecutionRouter, compileAdmittedCapabilityRoute } from "@function-hooks/router";
 import { CapabilityHandleCache } from "./handle-cache.js";
-import { assertRuntimeAdmittedCapability } from "./admission.js";
+import {
+  assertRuntimeAdmittedCapability,
+  mcpReadDescriptorPin,
+  normalizeMcpReadDescriptorEvidence,
+} from "./admission.js";
 import {
   RuntimeCapabilityNotFoundError,
   RuntimeCapabilityStateError,
   RuntimeExecutionPolicyError,
 } from "./errors.js";
 import { EffectExecutor, FastExecutor, GuardedExecutor } from "./executors.js";
+import { assertRequestMatchesPinnedInputSchema } from "./input-schema.js";
 import { projectRuntimeCapabilityCatalog } from "./registry.js";
+import { normalizedCallerCorrelationId } from "./write-identity.js";
 import type {
   CompiledCapabilityHandle,
   CreateFunctionHooksRuntimeOptions,
@@ -53,6 +59,10 @@ function compileHandle(
     route
       ? createExecutionRouter({ gateway: options.fastGateway, routes: [route] })
       : undefined;
+  const readDescriptorPin =
+    record.capability.execution.executionClass === "read"
+      ? mcpReadDescriptorPin(record.capability.capability)
+      : undefined;
 
   return Object.freeze({
     id: record.capability.capability.id,
@@ -69,10 +79,14 @@ function compileHandle(
     ...(record.capability.execution.pureHandlerId
       ? { pureHandlerId: record.capability.execution.pureHandlerId }
       : {}),
+    ...(record.capability.execution.readDescriptorDigest
+      ? { readDescriptorDigest: record.capability.execution.readDescriptorDigest }
+      : {}),
     requiresLightweightAuth: record.capability.execution.requiresLightweightAuth,
     trustedRead: record.capability.execution.trustedRead,
     stateVersion: record.stateVersion,
     admitted: record.capability,
+    ...(readDescriptorPin ? { mcpReadDescriptorPin: readDescriptorPin } : {}),
     ...(route ? { route } : {}),
     ...(directRouter ? { directRouter } : {}),
   });
@@ -103,6 +117,32 @@ async function assertCurrentExecutionEpoch(
 function createExecutors(options: CreateFunctionHooksRuntimeOptions): RuntimeExecutors {
   const assertEffectEpoch = (handle: CompiledCapabilityHandle) =>
     assertCurrentExecutionEpoch(options.registry, handle);
+  const assertReadAuthority = async (handle: CompiledCapabilityHandle): Promise<void> => {
+    await assertCurrentExecutionEpoch(options.registry, handle);
+    const implementation = handle.admitted.capability.implementation;
+    const pin = handle.mcpReadDescriptorPin;
+    if (handle.executionClass !== "read" || implementation.kind !== "mcp" || pin === undefined) {
+      return;
+    }
+    const authority = options.mcpReadDescriptorAuthority;
+    if (!authority) {
+      throw new RuntimeExecutionPolicyError(
+        `Capability ${handle.id} requires mcpReadDescriptorAuthority for MCP read freshness checks.`,
+      );
+    }
+    const observed = normalizeMcpReadDescriptorEvidence(
+      await authority.describeTool(implementation.server, implementation.tool),
+    );
+    if (
+      observed.server !== pin.server ||
+      observed.tool !== pin.tool ||
+      observed.descriptorDigest !== pin.descriptorDigest
+    ) {
+      throw new RuntimeExecutionPolicyError(
+        `Capability ${handle.id} mcp read descriptor drifted; re-admit before external read I/O.`,
+      );
+    }
+  };
   const effect = new EffectExecutor({
     target: options.effectGateway,
     ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
@@ -112,6 +152,7 @@ function createExecutors(options: CreateFunctionHooksRuntimeOptions): RuntimeExe
     fast: new FastExecutor({
       ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
       ...(options.pureHandlers === undefined ? {} : { pureHandlers: options.pureHandlers }),
+      assertReadAuthority,
     }),
     guarded: new GuardedExecutor({
       ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
@@ -179,6 +220,11 @@ function assertHandlePin(handle: CompiledCapabilityHandle): void {
       `Capability ${handle.id} handle pure handler drifted from admission pin.`,
     );
   }
+  if (handle.readDescriptorDigest !== pinned.readDescriptorDigest) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle read descriptor drifted from admission pin.`,
+    );
+  }
   if (handle.requiresLightweightAuth !== pinned.requiresLightweightAuth) {
     throw new RuntimeExecutionPolicyError(
       `Capability ${handle.id} handle lightweight auth requirement drifted from admission pin.`,
@@ -219,10 +265,11 @@ export function createFunctionHooksRuntime(
     context?: InvokeCapabilityContext,
   ): Promise<unknown> => {
     const capabilityId = nonEmptyString(request.id, "request.id");
-    nonEmptyString(request.actionId, "request.actionId");
+    normalizedCallerCorrelationId(request);
     assertNoCallTimeTierOverride(request);
     const handle = await resolveHandle(capabilityId);
     assertHandlePin(handle);
+    assertRequestMatchesPinnedInputSchema(handle, request);
     const effectiveContext = normalizedContext(context);
     switch (handle.executor) {
       case "fast":

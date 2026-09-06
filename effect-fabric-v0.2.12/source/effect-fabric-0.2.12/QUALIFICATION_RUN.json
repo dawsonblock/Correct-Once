@@ -1,0 +1,11 @@
+{
+  "dependency_lock_hash": null,
+  "dependency_spec_hash": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+  "generated_at": "2026-09-06T21:11:26.796084+00:00",
+  "git_commit": "bf92f2a4ce10564c64ba655c716101d5f5606785",
+  "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+  "postgres_image_digest": null,
+  "python": "3.12.3",
+  "schema": "effect-fabric/qualification-run/v1",
+  "version": "0.2.12"
+}

@@ -21,7 +21,18 @@ function mcpImplementation(
     server: "github",
     tool,
     ...(options.attestedReadOnly
-      ? { descriptor: { authenticated: true, readOnly: true } }
+      ? {
+          descriptor: {
+            authenticated: true,
+            readOnly: true,
+            inputSchema: {
+              type: "object",
+              properties: { repo: { type: "string" } },
+              required: ["repo"],
+            },
+            epoch: "read-descriptor-v1",
+          },
+        }
       : {}),
   } as unknown as Parameters<typeof createCapabilityCandidate>[0]["implementation"];
 }
@@ -47,11 +58,11 @@ function expectedUnifiedActionId(input: {
   readonly capabilityId: string;
   readonly idempotencyKey: string;
   readonly requestInput?: unknown;
-  readonly requestMetadata?: Readonly<Record<string, string>>;
+  readonly semanticMetadata?: Readonly<Record<string, string>>;
 }): string {
   const actionDigest = capabilitySha256({
     ...(input.requestInput === undefined ? {} : { input: input.requestInput }),
-    ...(input.requestMetadata === undefined ? {} : { metadata: input.requestMetadata }),
+    ...(input.semanticMetadata === undefined ? {} : { metadata: input.semanticMetadata }),
   });
   return capabilitySha256({
     subject: input.subject,
@@ -59,6 +70,55 @@ function expectedUnifiedActionId(input: {
     idempotencyKey: input.idempotencyKey,
     actionDigest,
   });
+}
+
+function defaultReadDescriptorSchema() {
+  return {
+    type: "object",
+    properties: { repo: { type: "string" } },
+    required: ["repo"],
+  };
+}
+
+function writeSchema() {
+  return {
+    type: "object",
+    properties: {
+      repo: { type: "string" },
+      mode: { type: "string" },
+    },
+    required: ["repo", "mode"],
+  };
+}
+
+function runtimeStateWriteSchema() {
+  return {
+    type: "object",
+    properties: {
+      data: { type: "string" },
+    },
+    required: ["data"],
+  };
+}
+
+function readDescriptorAuthority(options: {
+  readonly server?: string;
+  readonly tool?: string;
+  readonly inputSchema?: Record<string, unknown>;
+  readonly authenticated?: boolean;
+  readonly readOnly?: boolean;
+  readonly epoch?: string | number;
+} = {}) {
+  return {
+    describeTool: async () => ({
+      server: options.server ?? "github",
+      tool: options.tool ?? "repo.read",
+      inputSchema: options.inputSchema ?? defaultReadDescriptorSchema(),
+      authenticated: options.authenticated ?? true,
+      readOnly: options.readOnly ?? true,
+      epoch: options.epoch ?? "read-descriptor-v1",
+    }),
+  };
 }
 
 function candidate(
@@ -145,7 +205,7 @@ test("pure stays in-process and read stays direct without calling Effect Fabric"
         capability: "json.normalize",
         description: "Normalize runtime JSON",
         inputSchema: { type: "object" },
-        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
+        implementation: { kind: "filesystem.read", path: "ignored-by-pure-handler.json" },
       },
       {
         executionClass: "pure",
@@ -190,6 +250,7 @@ test("pure stays in-process and read stays direct without calling Effect Fabric"
         readChecks.push(subject);
       },
     },
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
   });
 
   t.after(async () => {
@@ -268,6 +329,7 @@ test("read re-checks subject and allowlist on every call even with a cached hand
         }
       },
     },
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
   });
 
   t.after(async () => {
@@ -295,9 +357,170 @@ test("read re-checks subject and allowlist on every call even with a cached hand
     /not allowlisted/,
   );
 
-  assert.equal(registry.gets, 1);
+  assert.equal(runtime.cacheSize, 1);
   assert.equal(authChecks, 2);
   assert.equal(directCalls, 1);
+  assert.equal(effectCalls, 0);
+});
+
+test("read-path MCP descriptor drift is denied before external I/O", async (t) => {
+  let directCalls = 0;
+  let descriptorSchema: Record<string, unknown> = {
+    ...defaultReadDescriptorSchema(),
+  };
+  let descriptorEpoch: string | number = "read-descriptor-v1";
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => {
+        directCalls += 1;
+        return { ok: true };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.read-descriptor-freshness",
+        capability: "repo.read",
+      },
+      {
+        executionClass: "read",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => ({ from: "effect" })),
+    mcpReadDescriptorAuthority: {
+      describeTool: async () => ({
+        server: "github",
+        tool: "repo.read",
+        inputSchema: descriptorSchema,
+        authenticated: true,
+        readOnly: true,
+        epoch: descriptorEpoch,
+      }),
+    },
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await runtime.invokeCapability(
+    {
+      id: "github.repo.read-descriptor-freshness",
+      callerCorrelationId: "descriptor-freshness-ok",
+      input: { repo: "acme/example" },
+    },
+    { subject: "reader-1" },
+  );
+  descriptorEpoch = "read-descriptor-v2";
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.read-descriptor-freshness",
+        callerCorrelationId: "descriptor-freshness-drift",
+        input: { repo: "acme/example" },
+      },
+      { subject: "reader-1" },
+    ),
+    /descriptor drifted|re-admit/i,
+  );
+  assert.equal(directCalls, 1);
+});
+
+test("invalid request args are denied before direct or effect external execution", async (t) => {
+  let directCalls = 0;
+  let effectCalls = 0;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => {
+        directCalls += 1;
+        return { ok: true };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.read-schema-validation",
+        capability: "repo.read",
+      },
+      {
+        executionClass: "read",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.settings-schema-validation",
+        capability: "repo.settings",
+        description: "Critical schema validation fixture",
+        inputSchema: writeSchema(),
+        outputSchema: { type: "object" },
+        sideEffect: "write",
+        sensitivity: "public",
+        risk: "medium",
+        implementation: mcpImplementation("repo.settings"),
+      },
+      {
+        executionClass: "critical",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => {
+      effectCalls += 1;
+      return { ok: true };
+    }),
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.read-schema-validation",
+        callerCorrelationId: "invalid-read-schema",
+        input: { repo: 42 },
+      },
+      { subject: "reader-1" },
+    ),
+    /inputSchema validation/i,
+  );
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.settings-schema-validation",
+        callerCorrelationId: "invalid-write-schema",
+        idempotencyKey: "invalid-write-schema",
+        input: { repo: "acme/example" },
+      },
+      { subject: "tenant-a" },
+    ),
+    /inputSchema validation/i,
+  );
+
+  assert.equal(directCalls, 0);
   assert.equal(effectCalls, 0);
 });
 
@@ -323,6 +546,7 @@ test("ordinary mutations stay on the guarded direct path while critical stays on
         app: "runtime",
         capability: "state.update",
         description: "Update runtime state",
+        inputSchema: runtimeStateWriteSchema(),
         sideEffect: "write",
         risk: "medium",
         sensitivity: "public",
@@ -420,6 +644,7 @@ test("guarded mutations require idempotency keys and receipts", async (t) => {
         app: "runtime",
         capability: "state.patch",
         description: "Patch runtime state",
+        inputSchema: runtimeStateWriteSchema(),
         sideEffect: "write",
         sensitivity: "public",
         implementation: { kind: "filesystem.write", path: "state.json" },
@@ -493,7 +718,7 @@ test("handle cache avoids a second registry resolve for repeated invokes", async
         capability: "math.increment",
         description: "Increment a counter",
         inputSchema: { type: "object" },
-        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
+        implementation: { kind: "filesystem.read", path: "ignored-by-pure-handler.json" },
       },
       {
         executionClass: "pure",
@@ -652,7 +877,7 @@ test("destructive effect execution stays off by default", async (t) => {
   assert.equal(effectCalls, 0);
 });
 
-test("critical execution propagates the unified write identity into Effect Gateway contract fields", async (t) => {
+test("critical execution keeps caller correlation distinct from the trusted action id", async (t) => {
   let seenTraceId: string | undefined;
   let seenActionId: string | undefined;
   let seenIdempotencyKey: string | undefined;
@@ -702,7 +927,7 @@ test("critical execution propagates the unified write identity into Effect Gatew
   const result = await runtime.invokeCapability(
     {
       id: "github.repo.identity-trace",
-      actionId: "caller-visible-action",
+      callerCorrelationId: "caller-visible-action",
       idempotencyKey: "critical-identity-1",
       input: { repo: "acme/example" },
     },
@@ -720,11 +945,11 @@ test("critical execution propagates the unified write identity into Effect Gatew
     capabilityId: "github.repo.identity-trace",
     idempotencyKey: "critical-identity-1",
   });
-  assert.equal(seenTraceId, expected);
+  assert.equal(seenTraceId, "caller-visible-action");
   assert.equal(seenActionId, expected);
   assert.equal(seenIdempotencyKey, expectedIdempotency);
   assert.deepEqual(result, {
-    traceId: expected,
+    traceId: "caller-visible-action",
     actionId: expected,
     idempotencyKey: expectedIdempotency,
   });
@@ -813,6 +1038,7 @@ test("call-time executionClass choice is denied", async (t) => {
     policyHooks: {
       "read-auth": () => {},
     },
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
   });
 
   t.after(async () => {
@@ -854,6 +1080,7 @@ test("mutation and critical recheck revocation immediately before external execu
         app: "runtime",
         capability: "state.revocation-check",
         description: "Mutation revoked before write",
+        inputSchema: runtimeStateWriteSchema(),
         sideEffect: "write",
         sensitivity: "public",
         implementation: { kind: "filesystem.write", path: "state.json" },
@@ -953,7 +1180,7 @@ test("pure capabilities fail closed instead of reaching MCP or other external pa
         capability: "math.double",
         description: "Double a value",
         inputSchema: { type: "object" },
-        implementation: mcpImplementation("should-never-run", { attestedReadOnly: true }),
+        implementation: { kind: "filesystem.read", path: "ignored-by-pure-handler.json" },
       },
       {
         executionClass: "pure",
@@ -1192,6 +1419,7 @@ test("secret reads without a subject are denied before any read executes", async
         app: "runtime",
         capability: "secret.read",
         description: "Read secret runtime state",
+        inputSchema: { type: "null" },
         sideEffect: "read",
         sensitivity: "secret",
         implementation: { kind: "filesystem.read", path: "secret.txt" },

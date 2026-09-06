@@ -2,7 +2,7 @@
  * Host mcpCall bridge: MUST invoke A EffectGateway.call_tool (or HTTP facade).
  * Never call raw MCP transport. Refuse manualRoutes that target MCP.
  *
- * A symbols (effect-fabric 0.2.11):
+ * A symbols (effect-fabric 0.2.12):
  *   EffectGateway.call_tool(subject, server, tool, arguments, ...)
  *   create_gateway_app -> POST /gateway/tool-call  (gateway_api.py)
  *

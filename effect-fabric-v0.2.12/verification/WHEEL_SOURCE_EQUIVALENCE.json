@@ -1,0 +1,595 @@
+{
+  "compared_files": 73,
+  "failures": [],
+  "files": [
+    {
+      "expected_wheel_suffix": "effect_fabric/__init__.py",
+      "source": "src/effect_fabric/__init__.py",
+      "source_sha256": "36256f66f07f4714529c4a78b272f2a166b06804801685f12bbaa8e22302cfa7",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/__init__.py",
+      "wheel_sha256": "36256f66f07f4714529c4a78b272f2a166b06804801685f12bbaa8e22302cfa7"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/_generated_transition_table.py",
+      "source": "src/effect_fabric/_generated_transition_table.py",
+      "source_sha256": "6b70887ed923c162368bc38271502ffc1b064ba20f8142a079f243af4a9aaecb",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/_generated_transition_table.py",
+      "wheel_sha256": "6b70887ed923c162368bc38271502ffc1b064ba20f8142a079f243af4a9aaecb"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/adapters/__init__.py",
+      "source": "src/effect_fabric/adapters/__init__.py",
+      "source_sha256": "4fe831baa273677e3daafe85e1e1ba15b9d44c79e870f6d252655f3c3578a7ec",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/adapters/__init__.py",
+      "wheel_sha256": "4fe831baa273677e3daafe85e1e1ba15b9d44c79e870f6d252655f3c3578a7ec"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/adapters/github.py",
+      "source": "src/effect_fabric/adapters/github.py",
+      "source_sha256": "3624e1e36772eeb7cd60560cbed5cdc453e3e8463cc0220b7712c2848101ba87",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/adapters/github.py",
+      "wheel_sha256": "3624e1e36772eeb7cd60560cbed5cdc453e3e8463cc0220b7712c2848101ba87"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/anchors.py",
+      "source": "src/effect_fabric/anchors.py",
+      "source_sha256": "3b36d6bc372c2046537eb65f8acc2e143f7601faf3878df097bf253c7621e402",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/anchors.py",
+      "wheel_sha256": "3b36d6bc372c2046537eb65f8acc2e143f7601faf3878df097bf253c7621e402"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/api.py",
+      "source": "src/effect_fabric/api.py",
+      "source_sha256": "1acbd895b528e3c2520de98d109e62109d509edf60b00a0cc29af483d5c43f6e",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/api.py",
+      "wheel_sha256": "1acbd895b528e3c2520de98d109e62109d509edf60b00a0cc29af483d5c43f6e"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/canonical.py",
+      "source": "src/effect_fabric/canonical.py",
+      "source_sha256": "d174397b19a6308e7aedf448a6a7838f9b2acd53dc0ff80cf1db8e0ef83e7522",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/canonical.py",
+      "wheel_sha256": "d174397b19a6308e7aedf448a6a7838f9b2acd53dc0ff80cf1db8e0ef83e7522"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/capabilities.py",
+      "source": "src/effect_fabric/capabilities.py",
+      "source_sha256": "201f046d8af8bfce9878d7dcca36ec1bc8a46b336a453953270f9526fa675211",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/capabilities.py",
+      "wheel_sha256": "201f046d8af8bfce9878d7dcca36ec1bc8a46b336a453953270f9526fa675211"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/cli.py",
+      "source": "src/effect_fabric/cli.py",
+      "source_sha256": "6692667849344a74dcffd72aa1e3c8234aff1bb1a946a26cfe39b632b33fd904",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/cli.py",
+      "wheel_sha256": "6692667849344a74dcffd72aa1e3c8234aff1bb1a946a26cfe39b632b33fd904"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/compat/__init__.py",
+      "source": "src/effect_fabric/compat/__init__.py",
+      "source_sha256": "2e2a5b0cd282b98209a997b6d5dca1f22eeadcb52e2027c8f124c33f3cc7d32c",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/compat/__init__.py",
+      "wheel_sha256": "2e2a5b0cd282b98209a997b6d5dca1f22eeadcb52e2027c8f124c33f3cc7d32c"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/compat/agentaction.py",
+      "source": "src/effect_fabric/compat/agentaction.py",
+      "source_sha256": "1268301e9e6d8625e90f8c8cd19ecac0936e20e4a0dcd87f9203317e0b396322",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/compat/agentaction.py",
+      "wheel_sha256": "1268301e9e6d8625e90f8c8cd19ecac0936e20e4a0dcd87f9203317e0b396322"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/compat/donors.py",
+      "source": "src/effect_fabric/compat/donors.py",
+      "source_sha256": "993e519f6158fe6f5762b4b369680e4168357a1e7b3d90eee0dd619ef68260a3",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/compat/donors.py",
+      "wheel_sha256": "993e519f6158fe6f5762b4b369680e4168357a1e7b3d90eee0dd619ef68260a3"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/compat/palo.py",
+      "source": "src/effect_fabric/compat/palo.py",
+      "source_sha256": "bb87ec93e0b75724dd2259f76277398db779490c81f0462cbb2bf685cd9dd081",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/compat/palo.py",
+      "wheel_sha256": "bb87ec93e0b75724dd2259f76277398db779490c81f0462cbb2bf685cd9dd081"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/dao_crosswalk.py",
+      "source": "src/effect_fabric/dao_crosswalk.py",
+      "source_sha256": "027f2af24a4acbea7d524ec6112a4773b5f32a3a836ce50d673b451c73537dea",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/dao_crosswalk.py",
+      "wheel_sha256": "027f2af24a4acbea7d524ec6112a4773b5f32a3a836ce50d673b451c73537dea"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/effect_registry.py",
+      "source": "src/effect_fabric/effect_registry.py",
+      "source_sha256": "05d635014dc6983d1aaeff1338f18adc8138779a42425b5a24c11a5edd49bfff",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/effect_registry.py",
+      "wheel_sha256": "05d635014dc6983d1aaeff1338f18adc8138779a42425b5a24c11a5edd49bfff"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/engine.py",
+      "source": "src/effect_fabric/engine.py",
+      "source_sha256": "6076f57c7b5a935d845217430c04486d7facf3b1a05d229b5c22293c9272942e",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/engine.py",
+      "wheel_sha256": "6076f57c7b5a935d845217430c04486d7facf3b1a05d229b5c22293c9272942e"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/errors.py",
+      "source": "src/effect_fabric/errors.py",
+      "source_sha256": "c29a9436e1ca7cce68f3ab875c56a336a3e5833959f4ff744524505e3e597ebf",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/errors.py",
+      "wheel_sha256": "c29a9436e1ca7cce68f3ab875c56a336a3e5833959f4ff744524505e3e597ebf"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/external_authorization.py",
+      "source": "src/effect_fabric/external_authorization.py",
+      "source_sha256": "f07603dd717800d87051b80f45bef4bc7a00574526ab6ed12a692b727999f98d",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/external_authorization.py",
+      "wheel_sha256": "f07603dd717800d87051b80f45bef4bc7a00574526ab6ed12a692b727999f98d"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/faults.py",
+      "source": "src/effect_fabric/faults.py",
+      "source_sha256": "0742a4970442eb1a71d63dbed44c98f3b960309a00a28d218f4c62759093c168",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/faults.py",
+      "wheel_sha256": "0742a4970442eb1a71d63dbed44c98f3b960309a00a28d218f4c62759093c168"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/gateway.py",
+      "source": "src/effect_fabric/gateway.py",
+      "source_sha256": "877a67fc2984a279f5ae09c824cf77725916e193d2a8446cc9c1206c2b0b94dd",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/gateway.py",
+      "wheel_sha256": "877a67fc2984a279f5ae09c824cf77725916e193d2a8446cc9c1206c2b0b94dd"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/gateway_api.py",
+      "source": "src/effect_fabric/gateway_api.py",
+      "source_sha256": "b0e4a2dbe663e8aa70620e44e99b59013f5927157c10cb457a5624ca047a9fc0",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/gateway_api.py",
+      "wheel_sha256": "b0e4a2dbe663e8aa70620e44e99b59013f5927157c10cb457a5624ca047a9fc0"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/gateway_policy.py",
+      "source": "src/effect_fabric/gateway_policy.py",
+      "source_sha256": "a1ed0b2b50808a95d411009057f6c4c86a26dced591a3f9ce89dbdd79a7e6bc6",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/gateway_policy.py",
+      "wheel_sha256": "a1ed0b2b50808a95d411009057f6c4c86a26dced591a3f9ce89dbdd79a7e6bc6"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/identity.py",
+      "source": "src/effect_fabric/identity.py",
+      "source_sha256": "c6d129907f906a2f77c7ac757f64e7602f4c8147d4fe0cab55508d16c4bdf8ec",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/identity.py",
+      "wheel_sha256": "c6d129907f906a2f77c7ac757f64e7602f4c8147d4fe0cab55508d16c4bdf8ec"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/integrations/__init__.py",
+      "source": "src/effect_fabric/integrations/__init__.py",
+      "source_sha256": "1afa7c764103a8b100a552a89632af00bb6ae6368d81e1c341eae4ff9c9005e2",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/integrations/__init__.py",
+      "wheel_sha256": "1afa7c764103a8b100a552a89632af00bb6ae6368d81e1c341eae4ff9c9005e2"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/integrations/mcp_bridge.py",
+      "source": "src/effect_fabric/integrations/mcp_bridge.py",
+      "source_sha256": "f342a87d4d8b07f7d0b557f0587b17bc84876caaf9122026a8ee81af048e72f9",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/integrations/mcp_bridge.py",
+      "wheel_sha256": "f342a87d4d8b07f7d0b557f0587b17bc84876caaf9122026a8ee81af048e72f9"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/integrations/mcp_gateway.py",
+      "source": "src/effect_fabric/integrations/mcp_gateway.py",
+      "source_sha256": "5e52e8e445253b60c7cde3256f53a34b64c7cc6ca7378b11b7225594da92ad47",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/integrations/mcp_gateway.py",
+      "wheel_sha256": "5e52e8e445253b60c7cde3256f53a34b64c7cc6ca7378b11b7225594da92ad47"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/integrations/mitos.py",
+      "source": "src/effect_fabric/integrations/mitos.py",
+      "source_sha256": "b7755aec994683352b786856c62f0319ac8c8233367a99dc9378de39dd9b7699",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/integrations/mitos.py",
+      "wheel_sha256": "b7755aec994683352b786856c62f0319ac8c8233367a99dc9378de39dd9b7699"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/interfaces.py",
+      "source": "src/effect_fabric/interfaces.py",
+      "source_sha256": "3054ac01f4d8c5d4c8a7b7ebd6350a81acf0dba6a06d81638fbc926f26cb3f9d",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/interfaces.py",
+      "wheel_sha256": "3054ac01f4d8c5d4c8a7b7ebd6350a81acf0dba6a06d81638fbc926f26cb3f9d"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/json_schema.py",
+      "source": "src/effect_fabric/json_schema.py",
+      "source_sha256": "157264c15d5b88cad1ab963e72e382fa175ce3a756b35e8ed276e2d56b802d8f",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/json_schema.py",
+      "wheel_sha256": "157264c15d5b88cad1ab963e72e382fa175ce3a756b35e8ed276e2d56b802d8f"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/ledger.py",
+      "source": "src/effect_fabric/ledger.py",
+      "source_sha256": "f0227f16f9a2d416ee96cf8b2e0616aaf34f495c71bcd4d89d7c8a3e441c5eb8",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/ledger.py",
+      "wheel_sha256": "f0227f16f9a2d416ee96cf8b2e0616aaf34f495c71bcd4d89d7c8a3e441c5eb8"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/models.py",
+      "source": "src/effect_fabric/models.py",
+      "source_sha256": "5a958e7c3484f8e9be4168852ee5c37203219351bfaa800482cd1a979adf704e",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/models.py",
+      "wheel_sha256": "5a958e7c3484f8e9be4168852ee5c37203219351bfaa800482cd1a979adf704e"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/outbox.py",
+      "source": "src/effect_fabric/outbox.py",
+      "source_sha256": "87c3dc9ab2fd94beab2d3eb8490943ee898998ac4a4310a94d054def7c3448b9",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/outbox.py",
+      "wheel_sha256": "87c3dc9ab2fd94beab2d3eb8490943ee898998ac4a4310a94d054def7c3448b9"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/postgres.py",
+      "source": "src/effect_fabric/postgres.py",
+      "source_sha256": "ea68c1b43f2a6692caae5915ff6bc037e16684a2c972d406748bcb226cff8f7c",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/postgres.py",
+      "wheel_sha256": "ea68c1b43f2a6692caae5915ff6bc037e16684a2c972d406748bcb226cff8f7c"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/postgres_evidence.py",
+      "source": "src/effect_fabric/postgres_evidence.py",
+      "source_sha256": "1968af90bf72cd7303e8df67d36c35f245c1b1fde345ff3e7fbab10742fa11dd",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/postgres_evidence.py",
+      "wheel_sha256": "1968af90bf72cd7303e8df67d36c35f245c1b1fde345ff3e7fbab10742fa11dd"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/predicates.py",
+      "source": "src/effect_fabric/predicates.py",
+      "source_sha256": "da982aba99ea57e7b2c4518d6ba5422f372277701f4fca9e6648e2fb411d2c50",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/predicates.py",
+      "wheel_sha256": "da982aba99ea57e7b2c4518d6ba5422f372277701f4fca9e6648e2fb411d2c50"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/provider_profiles.py",
+      "source": "src/effect_fabric/provider_profiles.py",
+      "source_sha256": "1c8629dbb72a5fab2c35d44e54f724cddb236c0c4c91b8362454505832707bb8",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/provider_profiles.py",
+      "wheel_sha256": "1c8629dbb72a5fab2c35d44e54f724cddb236c0c4c91b8362454505832707bb8"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/__init__.py",
+      "source": "src/effect_fabric/qualification/__init__.py",
+      "source_sha256": "008ed5e7a0dbd60f9f7299f65d91cb4d8ddd4d14c3db05e2c13c17d38fe38da1",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/__init__.py",
+      "wheel_sha256": "008ed5e7a0dbd60f9f7299f65d91cb4d8ddd4d14c3db05e2c13c17d38fe38da1"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/dao_active_guard.py",
+      "source": "src/effect_fabric/qualification/dao_active_guard.py",
+      "source_sha256": "89a99fdcd4eeb6f794565c471298cf8310f1f70bce90e432797f7fa8ad4baf80",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/dao_active_guard.py",
+      "wheel_sha256": "89a99fdcd4eeb6f794565c471298cf8310f1f70bce90e432797f7fa8ad4baf80"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/dao_active_guard_server.py",
+      "source": "src/effect_fabric/qualification/dao_active_guard_server.py",
+      "source_sha256": "23f5478f063da1d1766c274e5c598637518cefab7e6268a85d88f7c378e493d6",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/dao_active_guard_server.py",
+      "wheel_sha256": "23f5478f063da1d1766c274e5c598637518cefab7e6268a85d88f7c378e493d6"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/dao_engine_shadow.py",
+      "source": "src/effect_fabric/qualification/dao_engine_shadow.py",
+      "source_sha256": "2412b3cbd7a634d3aa2eb84a2931a0caf006185a33ef2c219c3e64ff82247c9e",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/dao_engine_shadow.py",
+      "wheel_sha256": "2412b3cbd7a634d3aa2eb84a2931a0caf006185a33ef2c219c3e64ff82247c9e"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/dao_engine_shadow_server.py",
+      "source": "src/effect_fabric/qualification/dao_engine_shadow_server.py",
+      "source_sha256": "326161cd5c39c765f4f12593e531d9b52198034874dd553110cf18c99d7af4ff",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/dao_engine_shadow_server.py",
+      "wheel_sha256": "326161cd5c39c765f4f12593e531d9b52198034874dd553110cf18c99d7af4ff"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/dao_store.py",
+      "source": "src/effect_fabric/qualification/dao_store.py",
+      "source_sha256": "971225050ee761ec902845996afb0a69b7d71cc9f00c7cd17a7931fa20922027",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/dao_store.py",
+      "wheel_sha256": "971225050ee761ec902845996afb0a69b7d71cc9f00c7cd17a7931fa20922027"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/dao_store_server.py",
+      "source": "src/effect_fabric/qualification/dao_store_server.py",
+      "source_sha256": "7ad9e023f84a6ba4300eaba615ba9fb9a3799e347fde07255e0f29d514c411ff",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/dao_store_server.py",
+      "wheel_sha256": "7ad9e023f84a6ba4300eaba615ba9fb9a3799e347fde07255e0f29d514c411ff"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/donor_conformance.py",
+      "source": "src/effect_fabric/qualification/donor_conformance.py",
+      "source_sha256": "c972495702b8c05ac61a9e1b1eeda8098ae90cda8229d0477b2e3f6901b7cc37",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/donor_conformance.py",
+      "wheel_sha256": "c972495702b8c05ac61a9e1b1eeda8098ae90cda8229d0477b2e3f6901b7cc37"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/provenance.py",
+      "source": "src/effect_fabric/qualification/provenance.py",
+      "source_sha256": "27142b15e5dd515f7abbd2131ea3c92d6111607505be32f768433e324c53efc6",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/provenance.py",
+      "wheel_sha256": "27142b15e5dd515f7abbd2131ea3c92d6111607505be32f768433e324c53efc6"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/provider.py",
+      "source": "src/effect_fabric/qualification/provider.py",
+      "source_sha256": "4ee20f38fda9de4352d8c8201c34c09121bc054c43af38358bbf0623a5f617a2",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/provider.py",
+      "wheel_sha256": "4ee20f38fda9de4352d8c8201c34c09121bc054c43af38358bbf0623a5f617a2"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/reducer_equivalence.py",
+      "source": "src/effect_fabric/qualification/reducer_equivalence.py",
+      "source_sha256": "546ccc908428489e13a652087d6199b0ba829f948a1131558667a0331d2e844b",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/reducer_equivalence.py",
+      "wheel_sha256": "546ccc908428489e13a652087d6199b0ba829f948a1131558667a0331d2e844b"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/reducer_mutants.py",
+      "source": "src/effect_fabric/qualification/reducer_mutants.py",
+      "source_sha256": "c67e5444dfa6e94ad9d136d164a95cf7394fa5cc433bccdd20e75f6f52791d90",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/reducer_mutants.py",
+      "wheel_sha256": "c67e5444dfa6e94ad9d136d164a95cf7394fa5cc433bccdd20e75f6f52791d90"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/release.py",
+      "source": "src/effect_fabric/qualification/release.py",
+      "source_sha256": "3597a7c321c251768f7a27b112646105ca21c18e6fbfd6ce07e3bb4b4cc5572f",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/release.py",
+      "wheel_sha256": "3597a7c321c251768f7a27b112646105ca21c18e6fbfd6ce07e3bb4b4cc5572f"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/qualification/upstream_dao.py",
+      "source": "src/effect_fabric/qualification/upstream_dao.py",
+      "source_sha256": "5eb352bab7f9fd3c773066002b4cf5dac03bd2538feb089666263abae539c11f",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/qualification/upstream_dao.py",
+      "wheel_sha256": "5eb352bab7f9fd3c773066002b4cf5dac03bd2538feb089666263abae539c11f"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/reducer.py",
+      "source": "src/effect_fabric/reducer.py",
+      "source_sha256": "55897c9030cc789c736bc8ff690d70b0c2447177dd3790eba4ed2714b5b70a56",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/reducer.py",
+      "wheel_sha256": "55897c9030cc789c736bc8ff690d70b0c2447177dd3790eba4ed2714b5b70a56"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/store.py",
+      "source": "src/effect_fabric/store.py",
+      "source_sha256": "da888205cfe5273d4ae6d649ea7b98955c6aba4ac9ca3ba0e8055d30e66f31b9",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/store.py",
+      "wheel_sha256": "da888205cfe5273d4ae6d649ea7b98955c6aba4ac9ca3ba0e8055d30e66f31b9"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/testing.py",
+      "source": "src/effect_fabric/testing.py",
+      "source_sha256": "8e2ee79918b6e13c0e375fef1d2bf7ef0898f744675d89d81c51a9c010b2904f",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/testing.py",
+      "wheel_sha256": "8e2ee79918b6e13c0e375fef1d2bf7ef0898f744675d89d81c51a9c010b2904f"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/transition_kernel.py",
+      "source": "src/effect_fabric/transition_kernel.py",
+      "source_sha256": "d73e8463aca1a9fc0a1c8e13698eaac6413fbbd9a3a44621d9e78c217ec0d111",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/transition_kernel.py",
+      "wheel_sha256": "d73e8463aca1a9fc0a1c8e13698eaac6413fbbd9a3a44621d9e78c217ec0d111"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/migrations/001_core.sql",
+      "source": "migrations/001_core.sql",
+      "source_sha256": "befa15c191c69f5154c3cc9b8c2a9052a04ee2909cf7fa469cda5a741ee25f07",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/migrations/001_core.sql",
+      "wheel_sha256": "befa15c191c69f5154c3cc9b8c2a9052a04ee2909cf7fa469cda5a741ee25f07"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/migrations/002_capability_transaction_binding.sql",
+      "source": "migrations/002_capability_transaction_binding.sql",
+      "source_sha256": "6dc60c958756000c380369ed93927994af9db9e49660d354367b23e5c7276a7c",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/migrations/002_capability_transaction_binding.sql",
+      "wheel_sha256": "6dc60c958756000c380369ed93927994af9db9e49660d354367b23e5c7276a7c"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/migrations/003_attempt_leases.sql",
+      "source": "migrations/003_attempt_leases.sql",
+      "source_sha256": "e94b5dfd507793c8835e9aad2fff0f5d7de8138fc5caa4c41611b124c0326863",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/migrations/003_attempt_leases.sql",
+      "wheel_sha256": "e94b5dfd507793c8835e9aad2fff0f5d7de8138fc5caa4c41611b124c0326863"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/migrations/004_evidence_hardening.sql",
+      "source": "migrations/004_evidence_hardening.sql",
+      "source_sha256": "969c93733e346ef89aadcfe8684274808fd3443431a6637eba689373e60d36d3",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/migrations/004_evidence_hardening.sql",
+      "wheel_sha256": "969c93733e346ef89aadcfe8684274808fd3443431a6637eba689373e60d36d3"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/migrations/005_transactional_evidence_outbox.sql",
+      "source": "migrations/005_transactional_evidence_outbox.sql",
+      "source_sha256": "c376c566fe4132bc9e8b948c538ff8bc9ef595167551b54678699dfbfe6f5b12",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/migrations/005_transactional_evidence_outbox.sql",
+      "wheel_sha256": "c376c566fe4132bc9e8b948c538ff8bc9ef595167551b54678699dfbfe6f5b12"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/migrations/006_postgres_fencing_claim_tokens.sql",
+      "source": "migrations/006_postgres_fencing_claim_tokens.sql",
+      "source_sha256": "099a86430fa4254ee6a232d92cc98406ef51834df34f6167fd9eaba7ba94c1de",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/migrations/006_postgres_fencing_claim_tokens.sql",
+      "wheel_sha256": "099a86430fa4254ee6a232d92cc98406ef51834df34f6167fd9eaba7ba94c1de"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/migrations/007_workload_identity.sql",
+      "source": "migrations/007_workload_identity.sql",
+      "source_sha256": "3040b9a9f67ecf5d8ab7c3af1c1a70afc78e4ef28c03191a16c5407f30e4622d",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/migrations/007_workload_identity.sql",
+      "wheel_sha256": "3040b9a9f67ecf5d8ab7c3af1c1a70afc78e4ef28c03191a16c5407f30e4622d"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_active_engine.mjs",
+      "source": "bridges/durable-agent-outbox/run_effect_fabric_active_engine.mjs",
+      "source_sha256": "816efc08a929003187f8b1c291865d5fafbbceb1004b8064f1a80500a64d6331",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_active_engine.mjs",
+      "wheel_sha256": "816efc08a929003187f8b1c291865d5fafbbceb1004b8064f1a80500a64d6331"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_engine.mjs",
+      "source": "bridges/durable-agent-outbox/run_effect_fabric_engine.mjs",
+      "source_sha256": "c5c223957105459b0954408cb719609aaae13d1d3bdeb8b9e7cc07aa770fb31e",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_engine.mjs",
+      "wheel_sha256": "c5c223957105459b0954408cb719609aaae13d1d3bdeb8b9e7cc07aa770fb31e"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_native_engine.mjs",
+      "source": "bridges/durable-agent-outbox/run_effect_fabric_native_engine.mjs",
+      "source_sha256": "8e5a577fbfb560e8e995388a39975d8bedf5c0cf9e4df50a09e4e6e199ac1a00",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_native_engine.mjs",
+      "wheel_sha256": "8e5a577fbfb560e8e995388a39975d8bedf5c0cf9e4df50a09e4e6e199ac1a00"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_store.mjs",
+      "source": "bridges/durable-agent-outbox/run_effect_fabric_store.mjs",
+      "source_sha256": "aee7199c52cf4012109e0deaea0bdc3bd23221761f743faa871dfb2cdce6ffbb",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/bridges/durable-agent-outbox/run_effect_fabric_store.mjs",
+      "wheel_sha256": "aee7199c52cf4012109e0deaea0bdc3bd23221761f743faa871dfb2cdce6ffbb"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/bridges/durable-agent-outbox/run_official.mjs",
+      "source": "bridges/durable-agent-outbox/run_official.mjs",
+      "source_sha256": "12c50fb250dce2667b7318b25b5eefdc84c9505c4052a658ed7aaff0395f8778",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/bridges/durable-agent-outbox/run_official.mjs",
+      "wheel_sha256": "12c50fb250dce2667b7318b25b5eefdc84c9505c4052a658ed7aaff0395f8778"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/bridges/durable-agent-outbox/effect_fabric_native_reduce.ts",
+      "source": "bridges/durable-agent-outbox/effect_fabric_native_reduce.ts",
+      "source_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/bridges/durable-agent-outbox/effect_fabric_native_reduce.ts",
+      "wheel_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/bridges/durable-agent-outbox/generated_transition_table.ts",
+      "source": "bridges/durable-agent-outbox/generated_transition_table.ts",
+      "source_sha256": "21f058dfb44c7fb630736d8f41bde5b7cd95c0d35b8f650626ae035fa880ca45",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/bridges/durable-agent-outbox/generated_transition_table.ts",
+      "wheel_sha256": "21f058dfb44c7fb630736d8f41bde5b7cd95c0d35b8f650626ae035fa880ca45"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/licenses/THIRD_PARTY_NOTICES.md",
+      "source": "THIRD_PARTY_NOTICES.md",
+      "source_sha256": "26fa72e6c4f34ecd8f3649253842fce22a454f38c3c0b127c5262c194b016dd2",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/licenses/THIRD_PARTY_NOTICES.md",
+      "wheel_sha256": "26fa72e6c4f34ecd8f3649253842fce22a454f38c3c0b127c5262c194b016dd2"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/licenses/durable-agent-outbox-MIT.txt",
+      "source": "LICENSES/durable-agent-outbox-MIT.txt",
+      "source_sha256": "3ef0b6b142452ad70cc6677debc1785372917ad1e202d6bd1785b798cf26e802",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/licenses/durable-agent-outbox-MIT.txt",
+      "wheel_sha256": "3ef0b6b142452ad70cc6677debc1785372917ad1e202d6bd1785b798cf26e802"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/spec/effect-transition-v1.json",
+      "source": "spec/effect-transition-v1.json",
+      "source_sha256": "06b7d68f0104180e779a09c470d988f7b1f8a5d8ff595251d457f4acd9bb3f86",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/spec/effect-transition-v1.json",
+      "wheel_sha256": "06b7d68f0104180e779a09c470d988f7b1f8a5d8ff595251d457f4acd9bb3f86"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/spec/effect-transition-v1.schema.json",
+      "source": "spec/effect-transition-v1.schema.json",
+      "source_sha256": "32f392fac949b8a519854e1634249fb64e68e3f9a07cf724e247a7fda35f7b36",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/spec/effect-transition-v1.schema.json",
+      "wheel_sha256": "32f392fac949b8a519854e1634249fb64e68e3f9a07cf724e247a7fda35f7b36"
+    },
+    {
+      "expected_wheel_suffix": "share/effect-fabric/spec/invariants-v1.json",
+      "source": "spec/invariants-v1.json",
+      "source_sha256": "935c95ad471a260fd8efb0fb782dcf0e10de3b6fa5cc5c273e27568014168e40",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric-0.2.12.data/data/share/effect-fabric/spec/invariants-v1.json",
+      "wheel_sha256": "935c95ad471a260fd8efb0fb782dcf0e10de3b6fa5cc5c273e27568014168e40"
+    }
+  ],
+  "schema": "effect-fabric/wheel-source-equivalence/v1",
+  "source_manifest_sha256": "34a25fbb1302c174b40b61d40b67272f9b3f5be01c0d3e1d5f75638d8c90c0e5",
+  "status": "PASS",
+  "version": "0.2.12",
+  "wheel": "effect_fabric-0.2.12-py3-none-any.whl"
+}

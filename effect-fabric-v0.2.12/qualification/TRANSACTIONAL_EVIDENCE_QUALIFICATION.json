@@ -1,0 +1,45 @@
+{
+  "limitations": [
+    "PostgreSQL process-kill qualification is a separate CI/live gate.",
+    "External WORM anchoring and KMS/HSM key custody are not exercised here."
+  ],
+  "passed": 6,
+  "provenance": {
+    "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
+    "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
+    "schema": "effect-fabric/qualification-provenance/v1",
+    "version": "0.2.12"
+  },
+  "qualification": "transactional-evidence-local",
+  "scenarios": [
+    {
+      "scenario": "state_plus_outbox_survives_pre_flush_crash",
+      "status": "PASS"
+    },
+    {
+      "scenario": "pending_intent_replays_after_restart_boundary",
+      "status": "PASS"
+    },
+    {
+      "scenario": "ledger_outbox_idempotency",
+      "status": "PASS"
+    },
+    {
+      "scenario": "append_before_ack_redelivery_is_idempotent",
+      "status": "PASS"
+    },
+    {
+      "scenario": "file_ledger_restart_preserves_outbox_identity",
+      "status": "PASS"
+    },
+    {
+      "scenario": "sink_failure_returns_intent_to_pending",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "total": 6,
+  "version": "0.2.12"
+}

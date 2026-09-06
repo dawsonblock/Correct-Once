@@ -6,3 +6,4 @@ export * from "./handle-cache.js";
 export * from "./effect-gateway-bridge.js";
 export * from "./executors.js";
 export * from "./runtime.js";
+export * from "./write-identity.js";
