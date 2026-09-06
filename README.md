@@ -50,41 +50,20 @@ release asset `mcp-hooks-upgraded-v0.1.1.zip` at the SHA256 listed above.
 
 ## Critical-path code snippet
 
-The core v0.1.1 composition pattern is the locked gateway wrapper below:
+Quoted host-composition pattern from `adapter/README.md` and `adapter/FIXES.md`:
 
 ```ts
-const EFFECT_LOCK = Symbol("effect-locked-agent-gateway");
-const CURATED_TOOLS = new Set([
-  "search_capabilities",
-  "invoke_capability",
-]);
+import { createNodeGatewayAdapters } from "@function-hooks/gateway";
+import {
+  composeEffectLockedMcpOptions,
+  createEffectLockedAgentGateway,
+  assertNoManualMcpRoutes,
+} from "./adapter/ts/composeLockedAdapters.js";
 
-export function createEffectLockedAgentGateway(
-  input: CreateEffectLockedAgentGatewayInput,
-) {
-  assertCuratedTools(input.tools, CURATED_TOOLS);
-  assertDestructiveDefaultOff(input.destructive ?? false);
-
-  const lockedInput = {
-    ...input,
-    [EFFECT_LOCK]: true as const,
-  };
-
-  assertEffectGatewayLock(lockedInput);
-  return createAgentGateway(lockedInput);
-}
-
-function assertEffectGatewayLock(
-  value: unknown,
-): asserts value is { [EFFECT_LOCK]: true } {
-  if (
-    !value ||
-    typeof value !== "object" ||
-    (value as Record<symbol, unknown>)[EFFECT_LOCK] !== true
-  ) {
-    throw new Error("Effect gateway composition lock missing");
-  }
-}
+assertNoManualMcpRoutes(manualRoutes);
+const { mcpCall } = composeEffectLockedMcpOptions(effectGateway);
+const adapters = await createNodeGatewayAdapters({ /* roots */, mcpCall });
+await createEffectLockedAgentGateway(createAgentGateway, { /* opts */, adapters });
 ```
 
 Why it matters:
@@ -115,15 +94,23 @@ The exact checksum line is also stored in
 ├── RELEASE-mcp-hooks-v0.1.1.md
 ├── mcp-hooks-upgraded-v0.1.1.sha256
 └── adapter/
-    └── PLACEHOLDER.md
+    ├── FIXES.md
+    ├── MAPPING.md
+    ├── README.md
+    ├── VERSION
+    ├── fixtures/
+    ├── python/
+    ├── schemas/
+    └── ts/
 ```
 
 - `LICENSE` stays unchanged.
 - `README.md` is the modern freeze overview.
 - `RELEASE-mcp-hooks-v0.1.1.md` captures the release-only notes.
 - `mcp-hooks-upgraded-v0.1.1.sha256` records the bundle checksum exactly.
-- `adapter/` is where adapter 0.1.1 source files land. The large upstream A/B
-  trees are intentionally omitted from git.
+- `adapter/` now contains the v0.1.1 source drop (`VERSION`, `README`,
+  `FIXES`, `MAPPING`, `ts/`, `python/`, `fixtures/`, `schemas/`). The large
+  upstream A/B trees are intentionally omitted from git.
 
 ## Safety notes
 
