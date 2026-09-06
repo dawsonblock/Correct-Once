@@ -1,0 +1,38 @@
+{
+  "name": "@function-hooks/core",
+  "version": "0.11.0",
+  "description": "Minimal typed Function Hooks kernel: event algebra, ordered middleware dispatch, lifecycle, cancellation, and engine projection.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./conformance": {
+      "types": "./dist/conformance.d.ts",
+      "import": "./dist/conformance.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SEMANTICS.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.tests.json && node --test dist-tests/tests/*.test.js",
+    "check": "npm run test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  }
+}

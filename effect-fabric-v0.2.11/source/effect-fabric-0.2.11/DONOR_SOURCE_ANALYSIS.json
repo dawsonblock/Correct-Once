@@ -1,0 +1,51 @@
+{
+  "checks": {
+    "AgentAction": {
+      "pytest_full": {
+        "passed": 147,
+        "status": "PASS"
+      }
+    },
+    "ChronoMCP": {
+      "node_syntax": {
+        "files_checked": 15,
+        "status": "PASS"
+      }
+    },
+    "OpenOnce": {
+      "pytest": {
+        "note": "optional PostgreSQL/LangGraph/OpenAI-Agents integrations skipped locally",
+        "passed": 418,
+        "skipped": 103,
+        "status": "PASS"
+      }
+    },
+    "PALOframework": {
+      "node_syntax": {
+        "files_checked": 67,
+        "status": "PASS"
+      }
+    },
+    "durable-agent-outbox": {
+      "core_tsc_no_emit": {
+        "status": "PASS",
+        "typescript": "5.8.3"
+      },
+      "upstream_public_runner": {
+        "mutants_discriminated": 8,
+        "mutants_total": 8,
+        "note": "Exact locked donor public runConformance/ALL_MUTANTS executed offline after local tsc compilation.",
+        "reference_scenarios_passed": 17,
+        "reference_scenarios_total": 17,
+        "status": "PASS"
+      },
+      "upstream_vitest_conformance": {
+        "reason": "Vitest peer not installed; public runner executed directly, so Vitest itself is not required for the v0.2.4 gate.",
+        "status": "NOT_RUN"
+      }
+    }
+  },
+  "non_claim": "Donor checks qualify the analyzed donor trees only. They do not make donor upstream claims part of Effect Fabric release qualification.",
+  "schema": "effect-fabric/donor-source-analysis/v1",
+  "source_bundle": "fab.zip"
+}

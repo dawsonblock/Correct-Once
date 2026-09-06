@@ -1,0 +1,8 @@
+# Development-only convenience override. Do not use these credentials outside a disposable local
+# workstation environment.
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: effect
+      POSTGRES_PASSWORD: effect-dev-only
+      POSTGRES_DB: effect_fabric

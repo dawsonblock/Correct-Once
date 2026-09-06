@@ -1,0 +1,49 @@
+{
+  "package": "@function-hooks/compat",
+  "exportedTypeEntrypoints": [
+    "./dist/core.d.ts",
+    "./dist/index.d.ts",
+    "./dist/runtime/blueprint.d.ts",
+    "./dist/runtime/errors.d.ts",
+    "./dist/runtime/freeze.d.ts",
+    "./dist/runtime/matcher.d.ts",
+    "./dist/runtime/runtime.d.ts",
+    "./dist/runtime/types.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "41bd490bc31520d7b9fc9b41cd5c55bef6740cfd188862ccd4ff5dd985cbaeee",
+  "files": [
+    {
+      "path": "dist/core.d.ts",
+      "sha256": "64cc19ff3525e833780c7b2d60bddd6183b579b81803edaf2696d8d285701307"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "89b47aca8e54bd96f81a41fe27fcf3fa043e4e2b689ae9dfebea2f3a917c1d9b"
+    },
+    {
+      "path": "dist/runtime/blueprint.d.ts",
+      "sha256": "412eb760fd7a4c86ec6fa85e4fc849aa8765248f5e19dac38e28820c2799fd9a"
+    },
+    {
+      "path": "dist/runtime/errors.d.ts",
+      "sha256": "222ea8fc8bb31d27aeaa8c81166e5bb6821511018cccc2745df834a1ac3f10a2"
+    },
+    {
+      "path": "dist/runtime/freeze.d.ts",
+      "sha256": "9075d622420d336288796915bc4787153bc7809620b728b1937b384a6dd983b4"
+    },
+    {
+      "path": "dist/runtime/matcher.d.ts",
+      "sha256": "dc066006ef810d8d50e2b93586990244a7f29991e48bfe9a651371f959c3a638"
+    },
+    {
+      "path": "dist/runtime/runtime.d.ts",
+      "sha256": "4f05048af2ee476d55199dfb3a053f29cc917bbd46fd266b468569073d6e0ffc"
+    },
+    {
+      "path": "dist/runtime/types.d.ts",
+      "sha256": "84f2f79c131d2ed0332f394a2c794853fa469aff1f27520e9e1efb65ed9215b4"
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "schema": "effect-fabric/transition-spec/v1",
+  "version": "1.0.0",
+  "description": "Canonical structural algebra for consequential-effect execution state. This specification defines legal execution-state edges and command-specific transitions; storage, provider I/O, authorization signatures, and clocks remain outside the pure kernel.",
+  "states": {
+    "planned": {
+      "terminal": false,
+      "ambiguous": false
+    },
+    "prepared": {
+      "terminal": false,
+      "ambiguous": false
+    },
+    "authorized": {
+      "terminal": false,
+      "ambiguous": false
+    },
+    "started": {
+      "terminal": false,
+      "ambiguous": true
+    },
+    "unknown": {
+      "terminal": false,
+      "ambiguous": true
+    },
+    "receipt_recorded": {
+      "terminal": true,
+      "ambiguous": false
+    },
+    "reconciled": {
+      "terminal": true,
+      "ambiguous": false
+    },
+    "execution_failed": {
+      "terminal": true,
+      "ambiguous": false
+    }
+  },
+  "commands": {
+    "prepare": {
+      "sources": [
+        "planned"
+      ],
+      "target": "prepared",
+      "requested_effects": []
+    },
+    "authorize": {
+      "sources": [
+        "prepared"
+      ],
+      "target": "authorized",
+      "requested_effects": [],
+      "idempotent_sources": [
+        "authorized"
+      ]
+    },
+    "start": {
+      "sources": [
+        "authorized"
+      ],
+      "target": "started",
+      "requested_effects": [
+        "provider.execute"
+      ]
+    },
+    "mark_unknown": {
+      "sources": [
+        "started"
+      ],
+      "target": "unknown",
+      "requested_effects": [
+        "provider.reconcile"
+      ]
+    },
+    "recover_orphan": {
+      "sources": [
+        "started"
+      ],
+      "target": "unknown",
+      "requested_effects": [
+        "provider.reconcile"
+      ]
+    },
+    "provider_retryable_pre_effect_failure": {
+      "sources": [
+        "started"
+      ],
+      "target": "prepared",
+      "requested_effects": [
+        "authorization.refresh_required"
+      ]
+    },
+    "provider_definitive_failure": {
+      "sources": [
+        "started"
+      ],
+      "target": "execution_failed",
+      "requested_effects": []
+    },
+    "record_receipt": {
+      "sources": [
+        "started",
+        "unknown"
+      ],
+      "target": "receipt_recorded",
+      "requested_effects": []
+    },
+    "reconcile_happened": {
+      "sources": [
+        "unknown"
+      ],
+      "target": "reconciled",
+      "requested_effects": []
+    },
+    "reconcile_not_happened_terminal": {
+      "sources": [
+        "unknown"
+      ],
+      "target": "execution_failed",
+      "requested_effects": []
+    },
+    "reconcile_not_happened_retry": {
+      "sources": [
+        "unknown"
+      ],
+      "target": "prepared",
+      "requested_effects": [
+        "authorization.refresh_required"
+      ]
+    }
+  },
+  "invariants": [
+    "EF-TX-001 terminal execution states do not transition to another execution state",
+    "EF-TX-002 provider execution can only be requested by authorized -> started",
+    "EF-TX-003 ambiguous started failures become unknown unless explicitly proven pre-effect",
+    "EF-TX-004 unknown can become retryable only after NOT_HAPPENED reconciliation",
+    "EF-TX-005 orphan recovery fences the previous worker before started -> unknown",
+    "EF-TX-006 receipt recording is legal only from started or unknown",
+    "EF-TX-007 UNKNOWN may terminate as EXECUTION_FAILED when authoritative NOT_HAPPENED settlement closes a pending withdrawal/supersession request"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "package": "@function-hooks/capabilities",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "b11c07cafa54563200a004417dcff9e8904e80b17e03ff09daabb4a9a80117b3",
+  "files": [
+    {
+      "path": "dist/canonical.d.ts",
+      "sha256": "1514f5fe0e404620bc42e02848987b4417cdcb778ffefc494060f97bb50b69ae"
+    },
+    {
+      "path": "dist/capability.d.ts",
+      "sha256": "7425435022abd5f6f63e3ab5167a5db6a6a645170a393c196277a83c52c02270"
+    },
+    {
+      "path": "dist/catalog.d.ts",
+      "sha256": "6bd050ff8d61a066791ab366bc3092834d8b3f8cab11c7e4ee9098ef5f525e43"
+    },
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "e15a566adb29e9d00afccc038e4548cebaea8d481ad1ba51d6814dc202aef271"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "5c1bb4ecfaebb705f191c87aa86b4adc15b032a941ec0515c92b5a26fb5786b3"
+    },
+    {
+      "path": "dist/registry.d.ts",
+      "sha256": "440da07392cacc4e07faabf80eb86f9d4d9334cf97c1f66262eb46c5be5afedd"
+    },
+    {
+      "path": "dist/types.d.ts",
+      "sha256": "b3a727ddad2e01fab5c8afea904b0ed9839209e51b124cce76928e4fb1ee3924"
+    }
+  ]
+}

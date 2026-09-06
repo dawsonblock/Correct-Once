@@ -1,0 +1,79 @@
+{
+  "donors": {
+    "AgentAction": {
+      "bytes": 16283301,
+      "file_count": 347,
+      "license_head": [
+        "Apache License",
+        "                           Version 2.0, January 2004",
+        "                        http://www.apache.org/licenses/",
+        "",
+        "   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION"
+      ],
+      "tree_digest": "sha256:f96656fdbc28dfac52672d6415e4b30496a9eed994e0a6ebe9538086e83c8750",
+      "version": "0.13.1"
+    },
+    "ChronoMCP": {
+      "bytes": 188776,
+      "file_count": 48,
+      "license_head": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 ChronoMCP contributors",
+        "",
+        "Permission is hereby granted, free of charge, to any person obtaining a copy"
+      ],
+      "tree_digest": "sha256:4dc15ab099f702650e49e93cf96b21052cef6d77b629b5d6a5257b085deb3b67",
+      "version": "0.1.0"
+    },
+    "OpenOnce": {
+      "bytes": 1049021,
+      "file_count": 60,
+      "license_head": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 Ziboyan Wang <eric@memov.ai>",
+        "",
+        "Permission is hereby granted, free of charge, to any person obtaining a copy"
+      ],
+      "tree_digest": "sha256:017baa99fb0966cb9eccc23c1395a0adaba50f24b82f79ee612b2f626de9fc9c",
+      "version": "0.1.0"
+    },
+    "PALOframework": {
+      "bytes": 169005436,
+      "file_count": 1149,
+      "license_head": [
+        "MIT License",
+        "",
+        "Copyright (c) 2025-2026 PALO Framework",
+        "",
+        "Permission is hereby granted, free of charge, to any person obtaining a copy"
+      ],
+      "tree_digest": "sha256:f4137022af306fa5570e245452bc1f3b15733aa8fb5fa5d1b2acc27ebbf7d70f",
+      "version": "3.1.0"
+    },
+    "durable-agent-outbox": {
+      "bytes": 2012683,
+      "conformance_bridge": {
+        "conformance_package_json_sha256": "043ab1ba8470ca3673f20c14991eeb6b0b9aece4a37646f6e75f3550e8666a02",
+        "conformance_package_version": "0.1.0",
+        "conformance_tree_sha256": "9516b947a79219f1fe2c764b40f43c84b8d14f07dc712f1dc463a8281ba11499",
+        "core_package_json_sha256": "0955524272703bc4c0ad543b87aad35d49792c477b105a359ec4aa1354c70b23",
+        "core_package_version": "0.1.0",
+        "core_tree_sha256": "19873f7119a082e36b1b369bfe7b3999dcb93865811364405f21b247e01e6482"
+      },
+      "file_count": 167,
+      "license_head": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 Mathew Stevens",
+        "",
+        "Permission is hereby granted, free of charge, to any person obtaining a copy"
+      ],
+      "tree_digest": "sha256:7566b4089dd522a87559bdfb47ef0aa04da26cb46734a119fd3890fed76bc8bd",
+      "version": "0.0.0"
+    }
+  },
+  "schema": "effect-fabric/donor-lock/v1",
+  "source_bundle": "fab.zip"
+}

@@ -1,0 +1,30 @@
+{
+  "package": "@function-hooks/audit",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "adfc967955ef971ce0dc6dc56fde1b654fb4bd92fbe410a86995ab669aba583b",
+  "files": [
+    {
+      "path": "dist/durable-journal.d.ts",
+      "sha256": "7a3d17850ba22d38fa3bb60b885ff6301014c2cebf57396b162f36e6eb727e75"
+    },
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "afb3e1a8eda7c5a0604783362c19e30b543b55cc25eac1fc5bd7e2da1e3514d3"
+    },
+    {
+      "path": "dist/hooks.d.ts",
+      "sha256": "c7542fd1785da828a1129cd969fb6f93734b0ab2a9cd6df79b6b8183ca1d064c"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "e6749fb76fa6890e5b1119903a29373feb6bb5221b82a58bfc43dee0de32623c"
+    },
+    {
+      "path": "dist/ledger.d.ts",
+      "sha256": "f2b4ef8428e0f0c206630aed586feae5d15a47d6b38673d0f5d6e8c5fc9aebe1"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+import { canonicalJson, sha256Hex } from "@function-hooks/assurance";
+export class HashChainAuditLedger {
+    #entries = [];
+    #redact;
+    #hmacKey;
+    constructor(options = {}) {
+        this.#redact = options.redact ?? ((payload) => payload);
+        this.#hmacKey = options.hmacKey;
+        if (options.initialEntries?.length) {
+            const checked = this.verify(options.initialEntries);
+            if (!checked.ok)
+                throw new Error(`Invalid initial audit chain at index ${checked.index}: ${checked.reason}`);
+            this.#entries.push(...options.initialEntries.map((entry) => Object.freeze({ ...entry })));
+        }
+    }
+    append(payload) {
+        const safe = this.#redact(payload);
+        const sequence = this.#entries.length;
+        const previousHash = sequence === 0 ? "0".repeat(64) : this.#entries[sequence - 1].entryHash;
+        const payloadHash = sha256Hex(canonicalJson(safe));
+        const entryHash = sha256Hex(canonicalJson({ sequence, previousHash, payloadHash }));
+        const mac = this.#hmacKey ? createHmac("sha256", this.#hmacKey).update(entryHash).digest("hex") : undefined;
+        const entry = Object.freeze({ sequence, previousHash, payload: safe, payloadHash, entryHash, ...(mac ? { mac } : {}) });
+        this.#entries.push(entry);
+        return entry;
+    }
+    entries() {
+        return Object.freeze([...this.#entries]);
+    }
+    verify(entries = this.#entries) {
+        let previousHash = "0".repeat(64);
+        for (let index = 0; index < entries.length; index += 1) {
+            const entry = entries[index];
+            if (entry.sequence !== index)
+                return { ok: false, index, reason: "sequence mismatch" };
+            if (entry.previousHash !== previousHash)
+                return { ok: false, index, reason: "previous hash mismatch" };
+            const payloadHash = sha256Hex(canonicalJson(entry.payload));
+            if (entry.payloadHash !== payloadHash)
+                return { ok: false, index, reason: "payload hash mismatch" };
+            const entryHash = sha256Hex(canonicalJson({ sequence: entry.sequence, previousHash: entry.previousHash, payloadHash: entry.payloadHash }));
+            if (entry.entryHash !== entryHash)
+                return { ok: false, index, reason: "entry hash mismatch" };
+            if (this.#hmacKey) {
+                if (!entry.mac)
+                    return { ok: false, index, reason: "missing MAC" };
+                const expected = createHmac("sha256", this.#hmacKey).update(entry.entryHash).digest();
+                const actual = Buffer.from(entry.mac, "hex");
+                if (actual.length !== expected.length || !timingSafeEqual(actual, expected))
+                    return { ok: false, index, reason: "MAC mismatch" };
+            }
+            previousHash = entry.entryHash;
+        }
+        return { ok: true };
+    }
+}
+export function redactKeys(keys) {
+    const denied = new Set(keys);
+    const scrub = (value) => {
+        if (Array.isArray(value))
+            return value.map(scrub);
+        if (value && typeof value === "object") {
+            const out = {};
+            for (const [key, entry] of Object.entries(value))
+                out[key] = denied.has(key) ? "[REDACTED]" : scrub(entry);
+            return out;
+        }
+        return value;
+    };
+    return (payload) => ({ ...payload, input: scrub(payload.input), ...(payload.result === undefined ? {} : { result: scrub(payload.result) }) });
+}
+//# sourceMappingURL=ledger.js.map

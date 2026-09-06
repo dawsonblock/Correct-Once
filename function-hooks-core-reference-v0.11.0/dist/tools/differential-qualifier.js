@@ -1,0 +1,66 @@
+import { createKernel } from "@function-hooks/core";
+import { createPortableKernel } from "@function-hooks/portable";
+function rng(seed) {
+    let state = seed >>> 0;
+    return () => {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        return state / 0x1_0000_0000;
+    };
+}
+function normalizeTrace(trace) {
+    return trace.map(({ phase, plugin, event, origin, detail }) => ({
+        phase, ...(plugin === undefined ? {} : { plugin }), event, origin,
+        ...(detail?.nextCalls === undefined ? {} : { nextCalls: detail.nextCalls }),
+    }));
+}
+async function exercise(factory, seed) {
+    const random = rng(seed);
+    const trace = [];
+    const builder = factory({ trace: (row) => trace.push(row) });
+    builder.defineEngine({ events: new Map([["calc.run", { invoke: ({ x, y }) => x * 31 + y }]]) });
+    const hookCount = 3 + Math.floor(random() * 5);
+    for (let i = 0; i < hookCount; i += 1) {
+        const plugin = `p${i}`;
+        const order = Math.floor(random() * 4) * 10;
+        const action = Math.floor(random() * 4);
+        const delta = 1 + Math.floor(random() * 7);
+        const matcherKind = Math.floor(random() * 4);
+        const callback = async (_engine, event, next) => {
+            if (action === 0)
+                return next({ ...event, x: event.x + delta });
+            if (action === 1)
+                return next({ ...event, y: event.y - delta });
+            if (action === 2 && ((event.x + event.y + seed + i) % 11 === 0))
+                return event.x - event.y + delta;
+            return next(event);
+        };
+        if (matcherKind === 0)
+            builder.on(plugin, order, "calc.run", { mode: "a" }, callback);
+        else if (matcherKind === 1)
+            builder.on(plugin, order, "calc.run", { mode: ["b", "c"] }, callback);
+        else if (matcherKind === 2)
+            builder.on(plugin, order, "calc.run", { x: [seed % 13, seed % 17] }, callback);
+        else
+            builder.on(plugin, order, "calc.run", callback);
+    }
+    const runtime = builder.build();
+    await runtime.start();
+    const modes = ["a", "b", "c"];
+    const outputs = [];
+    for (let dispatch = 0; dispatch < 3; dispatch += 1) {
+        const input = { x: (seed * 7 + dispatch * 3) % 29, y: (seed * 11 + dispatch) % 23, mode: modes[(seed + dispatch) % 3] };
+        outputs.push(await runtime.dispatch("calc.run", input, { origin: "differential" }));
+    }
+    await runtime.close();
+    return { outputs, trace: normalizeTrace(trace) };
+}
+export async function runDifferentialQualification(iterations = 256) {
+    const failures = [];
+    for (let seed = 1; seed <= iterations; seed += 1) {
+        const [reference, portable] = await Promise.all([exercise(createKernel, seed), exercise(createPortableKernel, seed)]);
+        if (JSON.stringify(reference) !== JSON.stringify(portable))
+            failures.push(`seed ${seed} diverged`);
+    }
+    return Object.freeze({ iterations, comparedDispatches: iterations * 3, failed: failures.length, failures: Object.freeze(failures) });
+}
+//# sourceMappingURL=differential-qualifier.js.map

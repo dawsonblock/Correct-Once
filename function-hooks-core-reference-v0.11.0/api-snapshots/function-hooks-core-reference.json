@@ -1,0 +1,38 @@
+{
+  "package": "function-hooks-core-reference",
+  "exportedTypeEntrypoints": [
+    "./dist/src/compat.d.ts",
+    "./dist/src/events.d.ts",
+    "./dist/src/index.d.ts",
+    "./dist/src/kernel.d.ts",
+    "./dist/src/portable.d.ts",
+    "dist/src/index.d.ts"
+  ],
+  "aggregateSha256": "71469a54dc8a043cd55cbe645fb4b985cb5efe2b6279465e4df604398dbef586",
+  "files": [
+    {
+      "path": "dist/src/compat.d.ts",
+      "sha256": "5b70f4341e8b6ff14ce3c1a96bfc78854b40aa6c13e04d1e2618c878924a96bb"
+    },
+    {
+      "path": "dist/src/events.d.ts",
+      "sha256": "066b826939e56fe896f97d9974868eb2a1f624b0047da77dc32a92203a3ed2a8"
+    },
+    {
+      "path": "dist/src/index.d.ts",
+      "sha256": "f4cbd553beb9efe0bfa69b34aff844efcb423e7fc64edcad99e13a15641871df"
+    },
+    {
+      "path": "dist/src/kernel.d.ts",
+      "sha256": "57b4a91415a4fc0c0186ff11a22def890ac622277b20a90a5b6bdf4624b04cb1"
+    },
+    {
+      "path": "dist/src/portable.d.ts",
+      "sha256": "b44d4a46ad1a1b1b0d84381dc08b56e23d1e0555edffc15b85a325da66610a44"
+    },
+    {
+      "path": "dist/src/ui/surfaces.d.ts",
+      "sha256": "d6c9a6c5550c66509f06e70ef1ee673cbd7101087158c99370f8fd210c49caf1"
+    }
+  ]
+}

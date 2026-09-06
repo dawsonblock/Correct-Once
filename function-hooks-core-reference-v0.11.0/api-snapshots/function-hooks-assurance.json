@@ -1,0 +1,42 @@
+{
+  "package": "@function-hooks/assurance",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "6885441f7d656c5eb4828614488d8169e6cbf01ef8640214b893aec243e43d79",
+  "files": [
+    {
+      "path": "dist/action-receipts.d.ts",
+      "sha256": "5a103fc74f144e56c91872606e69ca560092b795b18c0047f930d5c87fff0cbb"
+    },
+    {
+      "path": "dist/budgets.d.ts",
+      "sha256": "b391cc9b5d9a08989e52361278547703bb74691afb09e0e8c3ceeb78f7c8c86f"
+    },
+    {
+      "path": "dist/canonical.d.ts",
+      "sha256": "9a72f0f77c35424bd86cd67eefb535af1d307fe034d7164c38a67d7fc0e3e8c0"
+    },
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "a1b59983160b4f5840cc245e7d0cb0e1c80b204bd9ebee953362418d49e54639"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "512b89413965d52041b40a19967c7f9bb5e33afc79cdecf802eb7ffd92538e66"
+    },
+    {
+      "path": "dist/managed-config.d.ts",
+      "sha256": "381cace343c39e978b8c77bf029a2cf505467cdfd2a4d826cfdc15ddbfe2f624"
+    },
+    {
+      "path": "dist/schema-versions.d.ts",
+      "sha256": "339111372c4195061c51532046b12fa21998ecad6ac942b91229cb43fbb58e4e"
+    },
+    {
+      "path": "dist/schemas.d.ts",
+      "sha256": "699e89a3a90e42806127465c2f827f8bd80dd1c17716ebd6e52d925fa6e76241"
+    }
+  ]
+}

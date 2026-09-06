@@ -1,0 +1,14 @@
+{
+  "package": "@function-hooks/events",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "bab99526c9de8bc97ab3dbb87353b5c7eadfc8fb3c66704cda2f490770a4e4d6",
+  "files": [
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "513cf70f8a83ba58bae0f4d78625015a5f21047b73e0678fc7e6f7b6f8319f7a"
+    }
+  ]
+}

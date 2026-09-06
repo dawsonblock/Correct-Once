@@ -1,56 +1,39 @@
 # Correct-Once
 
-`Correct-Once` is the freeze repository for **MCP Hooks Upgraded v0.1.1**. The
-git tree carries the release documentation and the adapter 0.1.1 source drop,
-while the full upstream A/B source bundle stays outside git as a release asset.
+`Correct-Once` now contains the full in-tree freeze for **MCP Hooks Upgraded
+v0.1.1**: the adapter source drop, the `effect-fabric` v0.2.11 freeze tree,
+and the `function-hooks-core-reference` v0.11.0 freeze tree.
 
-## Freeze summary
+The imported source of truth is the GitHub release asset:
 
-- **B admits / A executes**: `function-hooks-core-reference` (B) admits and
-  constrains capability requests; `effect-fabric` (A) executes only after that
-  admitted shape has been composition-locked.
-- **Curated tools only**: the exposed tool surface is limited to
-  `search_capabilities` and `invoke_capability`.
-- **Composition lock is mandatory**:
-  `createEffectLockedAgentGateway` uses a module-private `Symbol` (not
-  `Symbol.for`) and always asserts the lock before calling
-  `createAgentGateway`.
-- **Destructive default is OFF**: destructive execution requires an explicit
-  opt-in and is not the default adapter posture.
-- **Smoke coverage uses mirrored gates**: smoke validation mirrors the gating
-  path and does **not** point at a live `effect_fabric`.
-- **Full bundle integrity**: the complete source bundle is shipped separately as
-  `mcp-hooks-upgraded-v0.1.1.zip` with SHA256
-  `d9b4292e6b2cb1d1314e2d1a4edf16db423a2248e7d9201393e0a1027d1eef8f`.
+- File:
+  `mcp-hooks-upgraded-v0.1.1.zip`
+- Release URL:
+  `https://github.com/dawsonblock/Correct-Once/releases/download/v0.1.1/mcp-hooks-upgraded-v0.1.1.zip`
+- SHA256:
+  `d9b4292e6b2cb1d1314e2d1a4edf16db423a2248e7d9201393e0a1027d1eef8f`
+
+That exact checksum is also stored in `mcp-hooks-upgraded-v0.1.1.sha256`.
 
 ## Frozen component pins
 
-| Component | Version | Role in freeze |
+| Component | Version | Role |
 | --- | --- | --- |
 | `effect-fabric` | `0.2.11` | A executes admitted effects |
 | `function-hooks-core-reference` | `0.11.0` | B admits and gates capability traffic |
-| `adapter` | `0.1.1` | Locked adapter surface documented and stored in `adapter/` |
+| `adapter` | `0.1.1` | Locked adapter surface and smoke fixtures |
 
-## Architecture contract
+## What this repository is
 
-The freeze keeps the execution model intentionally narrow:
+This freeze is a **curated, fail-closed bridge**:
 
-1. B admits the request shape and tool name.
-2. Only curated tools are forwarded: `search_capabilities` and
-   `invoke_capability`.
-3. The adapter stamps a **module-private composition lock**.
-4. The lock is asserted before `createAgentGateway` is allowed to run.
-5. Execution stays non-destructive by default.
-6. Smoke validation exercises mirrored gates rather than a live
-   `effect_fabric`.
+- **B admits** capabilities via `function-hooks-core-reference` records.
+- **A executes** only after the admitted MCP shape has been pinned and
+  composition-locked.
+- The exposed tool surface stays intentionally tiny:
+  `search_capabilities` and `invoke_capability`.
 
-This repository does **not** vendor the full `effect-fabric` or
-`function-hooks-core-reference` trees into git. The canonical full bundle is the
-release asset `mcp-hooks-upgraded-v0.1.1.zip` at the SHA256 listed above.
-
-## Critical-path code snippet
-
-Quoted host-composition pattern from `adapter/README.md` and `adapter/FIXES.md`:
+The critical host path is:
 
 ```ts
 import { createNodeGatewayAdapters } from "@function-hooks/gateway";
@@ -66,54 +49,132 @@ const adapters = await createNodeGatewayAdapters({ /* roots */, mcpCall });
 await createEffectLockedAgentGateway(createAgentGateway, { /* opts */, adapters });
 ```
 
-Why it matters:
-
-- `Symbol(...)` keeps the lock module-private. `Symbol.for(...)` would allow
-  unrelated code to spoof the same registry key across realms.
-- The assert runs **before** `createAgentGateway`, so unlocked composition fails
-  closed instead of slipping into execution.
-- Tool admission is intentionally tiny and auditable.
-
-## Release asset integrity
-
-The full non-git bundle for this freeze is:
-
-- File: `mcp-hooks-upgraded-v0.1.1.zip`
-- SHA256:
-  `d9b4292e6b2cb1d1314e2d1a4edf16db423a2248e7d9201393e0a1027d1eef8f`
-
-The exact checksum line is also stored in
-`mcp-hooks-upgraded-v0.1.1.sha256`.
+`composeEffectLockedMcpOptions` and
+`createEffectLockedAgentGateway` are the required composition path. The lock is
+module-private, asserted before `createAgentGateway`, and intended to fail
+closed when hosts try to boot with an unlocked `mcp.call`.
 
 ## Repository layout
+
+The freeze tree is now vendored directly at repo root:
 
 ```text
 .
 ├── LICENSE
+├── Makefile
 ├── README.md
-├── RELEASE-mcp-hooks-v0.1.1.md
-├── mcp-hooks-upgraded-v0.1.1.sha256
-└── adapter/
-    ├── FIXES.md
-    ├── MAPPING.md
-    ├── README.md
-    ├── VERSION
-    ├── fixtures/
-    ├── python/
-    └── ts/
+├── RELEASE.md
+├── adapter/
+├── effect-fabric-v0.2.11/
+├── function-hooks-core-reference-v0.11.0/
+└── mcp-hooks-upgraded-v0.1.1.sha256
 ```
 
-- `LICENSE` stays unchanged.
-- `README.md` is the modern freeze overview.
-- `RELEASE-mcp-hooks-v0.1.1.md` captures the release-only notes.
-- `mcp-hooks-upgraded-v0.1.1.sha256` records the bundle checksum exactly.
-- `adapter/` now contains the v0.1.1 source drop (`VERSION`, `README`,
-  `FIXES`, `MAPPING`, `ts/`, `python/`, `fixtures/`). The large upstream A/B
-  trees are intentionally omitted from git.
+Notes:
 
-## Safety notes
+- `adapter/` is the freeze adapter 0.1.1 source tree.
+- `effect-fabric-v0.2.11/` preserves the shipped freeze wrapper; the actual
+  Python install root is
+  `effect-fabric-v0.2.11/source/effect-fabric-0.2.11/`.
+- `function-hooks-core-reference-v0.11.0/` contains the Node workspace, shipped
+  `dist/`, package sources, and release evidence.
+- `RELEASE.md` is the freeze release note from the verified zip.
 
-- No secrets, tokens, or credentials belong in this repository.
-- Destructive behavior remains disabled by default.
-- Smoke checks should keep using mirrored gates until a separate change
-  explicitly authorizes live execution paths.
+## Install from a clean clone
+
+Prereqs:
+
+- Python `>=3.11`
+- Node `>=20`
+- `npm`
+
+You can use the root `Makefile` helpers or run the commands directly.
+
+### Install A (`effect-fabric` 0.2.11)
+
+Direct command:
+
+```bash
+python3 -m pip install -e effect-fabric-v0.2.11/source/effect-fabric-0.2.11
+```
+
+Make target:
+
+```bash
+make install-a
+```
+
+### Install B (`function-hooks-core-reference` 0.11.0)
+
+Direct command:
+
+```bash
+cd function-hooks-core-reference-v0.11.0
+npm install --package-lock=false
+```
+
+Make target:
+
+```bash
+make install-b
+```
+
+If you want to rebuild the shipped workspace artifacts locally:
+
+```bash
+make build-b
+```
+
+## Smoke and import checks
+
+Mirrored adapter smoke:
+
+```bash
+python3 adapter/fixtures/run_smoke.py
+```
+
+or:
+
+```bash
+make smoke
+```
+
+Optional install verification commands:
+
+```bash
+make smoke-a-import
+make smoke-b-import
+```
+
+Important honesty boundary: `adapter/fixtures/run_smoke.py` is a **mirrored
+gate smoke**. It checks the adapter's fail-closed rules and composition-lock
+branding, but it does **not** import a live `effect_fabric` runtime and does
+**not** prove end-to-end A execution.
+
+## Security gates
+
+The freeze keeps these gates closed by default:
+
+- only admitted capability ids are eligible;
+- curated tools stay limited to `search_capabilities` and `invoke_capability`;
+- `provenance.schemaDigest` must match `schemaHash`;
+- unknown operations fail closed;
+- raw/manual MCP routes are refused by `assertNoManualMcpRoutes`;
+- destructive behavior requires explicit opt-in and defaults to OFF;
+- no secrets, tokens, or credentials should be committed in this repository.
+
+## Host residual
+
+The unsupported path is a host that calls bare `createAgentGateway` with an
+unlocked `mcp.call`. The freeze does not bless that path. Hosts should compose
+through `composeEffectLockedMcpOptions` and then boot through
+`createEffectLockedAgentGateway`.
+
+## What this repository is not
+
+- Not an OpenAPI codegen or FastMCP `from_openapi` project.
+- Not a one-tool-per-endpoint export. The frozen surface is only
+  `search_capabilities` and `invoke_capability`.
+- Not a relaxation of the composition lock or destructive default.
+- Not a claim that mirrored smoke alone proves live `effect_fabric`
+  integration.

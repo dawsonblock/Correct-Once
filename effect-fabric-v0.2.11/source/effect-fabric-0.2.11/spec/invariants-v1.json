@@ -1,0 +1,13 @@
+{
+  "schema": "effect-fabric/transition-invariants/v1",
+  "transition_spec": "effect-transition-v1.json",
+  "invariants": {
+    "EF-TX-001": "Terminal execution states cannot leave terminality.",
+    "EF-TX-002": "Provider execution is requested only after authorization and durable STARTED intent.",
+    "EF-TX-003": "An ambiguous provider outcome is represented as UNKNOWN rather than assumed failure.",
+    "EF-TX-004": "UNKNOWN cannot return to PREPARED until reconciliation proves NOT_HAPPENED.",
+    "EF-TX-005": "Orphan recovery advances fencing before the recovered action becomes UNKNOWN.",
+    "EF-TX-006": "A provider receipt can only be committed from STARTED or UNKNOWN.",
+    "EF-TX-007": "A pending withdrawal/supersession may close UNKNOWN as EXECUTION_FAILED only after authoritative NOT_HAPPENED settlement."
+  }
+}

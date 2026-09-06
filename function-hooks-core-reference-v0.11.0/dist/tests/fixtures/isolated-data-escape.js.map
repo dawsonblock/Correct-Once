@@ -1,0 +1,1 @@
+{"version":3,"file":"isolated-data-escape.js","sourceRoot":"","sources":["../../../tests/fixtures/isolated-data-escape.ts"],"names":[],"mappings":"AAAA,MAAM,UAAU,GAAG,yCAAyC,CAAC;AAC7D,MAAM,MAAM,CAAC,UAAU,CAAC,CAAC;AAEzB,MAAM,UAAU,QAAQ,CAAC,EAAO;IAC9B,EAAE,CAAC,eAAe,EAAE,KAAK,EAAE,EAAO,EAAE,KAAU,EAAE,IAAS,EAAE,EAAE,CAAC,IAAI,CAAC,KAAK,CAAC,CAAC,CAAC;AAC7E,CAAC"}

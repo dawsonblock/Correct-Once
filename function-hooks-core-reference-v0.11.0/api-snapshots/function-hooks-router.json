@@ -1,0 +1,34 @@
+{
+  "package": "@function-hooks/router",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "6bcdd83b62185d4a433c40d3994c64246966fcbab2cf0ea094a56b627a543fae",
+  "files": [
+    {
+      "path": "dist/capability-compiler.d.ts",
+      "sha256": "ae659112c8fa8eee5c8f994243202686eebfd3623ca3db59c3fe2fc692bb57d0"
+    },
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "fee580aaa5adbc4ab07fa722b7e876c11d821c00f51b83dc1fed3ad5f357db09"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "74de5970412e6b85fb6bcd90298ddc4469ec829d1124ad220a2f984cc1d8f31d"
+    },
+    {
+      "path": "dist/router.d.ts",
+      "sha256": "4c052dd92a36458bd8f7cb91ed4a35bdf094560623df0b90a3094ad2acd3cfbf"
+    },
+    {
+      "path": "dist/routes.d.ts",
+      "sha256": "97fb05712c46d44d11e78940e159b48d9a4c4d0150f4fce9fe6368cf501a228e"
+    },
+    {
+      "path": "dist/types.d.ts",
+      "sha256": "c49b34d77996db8dfffbcf9f78e2576c1d632fd8cff49ffb33953f319dad3d6f"
+    }
+  ]
+}

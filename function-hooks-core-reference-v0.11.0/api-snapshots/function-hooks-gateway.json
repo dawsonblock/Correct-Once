@@ -1,0 +1,50 @@
+{
+  "package": "@function-hooks/gateway",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "62c6a0f5c332202feffae96e53f0f2abb5477fde826214057dae2fb036081b8a",
+  "files": [
+    {
+      "path": "dist/blueprint.d.ts",
+      "sha256": "e524fa5441bc67b2612800343f96a7f47df8122e89d09121d473965ee61ac7d0"
+    },
+    {
+      "path": "dist/errors.d.ts",
+      "sha256": "04391ef600300f0c05f33b5c90024a8610e4840b6743a36a77568b0d85516977"
+    },
+    {
+      "path": "dist/execution.d.ts",
+      "sha256": "cb42d3ee6f64620258bad94c1582e1207799cba483ac0b8d753e53672618883b"
+    },
+    {
+      "path": "dist/gateway.d.ts",
+      "sha256": "b5790ed0c9a07f733382069ed95b46994950d4bf1db45cf10561d95f44ef4ce4"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "450c55619f4663a4842f585c798fe3363c6fd41f0ea675bbb6d0fc12a991017b"
+    },
+    {
+      "path": "dist/ledger.d.ts",
+      "sha256": "469a7b61d7c9f4850763750fc8646446e1e248d1cbdad40071f52f843afd9e08"
+    },
+    {
+      "path": "dist/node-adapters.d.ts",
+      "sha256": "53799fa33b06b2f64cbc99ccebc3cd5def1ac6441acd61928524eb9e6458e452"
+    },
+    {
+      "path": "dist/policy.d.ts",
+      "sha256": "94dd69637d28e4d1f167745bcc96366b0fc81dab07531da8676e1e19fc020868"
+    },
+    {
+      "path": "dist/types.d.ts",
+      "sha256": "a5e55d5e81773e07760c400a9d7f0fec2f13369bd801104d99cc5fa654401ded"
+    },
+    {
+      "path": "dist/validate.d.ts",
+      "sha256": "28487dad210c714e0bf339570f86044393d63ffbe01746dcd72e035051c259a0"
+    }
+  ]
+}

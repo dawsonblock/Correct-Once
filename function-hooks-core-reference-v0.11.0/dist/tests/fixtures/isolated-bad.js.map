@@ -1,0 +1,1 @@
+{"version":3,"file":"isolated-bad.js","sourceRoot":"","sources":["../../../tests/fixtures/isolated-bad.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,SAAS,CAAC;AAEvC,MAAM,UAAU,QAAQ,CAAC,EAAO;IAC9B,KAAK,YAAY,CAAC;IAClB,EAAE,CAAC,eAAe,EAAE,KAAK,EAAE,EAAO,EAAE,KAAU,EAAE,IAAS,EAAE,EAAE,CAAC,IAAI,CAAC,KAAK,CAAC,CAAC,CAAC;AAC7E,CAAC"}

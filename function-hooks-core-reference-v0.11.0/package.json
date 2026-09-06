@@ -1,0 +1,117 @@
+{
+  "name": "function-hooks-core-reference",
+  "version": "0.11.0",
+  "description": "Pre-1.0 Function Hooks distribution with frozen 1.0-rc.1 kernel semantics, a fail-closed agent gateway, reusable routing, and admitted capability registries.",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./kernel": {
+      "types": "./dist/src/kernel.d.ts",
+      "import": "./dist/src/kernel.js"
+    },
+    "./events": {
+      "types": "./dist/src/events.d.ts",
+      "import": "./dist/src/events.js"
+    },
+    "./compat": {
+      "types": "./dist/src/compat.d.ts",
+      "import": "./dist/src/compat.js"
+    },
+    "./portable": {
+      "types": "./dist/src/portable.d.ts",
+      "import": "./dist/src/portable.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    "LICENSE",
+    "BUILD_REPORT.md",
+    "CHANGELOG.md",
+    "SBOM.spdx.json",
+    "RELEASE_EVIDENCE.json",
+    "api-snapshots",
+    "contracts"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist packages/*/dist packages/*/dist-tests",
+    "build": "npm run link:workspaces && npm run build:packages && npm run build:compat",
+    "test": "npm run build && npm run check:package-boundaries && npm run check:core-boundary && npm run check:portable-independence && npm run check:portable-platform && npm run check:umbrella-surface && npm run semantics:check && npm run api:check && npm run test:core && npm run test:portable && node tools/run-top-level-tests.mjs",
+    "demo": "npm run build && node dist/examples/demo.js",
+    "check": "npm run test",
+    "demo:isolated": "npm run build && node dist/examples/isolated-demo.js",
+    "qualify": "npm run clean && npm run test && node dist/examples/demo.js && node dist/examples/isolated-demo.js && node dist/examples/split-kernel-demo.js && node dist/examples/conformance-demo.js && node dist/examples/portable-conformance-demo.js && node dist/examples/dual-runtime-demo.js && node dist/examples/compat-package-demo.js && node dist/examples/differential-qualification-demo.js && node dist/examples/agent-gateway-demo.js && node dist/examples/execution-router-demo.js && node dist/examples/capability-registry-demo.js",
+    "verify:audit": "npm run build && node dist/tools/verify-audit.js",
+    "build:core": "npm --prefix packages/core run build",
+    "build:events": "npm --prefix packages/events run build",
+    "build:compat": "tsc -p tsconfig.json",
+    "test:core": "npm --prefix packages/core test",
+    "check:core-boundary": "node tools/check-core-boundary.mjs",
+    "build:packages": "npm run build:core && npm run build:portable && npm run build:assurance && npm run build:audit && npm run build:replay && npm run build:plugins && npm run build:isolation && npm run build:enterprise && npm run build:events && npm run build:gateway && npm run build:capabilities && npm run build:router && npm run build:compat-package",
+    "build:assurance": "npm --prefix packages/assurance run build",
+    "build:audit": "npm --prefix packages/audit run build",
+    "build:replay": "npm --prefix packages/replay run build",
+    "build:plugins": "npm --prefix packages/plugins run build",
+    "build:isolation": "npm --prefix packages/isolation run build",
+    "build:enterprise": "npm --prefix packages/enterprise run build",
+    "check:package-boundaries": "node tools/check-package-boundaries.mjs",
+    "link:workspaces": "node tools/link-workspaces.mjs",
+    "build:compat-package": "npm --prefix packages/compat run build",
+    "build:portable": "npm --prefix packages/portable run build",
+    "test:portable": "npm --prefix packages/portable test",
+    "check:portable-independence": "node tools/check-portable-independence.mjs",
+    "check:umbrella-surface": "node tools/check-umbrella-surface.mjs",
+    "api:update": "npm run build && node tools/api-snapshots.mjs update",
+    "api:check": "node tools/api-snapshots.mjs check",
+    "semantics:update": "npm run build:core && node tools/semantics-freeze.mjs update",
+    "semantics:check": "node tools/semantics-freeze.mjs check",
+    "check:portable-platform": "tsc -p packages/portable/tsconfig.web.json && node tools/check-portable-platform.mjs",
+    "build:gateway": "npm --prefix packages/gateway run build",
+    "build:router": "npm --prefix packages/router run build",
+    "build:capabilities": "npm --prefix packages/capabilities run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  },
+  "license": "MIT",
+  "workspaces": [
+    "packages/core",
+    "packages/events",
+    "packages/assurance",
+    "packages/audit",
+    "packages/replay",
+    "packages/plugins",
+    "packages/isolation",
+    "packages/enterprise",
+    "packages/compat",
+    "packages/portable",
+    "packages/gateway",
+    "packages/capabilities",
+    "packages/router"
+  ],
+  "dependencies": {
+    "@function-hooks/core": "0.11.0",
+    "@function-hooks/events": "0.11.0",
+    "@function-hooks/assurance": "0.11.0",
+    "@function-hooks/audit": "0.11.0",
+    "@function-hooks/replay": "0.11.0",
+    "@function-hooks/plugins": "0.11.0",
+    "@function-hooks/isolation": "0.11.0",
+    "@function-hooks/enterprise": "0.11.0",
+    "@function-hooks/compat": "0.11.0",
+    "@function-hooks/portable": "0.11.0",
+    "@function-hooks/gateway": "0.11.0",
+    "@function-hooks/router": "0.11.0",
+    "@function-hooks/capabilities": "0.11.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "package": "@function-hooks/enterprise",
+  "exportedTypeEntrypoints": [
+    "./dist/index.d.ts",
+    "dist/index.d.ts"
+  ],
+  "aggregateSha256": "4f657d2e89011e637a24dd615a93e10d4380a05be3fe63349afc65afad75da1c",
+  "files": [
+    {
+      "path": "dist/index.d.ts",
+      "sha256": "c763800503035a675eec2bb89b95ec7fb06d06a489d9133eac8154fe0f2d199c"
+    },
+    {
+      "path": "dist/managed.d.ts",
+      "sha256": "2c1d3b780ba01f026d53af8f2a09ebf34741eed837b51ec4d663356abd76c291"
+    },
+    {
+      "path": "dist/policies.d.ts",
+      "sha256": "a15124c78fdfccab51702bd500152d83bb06dbf10a075baf7f3169f8b8da5d0f"
+    }
+  ]
+}
