@@ -1,6 +1,8 @@
+> Historical freeze note: this file documents the v0.1.1 adapter + B freeze. Current in-tree Effect Fabric is `0.2.12`; see `README.md` and `effect-fabric-v0.2.12/`. The `0.2.11` pin below is historical only and does **not** claim a new packaging release or `RELEASE_QUALIFIED`.
+
 # MCP Hooks Upgraded Bundle v0.1.1
 
-Pins:
+Historical freeze pins:
 - effect-fabric **0.2.11** (A)
 - function-hooks-core-reference **0.11.0** (B)
 - adapter **0.1.1**
