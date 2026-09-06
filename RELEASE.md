@@ -1,4 +1,4 @@
-> Historical freeze note: this file documents the v0.1.1 adapter + B freeze. Current in-tree Effect Fabric is `0.2.12`; see `README.md` and `effect-fabric-v0.2.12/`. The `0.2.11` pin below is historical only and does **not** claim a new packaging release or `RELEASE_QUALIFIED`.
+> Historical freeze note: this file documents the v0.1.1 adapter + B freeze. Current in-tree Effect Fabric on `main` is `0.2.12`; see `README.md` and `effect-fabric-v0.2.12/`. The v0.15 line on `main` @ `9eb268bb` is merge-cleared only and remains **BLOCK RELEASE** for packaging. The `0.2.11` pin below is historical only. This file does **not** claim a live SE/CR `make qualify` rerun, a new packaging release, or `RELEASE_QUALIFIED`. Branding != crypto residual still applies.
 
 # MCP Hooks Upgraded Bundle v0.1.1
 

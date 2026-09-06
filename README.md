@@ -2,14 +2,14 @@
 
 Fail-closed MCP capability bridge: **B admits**, **A executes**, with a tiered Function Hooks runtime on top.
 
-Current default branch tip lands **v0.15 Cross-Layer Authority Qualification** (PR #8, squash `9eb268bb`). That closes EF provenance, qualify integrity, fast-READ epoch, unified write-identity, and pinned `inputSchema` validation. It does **not** mint a packaging release.
+Current default branch tip on `main` is **v0.15 Cross-Layer Authority Qualification** (PR #8, squash `9eb268bb`). That line is merge-cleared on `main`, but it is **BLOCK RELEASE** for packaging and does **not** mint `RELEASE_QUALIFIED`.
 
 | Claim | Status |
 | --- | --- |
 | Sealed MCP Hooks freeze **v0.1.1** (adapter + B 0.11.0) | Present |
-| Effect Fabric **0.2.12** (wheel == source, installed-wheel qualify) | Present |
-| Runtime track through **v0.15** authority closure | On `main` |
-| Production packaging / `RELEASE_QUALIFIED` | **Blocked** |
+| Effect Fabric **0.2.12** (wheel == source, installed-wheel qualify path) | Present on `main`; proofs agent-claimed from #8 |
+| Runtime track through **v0.15** authority closure | Merge-cleared on `main` @ `9eb268bb` |
+| Production packaging / `RELEASE_QUALIFIED` | **BLOCK RELEASE** |
 | EF Postgres durability gates | Env-limited (often skipped without `EFFECT_FABRIC_TEST_POSTGRES_DSN`) |
 
 ## Pins
@@ -92,13 +92,15 @@ await createEffectLockedAgentGateway(createAgentGateway, { /* opts */, adapters 
 
 Prereqs: Python `>=3.11`, Node `>=20`, `npm`.
 
+These are the current install/verify paths; listing them here does **not** claim that SE/CR re-ran them live on this branch.
+
 ```bash
 make install-a && make install-b && make install-runtime
 make typecheck && make test && make smoke
 make qualify
 ```
 
-`make qualify` should fail closed on EF integrity FAIL; includes `typecheck:qualification`, installed-wheel cross-language, and B `MANIFEST.sha256`. Postgres gates need `EFFECT_FABRIC_TEST_POSTGRES_DSN`.
+The `make qualify` path fail-closes on EF integrity FAIL and includes `typecheck:qualification`, installed-wheel cross-language, and B `MANIFEST.sha256`. The cited v0.15 proofs remain agent-claimed from PR #8, not a fresh SE/CR rerun here. Postgres gates need `EFFECT_FABRIC_TEST_POSTGRES_DSN`.
 
 ## Security gates (current)
 
@@ -113,7 +115,8 @@ make qualify
 
 ## Honesty boundaries
 
-- Not `RELEASE_QUALIFIED`. Not a production 0.12 packaging claim.
+- `main` @ `9eb268bb` is merge-cleared, not packaging-cleared: **BLOCK RELEASE** / no `RELEASE_QUALIFIED`.
+- The v0.15 proofs on `main` remain agent-claimed from PR #8; this README does **not** claim a fresh SE/CR `make qualify` rerun.
 - `RELEASE.md` is the historical v0.1.1 freeze note — treat in-tree EF 0.2.12 + this README as current for EF/authority.
 - Mirrored smoke ≠ live A proof; branding ≠ crypto; Postgres may skip without DSN.
 
