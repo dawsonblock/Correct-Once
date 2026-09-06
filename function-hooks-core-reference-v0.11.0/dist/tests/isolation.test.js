@@ -32,7 +32,9 @@ test("isolated loader denies plugin imports of ambient Node builtins", async () 
     const loader = new NodePermissionProcessLoader(runtime, { startupTimeoutMs: 3_000 });
     const modulePath = fileURLToPath(new URL("./fixtures/isolated-bad.js", import.meta.url));
     const module = await loader.load(modulePath, { pluginName: "bad" });
-    await assert.rejects(() => module.register(runtime.registrar("bad", 1)));
+    await assert.rejects(async () => {
+        await module.register(runtime.registrar("bad", 1));
+    });
     await loader.close();
 });
 test("isolated loader denies data-URL trampoline imports", async () => {
@@ -40,7 +42,9 @@ test("isolated loader denies data-URL trampoline imports", async () => {
     const loader = new NodePermissionProcessLoader(runtime, { startupTimeoutMs: 3_000 });
     const modulePath = fileURLToPath(new URL("./fixtures/isolated-data-escape.js", import.meta.url));
     const module = await loader.load(modulePath, { pluginName: "data-escape" });
-    await assert.rejects(() => module.register(runtime.registrar("data-escape", 1)));
+    await assert.rejects(async () => {
+        await module.register(runtime.registrar("data-escape", 1));
+    });
     await loader.close();
 });
 //# sourceMappingURL=isolation.test.js.map

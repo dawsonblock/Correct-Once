@@ -5,6 +5,8 @@
   "description": "Parallel scaffold for Function Hooks Runtime 0.12 execution classes, handle caching, and tiered dispatch.",
   "scripts": {
     "test": "tsx --test tests/**/*.test.ts",
+    "test:cross-language": "tsx --test qualification/**/*.test.ts",
+    "qualify": "npm test && npm run test:cross-language",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

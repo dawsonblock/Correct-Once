@@ -91,11 +91,12 @@ when that capability record changes.
   - Runs a fresh registry epoch/revocation check after policy and immediately
     before external I/O
   - Rechecks lightweight policy/auth on every call
-  - Uses subject-scoped idempotency keyed by
-    `subject + capability id + idempotencyKey + canonical action digest`
-  - Derives one unified write identity from that tuple and uses it as the
-    downstream guarded action id while preserving the caller's original
-    `request.actionId` in metadata for audit correlation
+  - Uses a subject-scoped trusted idempotency namespace keyed by
+    `subject + capability id + caller idempotencyKey`
+  - Derives one unified write action id from
+    `subject + capability id + caller idempotencyKey + canonical action digest`
+    while preserving the caller's original `request.actionId` in metadata for
+    audit correlation
   - Same key + different digest is `IDEMPOTENCY_CONFLICT`
   - If receipt persistence fails after an external attempt, the cached entry is
     retained and the call fails `NEEDS_RECONCILIATION` instead of re-executing
@@ -107,7 +108,10 @@ when that capability record changes.
   - Requires the same write identity tuple as `mutation`
   - Runs the same fresh registry epoch/revocation check after policy and
     immediately before the Effect Gateway call
-  - Propagates the unified write identity into Effect Gateway `trace_id`
+  - Propagates the trusted idempotency namespace into Effect Gateway
+    `idempotency_key`
+  - Propagates the unified write action id into Effect Gateway `action_id` and
+    `trace_id`
   - Preserves fail-closed checks on the effect path:
     - object args only
     - subject authority required
