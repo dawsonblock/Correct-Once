@@ -16,7 +16,8 @@
     "@function-hooks/capabilities": "file:../function-hooks-core-reference-v0.11.0/packages/capabilities",
     "@function-hooks/core": "file:../function-hooks-core-reference-v0.11.0/packages/core",
     "@function-hooks/gateway": "file:../function-hooks-core-reference-v0.11.0/packages/gateway",
-    "@function-hooks/router": "file:../function-hooks-core-reference-v0.11.0/packages/router"
+    "@function-hooks/router": "file:../function-hooks-core-reference-v0.11.0/packages/router",
+    "ajv": "^8.20.0"
   },
   "devDependencies": {
     "@types/node": "^24.3.3",

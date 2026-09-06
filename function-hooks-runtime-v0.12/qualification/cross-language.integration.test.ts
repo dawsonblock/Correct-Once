@@ -643,6 +643,23 @@ test("live harness proves the installed effect-fabric environment", async () => 
   });
 });
 
+test("live installed-wheel gateway revalidates pinned critical input schemas", async () => {
+  await withHarness(async ({ client, callCount }) => {
+    const before = await callCount();
+    await assert.rejects(async () => {
+      await callLockedEffectGateway(client, {
+        subject: "tenant-a",
+        server: "github",
+        tool: "repo.settings",
+        args: { repo: "acme/example" },
+        idempotencyKey: "invalid-wheel-schema",
+        actionId: "invalid-wheel-schema",
+      });
+    }, /403|inputSchema validation/i);
+    assert.equal((await callCount()) - before, 0);
+  });
+});
+
 test("live guarded write uses the cross-language MCP path", async () => {
   await withHarness(async ({ runtime, callCount }) => {
     const before = await callCount();

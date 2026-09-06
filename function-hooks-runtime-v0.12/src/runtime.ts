@@ -11,6 +11,7 @@ import {
   RuntimeExecutionPolicyError,
 } from "./errors.js";
 import { EffectExecutor, FastExecutor, GuardedExecutor } from "./executors.js";
+import { assertRequestMatchesPinnedInputSchema } from "./input-schema.js";
 import { projectRuntimeCapabilityCatalog } from "./registry.js";
 import { normalizedCallerCorrelationId } from "./write-identity.js";
 import type {
@@ -268,6 +269,7 @@ export function createFunctionHooksRuntime(
     assertNoCallTimeTierOverride(request);
     const handle = await resolveHandle(capabilityId);
     assertHandlePin(handle);
+    assertRequestMatchesPinnedInputSchema(handle, request);
     const effectiveContext = normalizedContext(context);
     switch (handle.executor) {
       case "fast":

@@ -9,6 +9,7 @@ import pytest
 from adapter.python.call_time_policy import SubjectAllowlist
 from adapter.python.curated_mcp_adapter import (
     AdapterError,
+    AdapterDenied,
     CuratedMcpAdapter,
     derive_trusted_write_identity,
 )
@@ -235,6 +236,34 @@ async def test_mutating_calls_require_nonempty_caller_idempotency_key(
             capability_id=WRITE_CAPABILITY_ID,
             arguments={"repo": "acme/example", "mode": "strict"},
         )
+
+
+@pytest.mark.asyncio
+async def test_invalid_arguments_are_denied_before_effect_gateway_side_effect(
+    tmp_path: Path,
+) -> None:
+    snapshot = tmp_path / "adapter-snapshot.json"
+    write_adapter_snapshot(snapshot)
+
+    transport = FakeMcpTransport()
+    transport.add("github", "repo.settings", capability_schema())
+    gateway = EffectGateway(transport=transport)
+    adapter = CuratedMcpAdapter(
+        gateway,
+        subjects={"tenant-a": subject_allowlist("write")},
+    )
+    adapter.register_from_snapshot(snapshot)
+
+    with pytest.raises(AdapterDenied, match="inputSchema validation"):
+        await adapter.invoke_capability(
+            subject="tenant-a",
+            capability_id=WRITE_CAPABILITY_ID,
+            arguments={"repo": "acme/example"},
+            caller_correlation_id="invalid-schema",
+            idempotency_key="invalid-schema",
+        )
+
+    assert transport.calls == []
 
 
 @pytest.mark.asyncio

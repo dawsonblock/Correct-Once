@@ -40,7 +40,7 @@ test-runtime:
 	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) test
 
 test-adapter-live:
-	PYTHONPATH="$(QUALIFY_PYTHONPATH)" $(PYTHON) -m pytest -q adapter/tests/test_curated_mcp_adapter_live.py
+	PYTHONPATH="$(QUALIFY_PYTHONPATH)" $(PYTHON) -m pytest -q adapter/tests/test_curated_mcp_adapter_live.py adapter/tests/test_write_identity_vectors.py
 
 test-cross-language: build-a-release
 	set -- "$(EFFECT_FABRIC_DIR)"/release-artifacts/wheel/effect_fabric-0.2.12-*.whl && \

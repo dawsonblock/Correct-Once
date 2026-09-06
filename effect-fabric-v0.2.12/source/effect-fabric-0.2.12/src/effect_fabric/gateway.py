@@ -36,6 +36,7 @@ from .integrations.mcp_gateway import (
     PrepareProbe,
     ReconcileProbe,
 )
+from .json_schema import JsonSchemaValidationError, assert_valid_input_schema_instance
 from .models import (
     ActionIntent,
     EffectContract,
@@ -361,6 +362,14 @@ class EffectGateway:
             raise GatewayDenied(f"MCP schema drift denied: {server}/{tool}")
         if decision is RegistryDecision.DENY_UNKNOWN_MUTATION:
             raise GatewayDenied(f"unknown MCP mutation denied: {server}/{tool}")
+        try:
+            assert_valid_input_schema_instance(
+                schema=definition.mcp.input_schema,
+                instance=arguments,
+                label=f"{server}/{tool} arguments",
+            )
+        except JsonSchemaValidationError as exc:
+            raise GatewayDenied(str(exc)) from exc
         if decision is RegistryDecision.PASSTHROUGH_READ:
             result = await self.transport.call_tool(server, tool, arguments)
             return GatewayCallResult(

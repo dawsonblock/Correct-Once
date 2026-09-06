@@ -80,6 +80,27 @@ function defaultReadDescriptorSchema() {
   };
 }
 
+function writeSchema() {
+  return {
+    type: "object",
+    properties: {
+      repo: { type: "string" },
+      mode: { type: "string" },
+    },
+    required: ["repo", "mode"],
+  };
+}
+
+function runtimeStateWriteSchema() {
+  return {
+    type: "object",
+    properties: {
+      data: { type: "string" },
+    },
+    required: ["data"],
+  };
+}
+
 function readDescriptorAuthority(options: {
   readonly server?: string;
   readonly tool?: string;
@@ -415,6 +436,94 @@ test("read-path MCP descriptor drift is denied before external I/O", async (t) =
   assert.equal(directCalls, 1);
 });
 
+test("invalid request args are denied before direct or effect external execution", async (t) => {
+  let directCalls = 0;
+  let effectCalls = 0;
+  const gateway = await createAgentGateway({
+    receipts: false,
+    authorizer: allowAllGatewayAuthorizer(),
+    adapters: {
+      "mcp.call": async () => {
+        directCalls += 1;
+        return { ok: true };
+      },
+    },
+  });
+  const registry = new InMemoryRuntimeCapabilityRegistry();
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.read-schema-validation",
+        capability: "repo.read",
+      },
+      {
+        executionClass: "read",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  await registry.register(
+    runtimeCapability(
+      {
+        id: "github.repo.settings-schema-validation",
+        capability: "repo.settings",
+        description: "Critical schema validation fixture",
+        inputSchema: writeSchema(),
+        outputSchema: { type: "object" },
+        sideEffect: "write",
+        sensitivity: "public",
+        risk: "medium",
+        implementation: mcpImplementation("repo.settings"),
+      },
+      {
+        executionClass: "critical",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  const runtime = createFunctionHooksRuntime({
+    registry,
+    fastGateway: gateway,
+    effectGateway: effectGatewayClient(async () => {
+      effectCalls += 1;
+      return { ok: true };
+    }),
+    mcpReadDescriptorAuthority: readDescriptorAuthority(),
+  });
+
+  t.after(async () => {
+    await runtime.close();
+    await gateway.close();
+  });
+
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.read-schema-validation",
+        callerCorrelationId: "invalid-read-schema",
+        input: { repo: 42 },
+      },
+      { subject: "reader-1" },
+    ),
+    /inputSchema validation/i,
+  );
+  await assert.rejects(
+    runtime.invokeCapability(
+      {
+        id: "github.repo.settings-schema-validation",
+        callerCorrelationId: "invalid-write-schema",
+        idempotencyKey: "invalid-write-schema",
+        input: { repo: "acme/example" },
+      },
+      { subject: "tenant-a" },
+    ),
+    /inputSchema validation/i,
+  );
+
+  assert.equal(directCalls, 0);
+  assert.equal(effectCalls, 0);
+});
+
 test("ordinary mutations stay on the guarded direct path while critical stays on Effect Fabric", async (t) => {
   const directCalls: string[] = [];
   const effectCalls: string[] = [];
@@ -437,6 +546,7 @@ test("ordinary mutations stay on the guarded direct path while critical stays on
         app: "runtime",
         capability: "state.update",
         description: "Update runtime state",
+        inputSchema: runtimeStateWriteSchema(),
         sideEffect: "write",
         risk: "medium",
         sensitivity: "public",
@@ -534,6 +644,7 @@ test("guarded mutations require idempotency keys and receipts", async (t) => {
         app: "runtime",
         capability: "state.patch",
         description: "Patch runtime state",
+        inputSchema: runtimeStateWriteSchema(),
         sideEffect: "write",
         sensitivity: "public",
         implementation: { kind: "filesystem.write", path: "state.json" },
@@ -969,6 +1080,7 @@ test("mutation and critical recheck revocation immediately before external execu
         app: "runtime",
         capability: "state.revocation-check",
         description: "Mutation revoked before write",
+        inputSchema: runtimeStateWriteSchema(),
         sideEffect: "write",
         sensitivity: "public",
         implementation: { kind: "filesystem.write", path: "state.json" },
@@ -1307,6 +1419,7 @@ test("secret reads without a subject are denied before any read executes", async
         app: "runtime",
         capability: "secret.read",
         description: "Read secret runtime state",
+        inputSchema: { type: "null" },
         sideEffect: "read",
         sensitivity: "secret",
         implementation: { kind: "filesystem.read", path: "secret.txt" },

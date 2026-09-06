@@ -13,6 +13,7 @@ authors = [{name = "Effect Fabric contributors"}]
 dependencies = [
   "pydantic>=2.7,<3",
   "cryptography>=42,<49",
+  "jsonschema>=4.26.0,<5",
 ]
 
 [project.optional-dependencies]

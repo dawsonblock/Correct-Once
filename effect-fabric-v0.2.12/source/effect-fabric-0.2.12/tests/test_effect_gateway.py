@@ -231,6 +231,40 @@ async def test_registered_mutation_runs_through_effect_engine_and_dynamic_bindin
 
 
 @pytest.mark.asyncio
+async def test_registered_mutation_revalidates_arguments_against_pinned_input_schema():
+    schema = {
+        "type": "object",
+        "properties": {
+            "id": {"type": "string"},
+            "value": {"type": "integer"},
+        },
+        "required": ["id", "value"],
+    }
+    transport = FakeMcpTransport()
+    transport.add(
+        "demo",
+        "set_item",
+        schema,
+        result=McpToolResult(content={"changed": True}, external_id="remote-1", status_code=200),
+    )
+    gateway = EffectGateway(
+        transport=transport,
+        policy=StaticGatewayPolicy(allowed_operations={"demo.item.set"}),
+    )
+    gateway.register_tool(mutation_factory(schema))
+
+    with pytest.raises(GatewayDenied, match="inputSchema validation"):
+        await gateway.call_tool(
+            subject="agent-a",
+            server="demo",
+            tool="set_item",
+            arguments={"id": "a"},
+        )
+
+    assert transport.calls == []
+
+
+@pytest.mark.asyncio
 async def test_trusted_identity_overrides_bound_idempotency_and_replays_without_a_second_effect():
     schema = {
         "type": "object",

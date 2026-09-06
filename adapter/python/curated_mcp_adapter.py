@@ -11,6 +11,10 @@ from effect_fabric.effect_registry import McpToolIdentity, MutationClass
 from effect_fabric.errors import DuplicateIdempotencyConflict
 from effect_fabric.gateway import EffectDefinitionFactory, EffectGateway
 from effect_fabric.gateway_policy import StaticGatewayPolicy
+from effect_fabric.json_schema import (
+    JsonSchemaValidationError,
+    assert_valid_input_schema_instance,
+)
 from effect_fabric.models import (
     EffectContract,
     IdempotencyContract,
@@ -608,6 +612,14 @@ class CuratedMcpAdapter:
 
         # Gate 3: pass clean args only — policy looks up pin by server+tool.
         args = dict(arguments or {})
+        try:
+            assert_valid_input_schema_instance(
+                schema=pin.input_schema,
+                instance=args,
+                label=f"Capability {capability_id} arguments",
+            )
+        except JsonSchemaValidationError as exc:
+            raise AdapterDenied(str(exc)) from exc
         trusted_write = None
         if pin.mutation_class is not MutationClass.READ_ONLY:
             trusted_write = derive_trusted_write_identity(
