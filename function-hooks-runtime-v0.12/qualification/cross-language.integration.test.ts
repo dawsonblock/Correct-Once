@@ -19,6 +19,7 @@ import {
 const READ_CAPABILITY_ID = "github.repo.read-live";
 const MUTATION_CAPABILITY_ID = "github.repo.write-live";
 const WRITE_CAPABILITY_ID = "github.repo.settings-live";
+const APPROVAL_CAPABILITY_ID = "github.repo.approved-settings-live";
 const DESTRUCTIVE_CAPABILITY_ID = "github.repo.purge-live";
 const UNCERTAIN_CAPABILITY_ID = "github.repo.uncertain-live";
 
@@ -231,6 +232,12 @@ function defaultControl() {
         mode: "success",
         result: { updated: true },
       },
+      "github/repo.approved-settings": {
+        schema: writeSchema(),
+        mode: "success",
+        result: { updated: true, approved: true },
+        approvalSecret: "live-approval-secret",
+      },
       "github/repo.purge": {
         schema: readSchema(),
         mode: "success",
@@ -314,6 +321,22 @@ async function createHarness(): Promise<HarnessContext> {
         inputSchema: writeSchema(),
         sideEffect: "write",
         implementation: mcpImplementation("repo.settings"),
+      },
+      {
+        executionClass: "critical",
+        requiresLightweightAuth: false,
+      },
+    ),
+  );
+  await registry.register(
+    runtimeCapability(
+      {
+        id: APPROVAL_CAPABILITY_ID,
+        capability: "repo.approved-settings-live",
+        description: "Live approval-gated qualification capability",
+        inputSchema: writeSchema(),
+        sideEffect: "write",
+        implementation: mcpImplementation("repo.approved-settings"),
       },
       {
         executionClass: "critical",
@@ -558,6 +581,66 @@ test("live critical write stores trusted identity in Effect Fabric and replays i
 
     const replay = (await runtime.invokeCapability(
       { ...request, actionId: "caller-visible-replay" },
+      { subject: "tenant-a" },
+    )) as GatewayResult;
+    assert.equal(replay.transaction_id, first.transaction_id);
+    assert.equal((await callCount()) - before, 1);
+  });
+});
+
+test("live approval-gated critical write requires a valid approval token", async () => {
+  await withHarness(async ({ runtime, callCount, getTransaction }) => {
+    const before = await callCount();
+    await assert.rejects(async () => {
+      await runtime.invokeCapability(
+        {
+          id: APPROVAL_CAPABILITY_ID,
+          actionId: "approval-missing",
+          idempotencyKey: "approval-missing",
+          input: { repo: "acme/example", mode: "approved" },
+        },
+        { subject: "tenant-a" },
+      );
+    }, /409|approval/i);
+    assert.equal((await callCount()) - before, 0);
+
+    const approved = (await runtime.invokeCapability(
+      {
+        id: APPROVAL_CAPABILITY_ID,
+        actionId: "approval-granted",
+        idempotencyKey: "approval-granted",
+        input: { repo: "acme/example", mode: "approved" },
+      },
+      { subject: "tenant-a", approvalToken: "live-approval-secret" },
+    )) as GatewayResult;
+    assert.equal(approved.execution_state, "receipt_recorded");
+    assert.ok(approved.transaction_id);
+    assert.equal((await callCount()) - before, 1);
+    const tx = await getTransaction(approved.transaction_id);
+    assert.ok(tx.approval_digest);
+  });
+});
+
+test("live critical replay survives a fresh runtime instance without a second external call", async () => {
+  await withHarness(async ({ runtime, makeRuntime, callCount }) => {
+    const request = {
+      id: WRITE_CAPABILITY_ID,
+      actionId: "restart-first",
+      idempotencyKey: "restart-shared",
+      input: { repo: "acme/example", mode: "restart" },
+    };
+    const before = await callCount();
+    const first = (await runtime.invokeCapability(request, {
+      subject: "tenant-a",
+    })) as GatewayResult;
+    assert.ok(first.transaction_id);
+
+    const restartedRuntime = makeRuntime();
+    const replay = (await restartedRuntime.invokeCapability(
+      {
+        ...request,
+        actionId: "restart-second",
+      },
       { subject: "tenant-a" },
     )) as GatewayResult;
     assert.equal(replay.transaction_id, first.transaction_id);

@@ -212,6 +212,8 @@ def build_gateway(snapshot_path: Path, control_path: Path) -> tuple[EffectGatewa
     gateway = EffectGateway(transport=transport)
     snapshot = load_admitted_registry(snapshot_path)
     operations: set[str] = set()
+    approval_required_operations: set[str] = set()
+    approval_secret: str | None = None
     pins_by_mcp: dict[tuple[str, str], RegistrationPin] = {}
     for record in snapshot["records"]:
         if record.get("state") != "active":
@@ -236,10 +238,28 @@ def build_gateway(snapshot_path: Path, control_path: Path) -> tuple[EffectGatewa
             reconcile_probe = _reconcile_probe(transport, pin.server, pin.tool)
         gateway.register_tool(factory, reconcile_probe=reconcile_probe)
         operations.add(pin.operation)
+        tool_config = transport.tool_config(pin.server, pin.tool)
+        tool_approval_secret = tool_config.get("approvalSecret")
+        if tool_approval_secret is not None:
+            if not isinstance(tool_approval_secret, str) or not tool_approval_secret:
+                raise RuntimeError(
+                    f"{pin.server}/{pin.tool} approvalSecret must be a non-empty string"
+                )
+            if approval_secret is None:
+                approval_secret = tool_approval_secret
+            elif approval_secret != tool_approval_secret:
+                raise RuntimeError(
+                    "qualification harness requires a single shared approval secret"
+                )
+            approval_required_operations.add(pin.operation)
         pins_by_mcp[(pin.server, pin.tool)] = pin
 
     gateway.policy = LiveSnapshotPolicy(
-        inner=StaticGatewayPolicy(allowed_operations=operations),
+        inner=StaticGatewayPolicy(
+            allowed_operations=operations,
+            approval_required_operations=approval_required_operations,
+            approval_secret=approval_secret,
+        ),
         snapshot_path=snapshot_path,
         pins_by_mcp=pins_by_mcp,
     )
