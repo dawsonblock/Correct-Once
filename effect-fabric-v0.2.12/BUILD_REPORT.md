@@ -14,21 +14,21 @@
 
 ## Results
 
-- Source qualification: **176 total / 174 passed / 2 skipped / 0 failed**.
+- Source qualification: **177 total / 175 passed / 2 skipped / 0 failed**.
 - Source-integrity verifier: **PASS**.
-- Source manifest SHA256: `bc4b56d9682d1efca651e4768f7a1f003b9a807f5eb25c52ee838e09f17c69fe`.
+- Source manifest SHA256: `34a25fbb1302c174b40b61d40b67272f9b3f5be01c0d3e1d5f75638d8c90c0e5`.
 - Source tar: `effect-fabric-0.2.12.tar.gz`
-  (`sha256: fa50c406f77e1d2261bfa892a0de438843c800e249e753ffb9475db9df64fed0`).
+  (`sha256: 0506c53627b7dfd29894e7bc91c80e36fe6f6b86b2f2e68484b77b459f0fa837`).
 - Wheel: `effect_fabric-0.2.12-py3-none-any.whl`
-  (`sha256: dfe150347ec379df84ab6bd6bc26dad089dbda3c921f7738f4475de88ec49cd6`).
+  (`sha256: 4b13067d8069080862772bc8ca23700cd6ed9123550c1003e1c8574d2b44d19b`).
 - Wheel payload audit: **PASS** (`artifacts/WHEEL_CONTENTS_CHECK.json`).
-- Wheel/source equivalence: **PASS** with **72 compared files** and **0 failures**
+- Wheel/source equivalence: **PASS** with **73 compared files** and **0 failures**
   (`artifacts/WHEEL_SOURCE_EQUIVALENCE.json`).
 - Installed-wheel smoke: **PASS** (`verification/INSTALLED_WHEEL_SMOKE.json`).
 - Installed-wheel CLI demo: **PASS** (`verification/INSTALLED_WHEEL_DEMO.json`).
-- Root runtime suite: **24 passed**.
-- Root adapter live suite: **3 passed**.
-- Root cross-language suite: **13 passed** against the installed wheel from a clean virtualenv; the
+- Root runtime suite: **25 passed**.
+- Root adapter live suite: **7 passed**.
+- Root cross-language suite: **14 passed** against the installed wheel from a clean virtualenv; the
   harness confirmed `effect_fabric_version=0.2.12` from `site-packages`.
 - Function Hooks manifest verification: **PASS**.
 

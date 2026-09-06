@@ -13,6 +13,8 @@ the built artifacts.
 - Added explicit `semantic_metadata` support to the gateway contract and `ActionIntent` so
   trusted-action identity distinguishes semantic drift while ordinary request metadata stays
   non-semantic by default.
+- Added pinned JSON Schema validation at both the runtime external-execution boundary and the
+  Effect Gateway so invalid arguments are denied before fake MCP or governed-effect I/O.
 - Hardened release build plumbing so the vendored qualification uses the configured Python
   interpreter, the package metadata builds cleanly under current setuptools, and root qualification
   creates a clean virtualenv for the installed-wheel cross-language proof.
@@ -22,15 +24,15 @@ the built artifacts.
 ## Verification highlights
 
 - `make qualify`: **PASS**
-- `bash scripts/qualify.sh`: **176 tests / 174 passed / 2 skipped / 0 failed**
+- `bash scripts/qualify.sh`: **177 tests / 175 passed / 2 skipped / 0 failed**
 - `python3 scripts/verify_release_integrity.py`: **PASS**
-- Installed-wheel cross-language suite: **13 passed**, with the harness proving
+- Installed-wheel cross-language suite: **14 passed**, with the harness proving
   `effect_fabric==0.2.12` was imported from `site-packages`
 - Source tar SHA256:
-  `4a2f49b20ca835e67dbca7d4b51e35262450d8cf35eddaa81d3847ca12e39b21`
+  `0506c53627b7dfd29894e7bc91c80e36fe6f6b86b2f2e68484b77b459f0fa837`
 - Wheel SHA256:
-  `dfe150347ec379df84ab6bd6bc26dad089dbda3c921f7738f4475de88ec49cd6`
-- Wheel/source equivalence: **72 compared files / 0 failures**
+  `4b13067d8069080862772bc8ca23700cd6ed9123550c1003e1c8574d2b44d19b`
+- Wheel/source equivalence: **73 compared files / 0 failures**
 
 ## Still not claimed
 

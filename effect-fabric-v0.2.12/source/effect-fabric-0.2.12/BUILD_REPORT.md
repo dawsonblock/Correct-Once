@@ -12,13 +12,13 @@ manifest, release manifest, sdist, wheel, and source-to-wheel evidence from that
 
 ## Commands and results
 
-- `bash scripts/qualify.sh` -> **176 tests / 174 passed / 2 skipped / 0 failed**.
+- `bash scripts/qualify.sh` -> **177 tests / 175 passed / 2 skipped / 0 failed**.
 - `python3 scripts/freeze_release.py` -> refreshed `MANIFEST.sha256` and `release-manifest.json`.
 - `python3 scripts/verify_release_integrity.py` -> **PASS**.
 - `python3 scripts/build_release.py` -> rebuilt the source tar and wheel; exact artifact digests are
   recorded in `release-artifacts/artifact-manifest.json`.
 - `release-artifacts/WHEEL_CONTENTS_CHECK.json` -> **PASS**.
-- `release-artifacts/WHEEL_SOURCE_EQUIVALENCE.json` -> **PASS** with **72 compared files** and
+- `release-artifacts/WHEEL_SOURCE_EQUIVALENCE.json` -> **PASS** with **73 compared files** and
   **0 failures**.
 
 ## Qualified local gates

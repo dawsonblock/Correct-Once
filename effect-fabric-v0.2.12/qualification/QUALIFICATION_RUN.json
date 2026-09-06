@@ -1,8 +1,8 @@
 {
   "dependency_lock_hash": null,
-  "dependency_spec_hash": "01e830036a3f5daf402dcc6b29631b69541f29253ba0324b86dac307435ac79a",
-  "generated_at": "2026-09-06T20:56:29.479463+00:00",
-  "git_commit": "990e2cf3179d8e305904a1f7c94a179ad86d4ed7",
+  "dependency_spec_hash": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+  "generated_at": "2026-09-06T21:11:26.796084+00:00",
+  "git_commit": "bf92f2a4ce10564c64ba655c716101d5f5606785",
   "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
   "postgres_image_digest": null,
   "python": "3.12.3",

@@ -1,19 +1,19 @@
 {
-  "aggregate_sha256": "c73d806dd0066b66a0d202aecbfffcdc1b591973e1cae5f086b5141f5ee8d160",
+  "aggregate_sha256": "54c2606f56c440c9786259376398f027555aafb9691c57e569b5a7c35cd61b91",
   "claim": "Generated local qualification artifacts have a stable canonical JSON representation for the current qualification input tree; this gate does not claim external-system or timing reproducibility.",
   "failures": [],
   "provenance": {
     "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
     "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
-    "pyproject_sha256": "01e830036a3f5daf402dcc6b29631b69541f29253ba0324b86dac307435ac79a",
-    "qualification_inputs_sha256": "73af6bb7a23449697b930689cc1f911b49b7d2ac7717e2d6d9b1350818a3c7b0",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
     "schema": "effect-fabric/qualification-provenance/v1",
     "version": "0.2.12"
   },
   "reports": {
     "CORE_TEST_QUALIFICATION.json": {
       "canonical_bytes": 584,
-      "canonical_sha256": "6552ae1693ff96ad111c43229d9af44b3be7a5159243566ed4e20b377e7018b9"
+      "canonical_sha256": "e55318ac564b71106e6f67f5f077098429159e74bead12766da201dd5493b035"
     },
     "DONOR_COMPATIBILITY_QUALIFICATION.json": {
       "canonical_bytes": 1613,
@@ -61,43 +61,43 @@
     },
     "UPSTREAM_DAO_ACTIVE_ENGINE_QUALIFICATION.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_ACTIVE_ENGINE_REPRODUCIBILITY.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_DIRECT_STORE_QUALIFICATION.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_DIRECT_STORE_REPRODUCIBILITY.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_ENGINE_INTERFACE_QUALIFICATION.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_ENGINE_INTERFACE_REPRODUCIBILITY.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_NATIVE_ENGINE_QUALIFICATION.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_NATIVE_ENGINE_REPRODUCIBILITY.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_QUALIFICATION.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "UPSTREAM_DAO_REPRODUCIBILITY.json": {
       "canonical_bytes": 611,
-      "canonical_sha256": "9d73f661a7f96e454fc51ae957571eac4110163a583801a4ee2cf3dea7fc45a1"
+      "canonical_sha256": "17b042ef6e56bb961869d9e2dc167154479f4d2f1741964b8d4caed0ffb76fae"
     },
     "WORKLOAD_IDENTITY_QUALIFICATION.json": {
       "canonical_bytes": 648,

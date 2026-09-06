@@ -2,12 +2,17 @@
   "schema": "effect-fabric/full-bundle-manifest/v1",
   "version": "0.2.12",
   "release": "trust-boundary-hardening",
-  "payload_files": 279,
+  "payload_files": 281,
   "files": [
     {
       "path": "BUILD_REPORT.md",
       "bytes": 2072,
-      "sha256": "a35b8f63a72a185c7d34422c3995c556c16038756e3508b9487734c41fc5d5e1"
+      "sha256": "04f42984caf430b0a5ab6a7ebc9ebc54e51bf5f01457166fd9621da245426393"
+    },
+    {
+      "path": "BUNDLE_MANIFEST.json",
+      "bytes": 54081,
+      "sha256": "9c4273af35d67506cabc119d102800082784dd4ed118e168c4ef46af8778b870"
     },
     {
       "path": "CHANGELOG.md",
@@ -31,13 +36,13 @@
     },
     {
       "path": "UPGRADE_SUMMARY.md",
-      "bytes": 2060,
-      "sha256": "b603c8e5bc690e8a1407e068a2c7bdb125348c3dc94095f3e9b115dd1b39d1db"
+      "bytes": 2243,
+      "sha256": "f0f50105f1932ba0706dc1305764b804ac6b88661b16ac65f186e081e2718c93"
     },
     {
       "path": "artifacts/QUALIFICATION_RUN.json",
       "bytes": 425,
-      "sha256": "5ae5c8eea90709a51c54677049fc56758b75c4139ea4d127604f63b581e88bad"
+      "sha256": "a876706df7ce0488248ba7c06032d52284636ada43d48d8113f1d970a0ea0b9b"
     },
     {
       "path": "artifacts/WHEEL_CONTENTS_CHECK.json",
@@ -46,48 +51,48 @@
     },
     {
       "path": "artifacts/WHEEL_SOURCE_EQUIVALENCE.json",
-      "bytes": 31049,
-      "sha256": "4a5fc2b8216d4528ded83048a0fc41726755e68c7cf5af25fa2747c7c151b7a6"
+      "bytes": 31434,
+      "sha256": "62795e8fe991fb1906431740ba7ba7ee5c6dd91e1e415a6fd1dd2316b8dea5a7"
     },
     {
       "path": "artifacts/artifact-manifest.json",
       "bytes": 1036,
-      "sha256": "09a9616ee3df4d38df1117d3c8b2e745698e449db1033d6f38ac6c847c944f92"
+      "sha256": "c5a4253d923543b93b5a4ae6b9cd51c95e539cdfdcd7e2275a2cd4a568264eb8"
     },
     {
       "path": "artifacts/effect-fabric-0.2.12.tar.gz",
-      "bytes": 207705,
-      "sha256": "fa50c406f77e1d2261bfa892a0de438843c800e249e753ffb9475db9df64fed0"
+      "bytes": 208399,
+      "sha256": "0506c53627b7dfd29894e7bc91c80e36fe6f6b86b2f2e68484b77b459f0fa837"
     },
     {
       "path": "artifacts/wheel/effect_fabric-0.2.12-py3-none-any.whl",
-      "bytes": 135661,
-      "sha256": "dfe150347ec379df84ab6bd6bc26dad089dbda3c921f7738f4475de88ec49cd6"
+      "bytes": 136636,
+      "sha256": "4b13067d8069080862772bc8ca23700cd6ed9123550c1003e1c8574d2b44d19b"
     },
     {
       "path": "qualification/CORE_TEST_QUALIFICATION.json",
       "bytes": 657,
-      "sha256": "46441943fe57c19fb8914c6b50284505b3c4568016fac60b9da98bfdf889310a"
+      "sha256": "bc76bd328c0e18e2b3897874bda6dd5f980da7157bfdaeabcc4a5ee386192bd0"
     },
     {
       "path": "qualification/DONOR_COMPATIBILITY_QUALIFICATION.json",
       "bytes": 2924,
-      "sha256": "d40894fb205bd3f0b2e5a73ea34ab9cdac3f4ef78d4d5ef338c45427bee5204c"
+      "sha256": "cc5861bcf920b900afc426b01e0ee322c30c5c0806a443a139b852c3cae38ddf"
     },
     {
       "path": "qualification/EVIDENCE_QUALIFICATION.json",
       "bytes": 1122,
-      "sha256": "6ac4972502e993fd0304a3bde0051c1f6500ead0d1e83f165284d6b2426106bd"
+      "sha256": "c84e7f61f306d6368be9d5014bf70f7ce4a78bdd280f9f9be8928ff8ff7af62b"
     },
     {
       "path": "qualification/EXTERNAL_ANCHOR_QUALIFICATION.json",
       "bytes": 1167,
-      "sha256": "6d40e1690515e4e685e6cbcaaf992b36e80db21cb72eec4c55cf0306342383bc"
+      "sha256": "96e583f7283d12816079d653e97f869042cda434117e4a374bfce266f6e3bb21"
     },
     {
       "path": "qualification/GATEWAY_QUALIFICATION.json",
       "bytes": 986,
-      "sha256": "905c13760766c9a84afb0d1446bf2332117e1aaac66692573cded0d86ad2395e"
+      "sha256": "2fa0264289213885ab65a6d88b927a7e0f9305baf6be625f832fd13b91576c77"
     },
     {
       "path": "qualification/LOCAL_STATIC_SANITY.json",
@@ -97,112 +102,112 @@
     {
       "path": "qualification/POSTGRES_QUALIFICATION.json",
       "bytes": 2060,
-      "sha256": "947468ae306a11767d4ed166874b3bcb58e958f0f353b16feab9ba7b3f44d1db"
+      "sha256": "d5409447a38c8e7939f8166b55da8843829746c26b0cb9736d80d3c1be1d0383"
     },
     {
       "path": "qualification/PROVIDER_QUALIFICATION.json",
       "bytes": 5513,
-      "sha256": "aa45d7e5faa3ffd296d3f4938895ad5b9738bb0783abd5d77a2b23b90379adc2"
+      "sha256": "db7a3ccffd6f461d33f756dea59fad042f9117298c1776cc3484ffc16d952892"
     },
     {
       "path": "qualification/QUALIFICATION_INPUTS.sha256",
-      "bytes": 19935,
-      "sha256": "73af6bb7a23449697b930689cc1f911b49b7d2ac7717e2d6d9b1350818a3c7b0"
+      "bytes": 20034,
+      "sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213"
     },
     {
       "path": "qualification/QUALIFICATION_REPRODUCIBILITY.json",
       "bytes": 5027,
-      "sha256": "2e2d4734893fbb46f12f58feeed7b5598d4610c7b3e0c05f17a7b4539ad354bf"
+      "sha256": "b9a0ee8008353fbd30bfd347c7bc212f7bb3c70356c53d4350b2a6a3690921d4"
     },
     {
       "path": "qualification/QUALIFICATION_RUN.json",
       "bytes": 425,
-      "sha256": "5ae5c8eea90709a51c54677049fc56758b75c4139ea4d127604f63b581e88bad"
+      "sha256": "a876706df7ce0488248ba7c06032d52284636ada43d48d8113f1d970a0ea0b9b"
     },
     {
       "path": "qualification/REDUCER_EQUIVALENCE_QUALIFICATION.json",
       "bytes": 3163,
-      "sha256": "644d30da81be214b4f70337d1d84a1e8dde38806cb2d739237c2fb9fcbb81770"
+      "sha256": "5c31edb29e76fb5f2f5c410adf5739e027284fc059e29d6b2af000895f5f84f0"
     },
     {
       "path": "qualification/REDUCER_NEGATIVE_CONTROL_QUALIFICATION.json",
       "bytes": 5206,
-      "sha256": "1f1eb643401da53e7d94297d46ec0aa6823de34dc07121f54f9cf502d690082a"
+      "sha256": "13f02afdd744c68bed5440eac51ee912c1399f2ea5808c21f67d07088ccdce71"
     },
     {
       "path": "qualification/RELEASE_QUALIFICATION.json",
       "bytes": 2155,
-      "sha256": "b30b630380ffad5988be9df41f971ad2586fe6f01a530e9ec24ec4ba677243a2"
+      "sha256": "223c3db33a9dbd437a4e2468ba4e9c486b190a38e53eb03fa0af696552ba0512"
     },
     {
       "path": "qualification/STATIC_QUALIFICATION.json",
       "bytes": 671,
-      "sha256": "c42e22fef0674101baed0eaee9b2819837fc85a2e368443426d5271749a5da9b"
+      "sha256": "35a947e82596ec22d24e45c4566cb9b474bf1aec917262c0af0fb909cf55deb8"
     },
     {
       "path": "qualification/TRANSACTIONAL_EVIDENCE_QUALIFICATION.json",
       "bytes": 1398,
-      "sha256": "fd2436378215b1e6e9dced31b604a169266d57637fd884975855866067119683"
+      "sha256": "fc694b26984eeb9eb78cb87f258f96e4c2361561479e0d43fa88d745ff35cce8"
     },
     {
       "path": "qualification/TRANSITION_KERNEL_QUALIFICATION.json",
       "bytes": 2060,
-      "sha256": "018a6927b0294f32ebc276de07e3641ac3494bc69fb69850a72c4edbcca9d892"
+      "sha256": "0166671ff8eca0b58d387f4d616c0086826511cc2bbb4da4ae13759e37863d9c"
     },
     {
       "path": "qualification/UPSTREAM_DAO_ACTIVE_ENGINE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_ACTIVE_ENGINE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_DIRECT_STORE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_DIRECT_STORE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_ENGINE_INTERFACE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_ENGINE_INTERFACE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_NATIVE_ENGINE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_NATIVE_ENGINE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/UPSTREAM_DAO_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "qualification/WORKLOAD_IDENTITY_QUALIFICATION.json",
       "bytes": 1212,
-      "sha256": "7081c94f68c28fe6de0be83bec5d3165c1841be48d7f55f3ff9b895e2c2b7a13"
+      "sha256": "38763d11916045182365fc4cc0fcc2ae075bc297bf5b0fcdaf73b6ffd80b4899"
     },
     {
       "path": "source/effect-fabric-0.2.12/.github/workflows/ci.yml",
@@ -222,7 +227,7 @@
     {
       "path": "source/effect-fabric-0.2.12/BUILD_REPORT.md",
       "bytes": 1982,
-      "sha256": "aeb78717a0e407a8c6a14d32494af0276bec6e36f51fc369d0e9bca1f88e71d3"
+      "sha256": "b1aca97b8620dda130031802ec07d78e0092de9e9d9bc5edff4de5c5f95df781"
     },
     {
       "path": "source/effect-fabric-0.2.12/CHANGELOG.md",
@@ -232,12 +237,12 @@
     {
       "path": "source/effect-fabric-0.2.12/CORE_TEST_QUALIFICATION.json",
       "bytes": 657,
-      "sha256": "46441943fe57c19fb8914c6b50284505b3c4568016fac60b9da98bfdf889310a"
+      "sha256": "bc76bd328c0e18e2b3897874bda6dd5f980da7157bfdaeabcc4a5ee386192bd0"
     },
     {
       "path": "source/effect-fabric-0.2.12/DONOR_COMPATIBILITY_QUALIFICATION.json",
       "bytes": 2924,
-      "sha256": "d40894fb205bd3f0b2e5a73ea34ab9cdac3f4ef78d4d5ef338c45427bee5204c"
+      "sha256": "cc5861bcf920b900afc426b01e0ee322c30c5c0806a443a139b852c3cae38ddf"
     },
     {
       "path": "source/effect-fabric-0.2.12/DONOR_LOCK.json",
@@ -252,17 +257,17 @@
     {
       "path": "source/effect-fabric-0.2.12/EVIDENCE_QUALIFICATION.json",
       "bytes": 1122,
-      "sha256": "6ac4972502e993fd0304a3bde0051c1f6500ead0d1e83f165284d6b2426106bd"
+      "sha256": "c84e7f61f306d6368be9d5014bf70f7ce4a78bdd280f9f9be8928ff8ff7af62b"
     },
     {
       "path": "source/effect-fabric-0.2.12/EXTERNAL_ANCHOR_QUALIFICATION.json",
       "bytes": 1167,
-      "sha256": "6d40e1690515e4e685e6cbcaaf992b36e80db21cb72eec4c55cf0306342383bc"
+      "sha256": "96e583f7283d12816079d653e97f869042cda434117e4a374bfce266f6e3bb21"
     },
     {
       "path": "source/effect-fabric-0.2.12/GATEWAY_QUALIFICATION.json",
       "bytes": 986,
-      "sha256": "905c13760766c9a84afb0d1446bf2332117e1aaac66692573cded0d86ad2395e"
+      "sha256": "2fa0264289213885ab65a6d88b927a7e0f9305baf6be625f832fd13b91576c77"
     },
     {
       "path": "source/effect-fabric-0.2.12/LICENSE",
@@ -281,8 +286,8 @@
     },
     {
       "path": "source/effect-fabric-0.2.12/MANIFEST.sha256",
-      "bytes": 22799,
-      "sha256": "bc4b56d9682d1efca651e4768f7a1f003b9a807f5eb25c52ee838e09f17c69fe"
+      "bytes": 22898,
+      "sha256": "34a25fbb1302c174b40b61d40b67272f9b3f5be01c0d3e1d5f75638d8c90c0e5"
     },
     {
       "path": "source/effect-fabric-0.2.12/Makefile",
@@ -292,27 +297,27 @@
     {
       "path": "source/effect-fabric-0.2.12/POSTGRES_QUALIFICATION.json",
       "bytes": 2060,
-      "sha256": "947468ae306a11767d4ed166874b3bcb58e958f0f353b16feab9ba7b3f44d1db"
+      "sha256": "d5409447a38c8e7939f8166b55da8843829746c26b0cb9736d80d3c1be1d0383"
     },
     {
       "path": "source/effect-fabric-0.2.12/PROVIDER_QUALIFICATION.json",
       "bytes": 5513,
-      "sha256": "aa45d7e5faa3ffd296d3f4938895ad5b9738bb0783abd5d77a2b23b90379adc2"
+      "sha256": "db7a3ccffd6f461d33f756dea59fad042f9117298c1776cc3484ffc16d952892"
     },
     {
       "path": "source/effect-fabric-0.2.12/QUALIFICATION_INPUTS.sha256",
-      "bytes": 19935,
-      "sha256": "73af6bb7a23449697b930689cc1f911b49b7d2ac7717e2d6d9b1350818a3c7b0"
+      "bytes": 20034,
+      "sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213"
     },
     {
       "path": "source/effect-fabric-0.2.12/QUALIFICATION_REPRODUCIBILITY.json",
       "bytes": 5027,
-      "sha256": "2e2d4734893fbb46f12f58feeed7b5598d4610c7b3e0c05f17a7b4539ad354bf"
+      "sha256": "b9a0ee8008353fbd30bfd347c7bc212f7bb3c70356c53d4350b2a6a3690921d4"
     },
     {
       "path": "source/effect-fabric-0.2.12/QUALIFICATION_RUN.json",
       "bytes": 425,
-      "sha256": "5ae5c8eea90709a51c54677049fc56758b75c4139ea4d127604f63b581e88bad"
+      "sha256": "a876706df7ce0488248ba7c06032d52284636ada43d48d8113f1d970a0ea0b9b"
     },
     {
       "path": "source/effect-fabric-0.2.12/README.md",
@@ -322,17 +327,17 @@
     {
       "path": "source/effect-fabric-0.2.12/REDUCER_EQUIVALENCE_QUALIFICATION.json",
       "bytes": 3163,
-      "sha256": "644d30da81be214b4f70337d1d84a1e8dde38806cb2d739237c2fb9fcbb81770"
+      "sha256": "5c31edb29e76fb5f2f5c410adf5739e027284fc059e29d6b2af000895f5f84f0"
     },
     {
       "path": "source/effect-fabric-0.2.12/REDUCER_NEGATIVE_CONTROL_QUALIFICATION.json",
       "bytes": 5206,
-      "sha256": "1f1eb643401da53e7d94297d46ec0aa6823de34dc07121f54f9cf502d690082a"
+      "sha256": "13f02afdd744c68bed5440eac51ee912c1399f2ea5808c21f67d07088ccdce71"
     },
     {
       "path": "source/effect-fabric-0.2.12/RELEASE_QUALIFICATION.json",
       "bytes": 2155,
-      "sha256": "b30b630380ffad5988be9df41f971ad2586fe6f01a530e9ec24ec4ba677243a2"
+      "sha256": "223c3db33a9dbd437a4e2468ba4e9c486b190a38e53eb03fa0af696552ba0512"
     },
     {
       "path": "source/effect-fabric-0.2.12/SECURITY.md",
@@ -342,7 +347,7 @@
     {
       "path": "source/effect-fabric-0.2.12/STATIC_QUALIFICATION.json",
       "bytes": 671,
-      "sha256": "c42e22fef0674101baed0eaee9b2819837fc85a2e368443426d5271749a5da9b"
+      "sha256": "35a947e82596ec22d24e45c4566cb9b474bf1aec917262c0af0fb909cf55deb8"
     },
     {
       "path": "source/effect-fabric-0.2.12/THIRD_PARTY_NOTICES.md",
@@ -352,67 +357,67 @@
     {
       "path": "source/effect-fabric-0.2.12/TRANSACTIONAL_EVIDENCE_QUALIFICATION.json",
       "bytes": 1398,
-      "sha256": "fd2436378215b1e6e9dced31b604a169266d57637fd884975855866067119683"
+      "sha256": "fc694b26984eeb9eb78cb87f258f96e4c2361561479e0d43fa88d745ff35cce8"
     },
     {
       "path": "source/effect-fabric-0.2.12/TRANSITION_KERNEL_QUALIFICATION.json",
       "bytes": 2060,
-      "sha256": "018a6927b0294f32ebc276de07e3641ac3494bc69fb69850a72c4edbcca9d892"
+      "sha256": "0166671ff8eca0b58d387f4d616c0086826511cc2bbb4da4ae13759e37863d9c"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_ACTIVE_ENGINE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_ACTIVE_ENGINE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_DIRECT_STORE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_DIRECT_STORE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_ENGINE_INTERFACE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_ENGINE_INTERFACE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_NATIVE_ENGINE_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_NATIVE_ENGINE_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_QUALIFICATION.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/UPSTREAM_DAO_REPRODUCIBILITY.json",
       "bytes": 672,
-      "sha256": "460316fb6d666d4cd9c4b0936cfa78872244a734cbae150c83419f082b5c7b50"
+      "sha256": "56fd56137418b7f1edc80c290be071a27144c4c1c53118559f27f781d30746a7"
     },
     {
       "path": "source/effect-fabric-0.2.12/WORKLOAD_IDENTITY_QUALIFICATION.json",
       "bytes": 1212,
-      "sha256": "7081c94f68c28fe6de0be83bec5d3165c1841be48d7f55f3ff9b895e2c2b7a13"
+      "sha256": "38763d11916045182365fc4cc0fcc2ae075bc297bf5b0fcdaf73b6ffd80b4899"
     },
     {
       "path": "source/effect-fabric-0.2.12/bridges/durable-agent-outbox/effect_fabric_native_reduce.ts",
@@ -646,13 +651,13 @@
     },
     {
       "path": "source/effect-fabric-0.2.12/pyproject.toml",
-      "bytes": 1626,
-      "sha256": "01e830036a3f5daf402dcc6b29631b69541f29253ba0324b86dac307435ac79a"
+      "bytes": 1653,
+      "sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a"
     },
     {
       "path": "source/effect-fabric-0.2.12/release-manifest.json",
       "bytes": 5739,
-      "sha256": "d60e3528246d7ea5f74491b776fe1c3f965b03c5bb802d91773942cdbc0d11a8"
+      "sha256": "395adde31e40afd504b1046429e43a6ab3f28dc2d58324bd7650215286140b95"
     },
     {
       "path": "source/effect-fabric-0.2.12/scripts/bind_qualification_evidence.py",
@@ -946,8 +951,8 @@
     },
     {
       "path": "source/effect-fabric-0.2.12/src/effect_fabric/gateway.py",
-      "bytes": 17724,
-      "sha256": "6cc1d3bcad10f013fb3ff2f5f499bad22cea8be5abc8e1a0b8ead17921bdaa98"
+      "bytes": 18126,
+      "sha256": "877a67fc2984a279f5ae09c824cf77725916e193d2a8446cc9c1206c2b0b94dd"
     },
     {
       "path": "source/effect-fabric-0.2.12/src/effect_fabric/gateway_api.py",
@@ -988,6 +993,11 @@
       "path": "source/effect-fabric-0.2.12/src/effect_fabric/interfaces.py",
       "bytes": 1007,
       "sha256": "3054ac01f4d8c5d4c8a7b7ebd6350a81acf0dba6a06d81638fbc926f26cb3f9d"
+    },
+    {
+      "path": "source/effect-fabric-0.2.12/src/effect_fabric/json_schema.py",
+      "bytes": 1877,
+      "sha256": "157264c15d5b88cad1ab963e72e382fa175ce3a756b35e8ed276e2d56b802d8f"
     },
     {
       "path": "source/effect-fabric-0.2.12/src/effect_fabric/ledger.py",
@@ -1181,8 +1191,8 @@
     },
     {
       "path": "source/effect-fabric-0.2.12/tests/test_effect_gateway.py",
-      "bytes": 13976,
-      "sha256": "3af4d3ec131dbd083509465bd02dc9750bde38e1cc3015206b6af54437584ea7"
+      "bytes": 14957,
+      "sha256": "7f6ebb5d5b89a6c551f0b05bef65d19c1691b8668a20242e7f2d0e6fbe214cd4"
     },
     {
       "path": "source/effect-fabric-0.2.12/tests/test_effect_registry_v2.py",
@@ -1357,12 +1367,12 @@
     {
       "path": "verification/ARTIFACT_MANIFEST.json",
       "bytes": 1036,
-      "sha256": "09a9616ee3df4d38df1117d3c8b2e745698e449db1033d6f38ac6c847c944f92"
+      "sha256": "c5a4253d923543b93b5a4ae6b9cd51c95e539cdfdcd7e2275a2cd4a568264eb8"
     },
     {
       "path": "verification/INSTALLED_WHEEL_DEMO.json",
       "bytes": 178,
-      "sha256": "1e0896b742b18435b59f05f625c15460e82a66c1d91fdd5ba71610138ec05bdb"
+      "sha256": "4e2350cbe527544e82228a660b8e9ce91dbf56259fdebc1358095741e54ed191"
     },
     {
       "path": "verification/INSTALLED_WHEEL_SMOKE.json",
@@ -1372,12 +1382,12 @@
     {
       "path": "verification/RELEASE_MANIFEST.json",
       "bytes": 5739,
-      "sha256": "d60e3528246d7ea5f74491b776fe1c3f965b03c5bb802d91773942cdbc0d11a8"
+      "sha256": "395adde31e40afd504b1046429e43a6ab3f28dc2d58324bd7650215286140b95"
     },
     {
       "path": "verification/SDIST_TESTS.json",
       "bytes": 166,
-      "sha256": "c5df355d9194ea3e6d13b4fd3d0228c1213d44322d11327c77ad6af6cae22362"
+      "sha256": "a7b59388818489ee562802ad5ebe8139ca38375c3c4f8a22df5c3a6536ae88d5"
     },
     {
       "path": "verification/SOURCE_INTEGRITY_CHECK.json",
@@ -1386,8 +1396,8 @@
     },
     {
       "path": "verification/SOURCE_MANIFEST.sha256",
-      "bytes": 22799,
-      "sha256": "bc4b56d9682d1efca651e4768f7a1f003b9a807f5eb25c52ee838e09f17c69fe"
+      "bytes": 22898,
+      "sha256": "34a25fbb1302c174b40b61d40b67272f9b3f5be01c0d3e1d5f75638d8c90c0e5"
     },
     {
       "path": "verification/WHEEL_CONTENTS_CHECK.json",
@@ -1396,8 +1406,8 @@
     },
     {
       "path": "verification/WHEEL_SOURCE_EQUIVALENCE.json",
-      "bytes": 31049,
-      "sha256": "4a5fc2b8216d4528ded83048a0fc41726755e68c7cf5af25fa2747c7c151b7a6"
+      "bytes": 31434,
+      "sha256": "62795e8fe991fb1906431740ba7ba7ee5c6dd91e1e415a6fd1dd2316b8dea5a7"
     }
   ]
 }

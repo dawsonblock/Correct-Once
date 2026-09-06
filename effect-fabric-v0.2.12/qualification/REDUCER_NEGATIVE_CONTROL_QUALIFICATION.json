@@ -8,8 +8,8 @@
   "provenance": {
     "donor_lock_sha256": "73a630bdb90ac0c646883de4d1edc2efe295fdb3b877e202342ebb6924b7b48f",
     "native_reducer_sha256": "ac05cb5504773c5cb863b52429d9dda82fd62a876da134cb25b2a6070a30bd06",
-    "pyproject_sha256": "01e830036a3f5daf402dcc6b29631b69541f29253ba0324b86dac307435ac79a",
-    "qualification_inputs_sha256": "73af6bb7a23449697b930689cc1f911b49b7d2ac7717e2d6d9b1350818a3c7b0",
+    "pyproject_sha256": "ef4b3a67de23f7a83d83463b9a7803219333f7ab5c8bffc298aa32f9b52e902a",
+    "qualification_inputs_sha256": "e6356394072ff16d9590254408e6b796da5c6d390dbb9582ee0d79194010c213",
     "schema": "effect-fabric/qualification-provenance/v1",
     "version": "0.2.12"
   },

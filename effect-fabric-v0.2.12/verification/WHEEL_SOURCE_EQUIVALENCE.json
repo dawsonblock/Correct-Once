@@ -1,5 +1,5 @@
 {
-  "compared_files": 72,
+  "compared_files": 73,
   "failures": [],
   "files": [
     {
@@ -157,10 +157,10 @@
     {
       "expected_wheel_suffix": "effect_fabric/gateway.py",
       "source": "src/effect_fabric/gateway.py",
-      "source_sha256": "6cc1d3bcad10f013fb3ff2f5f499bad22cea8be5abc8e1a0b8ead17921bdaa98",
+      "source_sha256": "877a67fc2984a279f5ae09c824cf77725916e193d2a8446cc9c1206c2b0b94dd",
       "status": "PASS",
       "wheel_entry": "effect_fabric/gateway.py",
-      "wheel_sha256": "6cc1d3bcad10f013fb3ff2f5f499bad22cea8be5abc8e1a0b8ead17921bdaa98"
+      "wheel_sha256": "877a67fc2984a279f5ae09c824cf77725916e193d2a8446cc9c1206c2b0b94dd"
     },
     {
       "expected_wheel_suffix": "effect_fabric/gateway_api.py",
@@ -225,6 +225,14 @@
       "status": "PASS",
       "wheel_entry": "effect_fabric/interfaces.py",
       "wheel_sha256": "3054ac01f4d8c5d4c8a7b7ebd6350a81acf0dba6a06d81638fbc926f26cb3f9d"
+    },
+    {
+      "expected_wheel_suffix": "effect_fabric/json_schema.py",
+      "source": "src/effect_fabric/json_schema.py",
+      "source_sha256": "157264c15d5b88cad1ab963e72e382fa175ce3a756b35e8ed276e2d56b802d8f",
+      "status": "PASS",
+      "wheel_entry": "effect_fabric/json_schema.py",
+      "wheel_sha256": "157264c15d5b88cad1ab963e72e382fa175ce3a756b35e8ed276e2d56b802d8f"
     },
     {
       "expected_wheel_suffix": "effect_fabric/ledger.py",
@@ -580,7 +588,7 @@
     }
   ],
   "schema": "effect-fabric/wheel-source-equivalence/v1",
-  "source_manifest_sha256": "bc4b56d9682d1efca651e4768f7a1f003b9a807f5eb25c52ee838e09f17c69fe",
+  "source_manifest_sha256": "34a25fbb1302c174b40b61d40b67272f9b3f5be01c0d3e1d5f75638d8c90c0e5",
   "status": "PASS",
   "version": "0.2.12",
   "wheel": "effect_fabric-0.2.12-py3-none-any.whl"
