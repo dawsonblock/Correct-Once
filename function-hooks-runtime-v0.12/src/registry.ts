@@ -170,8 +170,13 @@ export async function projectRuntimeCapabilityCatalog(
         risk: capability.capability.risk,
         schemaHash: capability.capability.schemaHash,
         executionClass: capability.execution.executionClass,
+        executor: capability.execution.executor,
+        schemaClassDigest: capability.execution.schemaClassDigest,
         ...(capability.execution.policyHookId
           ? { policyHookId: capability.execution.policyHookId }
+          : {}),
+        ...(capability.execution.pureHandlerId
+          ? { pureHandlerId: capability.execution.pureHandlerId }
           : {}),
         requiresLightweightAuth: capability.execution.requiresLightweightAuth,
         trustedRead: capability.execution.trustedRead,

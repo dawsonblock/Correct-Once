@@ -8,6 +8,7 @@ import type {
   CompiledCapabilityHandle,
   InvokeCapabilityContext,
   InvokeCapabilityRequest,
+  PureCapabilityHandler,
   RuntimePolicyContext,
   RuntimePolicyHook,
   RuntimeReceiptHooks,
@@ -17,10 +18,10 @@ function asError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
 }
 
-function hookMap(
-  hooks: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook> | undefined,
-): ReadonlyMap<string, RuntimePolicyHook> {
-  if (!hooks) return new Map<string, RuntimePolicyHook>();
+function valueMap<T>(
+  hooks: Readonly<Record<string, T>> | ReadonlyMap<string, T> | undefined,
+): ReadonlyMap<string, T> {
+  if (!hooks) return new Map<string, T>();
   return hooks instanceof Map ? hooks : new Map(Object.entries(hooks));
 }
 
@@ -62,11 +63,14 @@ function effectArgs(input: unknown, capabilityId: string): Record<string, unknow
 
 export class FastExecutor {
   readonly #policyHooks: ReadonlyMap<string, RuntimePolicyHook>;
+  readonly #pureHandlers: ReadonlyMap<string, PureCapabilityHandler>;
 
   constructor(options: {
     readonly policyHooks?: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook>;
+    readonly pureHandlers?: Readonly<Record<string, PureCapabilityHandler>> | ReadonlyMap<string, PureCapabilityHandler>;
   }) {
-    this.#policyHooks = hookMap(options.policyHooks);
+    this.#policyHooks = valueMap(options.policyHooks);
+    this.#pureHandlers = valueMap(options.pureHandlers);
   }
 
   async execute(
@@ -74,13 +78,34 @@ export class FastExecutor {
     request: InvokeCapabilityRequest,
     context: InvokeCapabilityContext,
   ): Promise<unknown> {
-    await runPolicyHook(this.#policyHooks, handle, request, context);
-    if (!handle.fastRouter) {
+    const policyContext = await runPolicyHook(this.#policyHooks, handle, request, context);
+    if (handle.executionClass === "pure") {
+      if (handle.route) {
+        throw new RuntimeExecutionPolicyError(
+          `Capability ${handle.id} is pure but still carries an external route.`,
+        );
+      }
+      const pureHandlerId = handle.pureHandlerId;
+      if (!pureHandlerId) {
+        throw new RuntimeExecutionPolicyError(
+          `Capability ${handle.id} is pure but has no pinned pure handler.`,
+        );
+      }
+      const pureHandler = this.#pureHandlers.get(pureHandlerId);
+      if (!pureHandler) {
+        throw new RuntimeExecutionPolicyError(
+          `Capability ${handle.id} references unknown pure handler ${pureHandlerId}.`,
+        );
+      }
+      return pureHandler(policyContext);
+    }
+
+    if (!handle.readRouter) {
       throw new RuntimeExecutionPolicyError(
-        `Capability ${handle.id} is missing a fast-path router handle.`,
+        `Capability ${handle.id} is missing a read-path router handle.`,
       );
     }
-    return handle.fastRouter.execute(
+    return handle.readRouter.execute(
       {
         actionId: request.actionId,
         app: handle.app,
@@ -155,7 +180,7 @@ export class GuardedExecutor {
     readonly receipts?: RuntimeReceiptHooks;
   }) {
     this.#effect = options.effect;
-    this.#policyHooks = hookMap(options.policyHooks);
+    this.#policyHooks = valueMap(options.policyHooks);
     this.#receipts = options.receipts;
   }
 
@@ -165,11 +190,25 @@ export class GuardedExecutor {
     context: InvokeCapabilityContext,
   ): Promise<unknown> {
     const policyContext = await runPolicyHook(this.#policyHooks, handle, request, context);
+    if (!request.idempotencyKey?.trim()) {
+      throw new RuntimeExecutionPolicyError(
+        `Capability ${handle.id} is guarded and requires a non-empty idempotencyKey.`,
+      );
+    }
+    const receipts = this.#receipts;
+    const onStart = receipts?.onStart;
+    const onSuccess = receipts?.onSuccess;
+    const onFailure = receipts?.onFailure;
+    if (!onStart || !onSuccess || !onFailure) {
+      throw new RuntimeExecutionPolicyError(
+        `Capability ${handle.id} is guarded and requires receipt hooks.`,
+      );
+    }
     const run = async (): Promise<unknown> => {
-      await this.#receipts?.onStart?.(policyContext);
+      await onStart(policyContext);
       try {
         const result = await this.#effect.execute(handle, request, context);
-        await this.#receipts?.onSuccess?.(
+        await onSuccess(
           Object.freeze({
             ...policyContext,
             result,
@@ -178,7 +217,7 @@ export class GuardedExecutor {
         return result;
       } catch (error) {
         const wrapped = asError(error);
-        await this.#receipts?.onFailure?.(
+        await onFailure(
           Object.freeze({
             ...policyContext,
             error: wrapped,
@@ -188,8 +227,7 @@ export class GuardedExecutor {
       }
     };
 
-    const key = request.idempotencyKey?.trim();
-    if (!key) return run();
+    const key = request.idempotencyKey.trim();
 
     const cacheKey = `${handle.id}\u0000${key}`;
     const existing = this.#idempotency.get(cacheKey);

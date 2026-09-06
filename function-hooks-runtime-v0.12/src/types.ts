@@ -14,7 +14,10 @@ export type ExecutorId = "fast" | "guarded" | "effect";
 
 export interface RuntimeExecutionPolicy {
   readonly executionClass: ExecutionClass;
+  readonly executor: ExecutorId;
+  readonly schemaClassDigest: string;
   readonly policyHookId?: string;
+  readonly pureHandlerId?: string;
   /**
    * Pure/read do not enter Effect Fabric by default. When lightweight auth is
    * still required, the admission record must carry a policy hook id.
@@ -36,6 +39,7 @@ export interface AdmitRuntimeCapabilityOptions {
   readonly reason?: string;
   readonly executionClass: ExecutionClass;
   readonly policyHookId?: string;
+  readonly pureHandlerId?: string;
   readonly requiresLightweightAuth?: boolean;
   readonly trustedRead?: boolean;
 }
@@ -82,7 +86,10 @@ export interface RuntimeCapabilityRegistry {
 
 export interface RuntimeCapabilityCatalogEntry extends AgentCapabilityCatalogEntry {
   readonly executionClass: ExecutionClass;
+  readonly executor: ExecutorId;
+  readonly schemaClassDigest: string;
   readonly policyHookId?: string;
+  readonly pureHandlerId?: string;
   readonly requiresLightweightAuth: boolean;
   readonly trustedRead: boolean;
 }
@@ -109,13 +116,15 @@ export interface CompiledCapabilityHandle {
   readonly executionClass: ExecutionClass;
   readonly risk: CapabilityRisk;
   readonly schemaHash: string;
+  readonly schemaClassDigest: string;
   readonly policyHookId?: string;
+  readonly pureHandlerId?: string;
   readonly requiresLightweightAuth: boolean;
   readonly trustedRead: boolean;
   readonly stateVersion: number;
   readonly admitted: RuntimeAdmittedCapability;
-  readonly route: AnyCapabilityRoute;
-  readonly fastRouter?: ExecutionRouter;
+  readonly route?: AnyCapabilityRoute;
+  readonly readRouter?: ExecutionRouter;
 }
 
 export interface RuntimePolicyContext {
@@ -125,6 +134,8 @@ export interface RuntimePolicyContext {
 }
 
 export type RuntimePolicyHook = (context: RuntimePolicyContext) => Promise<void> | void;
+
+export type PureCapabilityHandler = (context: RuntimePolicyContext) => Promise<unknown> | unknown;
 
 export interface RuntimeReceiptHooks {
   readonly onStart?: (context: RuntimePolicyContext) => Promise<void> | void;
@@ -149,6 +160,7 @@ export interface CreateFunctionHooksRuntimeOptions {
   readonly fastGateway: AgentGateway;
   readonly effectGateway: EffectGatewayCallTool | EffectGatewayHttpFacade;
   readonly policyHooks?: Readonly<Record<string, RuntimePolicyHook>> | ReadonlyMap<string, RuntimePolicyHook>;
+  readonly pureHandlers?: Readonly<Record<string, PureCapabilityHandler>> | ReadonlyMap<string, PureCapabilityHandler>;
   readonly receipts?: RuntimeReceiptHooks;
 }
 

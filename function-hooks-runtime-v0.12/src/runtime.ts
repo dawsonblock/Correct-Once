@@ -1,5 +1,6 @@
 import { createExecutionRouter, compileAdmittedCapabilityRoute } from "@function-hooks/router";
 import { CapabilityHandleCache } from "./handle-cache.js";
+import { assertRuntimeAdmittedCapability } from "./admission.js";
 import {
   RuntimeCapabilityNotFoundError,
   RuntimeCapabilityStateError,
@@ -35,15 +36,19 @@ function compileHandle(
   record: RuntimeCapabilityRegistryRecord,
   options: CreateFunctionHooksRuntimeOptions,
 ): CompiledCapabilityHandle {
+  assertRuntimeAdmittedCapability(record.capability);
   if (record.state !== "active") {
     throw new RuntimeCapabilityStateError(
       `Capability ${record.capability.capability.id} is not active.`,
     );
   }
-  const route = compileAdmittedCapabilityRoute(record.capability.capability);
   const executor = executorFor(record);
-  const fastRouter =
-    executor === "fast"
+  const route =
+    record.capability.execution.executionClass === "pure"
+      ? undefined
+      : compileAdmittedCapabilityRoute(record.capability.capability);
+  const readRouter =
+    record.capability.execution.executionClass === "read" && route
       ? createExecutionRouter({ gateway: options.fastGateway, routes: [route] })
       : undefined;
 
@@ -55,15 +60,19 @@ function compileHandle(
     executionClass: record.capability.execution.executionClass,
     risk: record.capability.capability.risk,
     schemaHash: record.capability.capability.schemaHash,
+    schemaClassDigest: record.capability.execution.schemaClassDigest,
     ...(record.capability.execution.policyHookId
       ? { policyHookId: record.capability.execution.policyHookId }
+      : {}),
+    ...(record.capability.execution.pureHandlerId
+      ? { pureHandlerId: record.capability.execution.pureHandlerId }
       : {}),
     requiresLightweightAuth: record.capability.execution.requiresLightweightAuth,
     trustedRead: record.capability.execution.trustedRead,
     stateVersion: record.stateVersion,
     admitted: record.capability,
-    route,
-    ...(fastRouter ? { fastRouter } : {}),
+    ...(route ? { route } : {}),
+    ...(readRouter ? { readRouter } : {}),
   });
 }
 
@@ -72,6 +81,7 @@ function createExecutors(options: CreateFunctionHooksRuntimeOptions): RuntimeExe
   return {
     fast: new FastExecutor({
       ...(options.policyHooks === undefined ? {} : { policyHooks: options.policyHooks }),
+      ...(options.pureHandlers === undefined ? {} : { pureHandlers: options.pureHandlers }),
     }),
     guarded: new GuardedExecutor({
       effect,
@@ -91,6 +101,54 @@ function nonEmptyString(value: unknown, field: string): string {
     throw new RuntimeExecutionPolicyError(`${field} must be a non-empty string.`);
   }
   return value;
+}
+
+function assertNoCallTimeTierOverride(request: InvokeCapabilityRequest): void {
+  const raw = request as unknown as Record<string, unknown>;
+  if (Object.prototype.hasOwnProperty.call(raw, "executionClass")) {
+    throw new RuntimeExecutionPolicyError(
+      "executionClass is pinned at admit time and cannot be chosen at call time.",
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(raw, "executor")) {
+    throw new RuntimeExecutionPolicyError(
+      "executor is pinned at admit time and cannot be chosen at call time.",
+    );
+  }
+}
+
+function assertHandlePin(handle: CompiledCapabilityHandle): void {
+  const pinned = handle.admitted.execution;
+  if (handle.executionClass !== pinned.executionClass) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle class drifted from admission pin.`,
+    );
+  }
+  if (handle.executor !== pinned.executor) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle executor drifted from admission pin.`,
+    );
+  }
+  if (handle.schemaHash !== handle.admitted.capability.schemaHash) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle schema hash drifted from admission pin.`,
+    );
+  }
+  if (handle.schemaClassDigest !== pinned.schemaClassDigest) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle schema/class digest drifted from admission pin.`,
+    );
+  }
+  if (handle.policyHookId !== pinned.policyHookId) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle policy hook drifted from admission pin.`,
+    );
+  }
+  if (handle.pureHandlerId !== pinned.pureHandlerId) {
+    throw new RuntimeExecutionPolicyError(
+      `Capability ${handle.id} handle pure handler drifted from admission pin.`,
+    );
+  }
 }
 
 export function createFunctionHooksRuntime(
@@ -122,7 +180,9 @@ export function createFunctionHooksRuntime(
   ): Promise<unknown> => {
     const capabilityId = nonEmptyString(request.id, "request.id");
     nonEmptyString(request.actionId, "request.actionId");
+    assertNoCallTimeTierOverride(request);
     const handle = await resolveHandle(capabilityId);
+    assertHandlePin(handle);
     const effectiveContext = normalizedContext(context);
     switch (handle.executor) {
       case "fast":
