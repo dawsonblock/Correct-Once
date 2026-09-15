@@ -7,7 +7,7 @@ FUNCTION_HOOKS_RUNTIME_DIR := function-hooks-runtime-v0.12
 QUALIFY_PYTHONPATH := $(CURDIR):$(CURDIR)/$(EFFECT_FABRIC_DIR)/src
 QUALIFY_WHEEL_VENV := $(CURDIR)/.tmp/effect-fabric-wheel-qualify
 
-.PHONY: install install-a install-b install-runtime build-a-release build-b typecheck typecheck-runtime verify-a-integrity test test-runtime test-adapter-live test-cross-language verify-b-manifest qualify smoke smoke-runtime smoke-adapter smoke-a-import smoke-b-import
+.PHONY: install install-a install-b install-runtime build-a-release build-b typecheck typecheck-runtime verify-a-integrity test test-runtime test-adapter-live test-cross-language verify-b-manifest qualify smoke smoke-runtime smoke-adapter smoke-a-import smoke-b-import gateway host-smoke
 
 install: install-a install-b install-runtime
 
@@ -80,3 +80,9 @@ smoke-a-import:
 
 smoke-b-import:
 	cd $(FUNCTION_HOOKS_DIR) && node --input-type=module -e "import('@function-hooks/gateway').then(() => console.log('function-hooks gateway import OK')).catch((err) => { console.error(err); process.exit(1); })"
+
+gateway:
+	PYTHONPATH="$(CURDIR):$(CURDIR)/$(EFFECT_FABRIC_DIR)/src" $(PYTHON) -m correct_once_gateway.main
+
+host-smoke:
+	cd $(FUNCTION_HOOKS_RUNTIME_DIR) && $(NPM) run host:smoke
