@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import readline from "node:readline";
 
 const controlPath = process.argv[2];
+const callStatePath = process.argv[3] ?? `${controlPath}.calls.json`;
 
 if (!controlPath) {
-  console.error("usage: stdio_mcp_server.mjs <control.json>");
+  console.error("usage: stdio_mcp_server.mjs <control.json> [call-state.json]");
   process.exit(2);
 }
 
@@ -36,6 +37,21 @@ function error(id, code, message) {
     `${JSON.stringify({ jsonrpc: "2.0", id, error: { code, message } })}\n`,
   );
 }
+
+function writeCallState(state) {
+  writeFileSync(callStatePath, JSON.stringify(state), "utf8");
+}
+
+function incrementCallCount() {
+  const state = JSON.parse(readFileSync(callStatePath, "utf8"));
+  const current =
+    typeof state.callCount === "number" && Number.isFinite(state.callCount)
+      ? state.callCount
+      : 0;
+  writeCallState({ ...state, callCount: current + 1 });
+}
+
+writeCallState({ callCount: 0 });
 
 const input = readline.createInterface({
   input: process.stdin,
@@ -110,6 +126,7 @@ input.on("line", (line) => {
       error(id, -32602, "tools/call requires params.arguments to be an object");
       return;
     }
+    incrementCallCount();
     const entry = Object.fromEntries(toolEntries())[name];
     if (!entry || typeof entry !== "object") {
       error(id, -32602, `unknown tool: ${name}`);

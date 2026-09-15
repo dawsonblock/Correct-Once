@@ -147,6 +147,7 @@ type HarnessContext = {
   readonly token: string;
   readonly gatewayChild: HarnessProcess;
   readonly capabilityId: string;
+  callCount(): Promise<number>;
   writeSnapshotState(
     capabilityId: string,
     state: "active" | "suspended" | "revoked",
@@ -162,6 +163,7 @@ async function createHarness(): Promise<HarnessContext> {
   const tempRoot = await mkdtemp(join(tmpdir(), "correct-once-live-gateway-"));
   const snapshotPath = join(tempRoot, "runtime-snapshot.json");
   const controlPath = join(tempRoot, "mcp-control.json");
+  const callStatePath = join(tempRoot, "mcp-call-state.json");
   const token = `live-gateway-${Math.random().toString(16).slice(2)}`;
   const port = await availablePort();
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -220,7 +222,11 @@ async function createHarness(): Promise<HarnessContext> {
       EFFECT_GATEWAY_MCP_TRANSPORT: "stdio",
       EFFECT_GATEWAY_MCP_SERVER_NAME: "github",
       EFFECT_GATEWAY_MCP_COMMAND: process.execPath,
-      EFFECT_GATEWAY_MCP_ARGS_JSON: JSON.stringify([fixturePath, controlPath]),
+      EFFECT_GATEWAY_MCP_ARGS_JSON: JSON.stringify([
+        fixturePath,
+        controlPath,
+        callStatePath,
+      ]),
       EFFECT_GATEWAY_MCP_CWD: repoRoot,
       EFFECT_GATEWAY_AUTO_VERIFY: "false",
     },
@@ -257,6 +263,10 @@ async function createHarness(): Promise<HarnessContext> {
     token,
     gatewayChild,
     capabilityId,
+    callCount: async () => {
+      const state = await readJson<{ readonly callCount?: number }>(callStatePath);
+      return typeof state.callCount === "number" ? state.callCount : 0;
+    },
     writeSnapshotState: async (targetId, state) => {
       const snapshot = await readJson<any>(snapshotPath);
       const record = snapshot.records.find(
@@ -310,7 +320,15 @@ test("permanent gateway requires bearer auth", async () => {
 
 test("live_authority_policy revokes the external critical path without restart", async () => {
   await withHarness(
-    async ({ runtime, capabilityId, writeSnapshotState, baseUrl, token, gatewayChild }) => {
+    async ({
+      runtime,
+      capabilityId,
+      callCount,
+      writeSnapshotState,
+      baseUrl,
+      token,
+      gatewayChild,
+    }) => {
       const environmentRes = await fetch(`${baseUrl}/debug/environment`);
       const environment = await environmentRes.json();
       assert.equal(environmentRes.status, 200);
@@ -332,6 +350,7 @@ test("live_authority_policy revokes the external critical path without restart",
         updated: true,
         source: "stdio-mcp",
       });
+      assert.equal(await callCount(), 1);
 
       await writeSnapshotState(capabilityId, "revoked");
 
@@ -347,6 +366,7 @@ test("live_authority_policy revokes the external critical path without restart",
         ),
         /403|authoritative|gateway-routable|denied/i,
       );
+      assert.equal(await callCount(), 1);
 
       const directRes = await fetch(`${baseUrl}/gateway/tool-call`, {
         method: "POST",
@@ -364,6 +384,7 @@ test("live_authority_policy revokes the external critical path without restart",
         }),
       });
       assert.equal(directRes.status, 403);
+      assert.equal(await callCount(), 1);
       assert.equal(gatewayChild.exitCode, null);
     },
   );
