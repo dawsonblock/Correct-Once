@@ -8,7 +8,8 @@
     "test:cross-language": "tsx --test qualification/**/*.test.ts",
     "qualify": "npm test && npm run test:cross-language",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "typecheck:qualification": "tsc -p tsconfig.qualification.json --noEmit"
+    "typecheck:qualification": "tsc -p tsconfig.qualification.json --noEmit",
+    "host:smoke": "tsx examples/host.ts"
   },
   "dependencies": {
     "@function-hooks/assurance": "file:../function-hooks-core-reference-v0.11.0/packages/assurance",
