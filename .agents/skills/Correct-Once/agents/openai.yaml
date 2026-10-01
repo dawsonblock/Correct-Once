@@ -1,0 +1,6 @@
+interface:
+  display_name: "Correct Once"
+  short_description: "Repo-specific patterns and workflows for Correct-Once"
+  default_prompt: "Use the Correct-Once repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
